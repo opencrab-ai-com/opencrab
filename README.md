@@ -8,7 +8,16 @@
 - 交互体验尽量简单，参考 ChatGPT Web
 - 聚焦稳定提供对话、Channels、定时任务、Skills 等核心能力
 
-当前项目还处于规划阶段。
+当前仓库已经完成了第一版 Web 骨架，并已接入 Codex SDK 的基础对话链路。
+
+本地启动：
+- `npm install`
+- 先执行 `codex login`
+- 参考 [`.env.example`](/Users/sky/SkyProjects/opencrab/.env.example) 配置环境变量
+- `npm run dev`
+
+Codex SDK：
+- [Codex SDK 接入说明](./docs/codex-sdk-integration.md)
 
 产品规划文档：
 - [V1 产品规划](./docs/v1-product-plan.md)

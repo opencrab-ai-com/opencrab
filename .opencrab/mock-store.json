@@ -1,0 +1,120 @@
+{
+  "folders": [
+    {
+      "id": "product",
+      "name": "产品讨论"
+    },
+    {
+      "id": "weekly",
+      "name": "每周回顾"
+    }
+  ],
+  "conversations": [
+    {
+      "id": "conversation-a9adb559-abd4-4bac-9f43-0b36c91852f4",
+      "title": "带附件的新对话",
+      "timeLabel": "刚刚",
+      "preview": "附件：55.png",
+      "folderId": null,
+      "codexThreadId": "019cf2c4-5c50-7d00-b1a2-49b8722a3d29",
+      "lastAssistantModel": "gpt-5.4"
+    },
+    {
+      "id": "opencrab-home",
+      "title": "opencrab 首页结构整理",
+      "timeLabel": "刚刚",
+      "preview": "整理首页结构，收紧空态和输入区。",
+      "folderId": "product",
+      "codexThreadId": null,
+      "lastAssistantModel": null
+    },
+    {
+      "id": "task-center",
+      "title": "任务中心信息架构",
+      "timeLabel": "今天",
+      "preview": "梳理任务列表、执行记录和回流结果。",
+      "folderId": null,
+      "codexThreadId": null,
+      "lastAssistantModel": null
+    },
+    {
+      "id": "channel-flow",
+      "title": "Channel 绑定流程",
+      "timeLabel": "昨天",
+      "preview": "整理完整远程对话入口和连接引导。",
+      "folderId": "weekly",
+      "codexThreadId": null,
+      "lastAssistantModel": null
+    },
+    {
+      "id": "skills-empty",
+      "title": "Skills 首页空态",
+      "timeLabel": "昨天",
+      "preview": "保持技能页轻量，不做市场化结构。",
+      "folderId": null,
+      "codexThreadId": null,
+      "lastAssistantModel": null
+    }
+  ],
+  "conversationMessages": {
+    "opencrab-home": [
+      {
+        "id": "m1",
+        "role": "user",
+        "content": "先把 opencrab 的首页搭成更接近 ChatGPT 的极简结构。",
+        "meta": "今天 00:14",
+        "status": "done"
+      },
+      {
+        "id": "m2",
+        "role": "assistant",
+        "content": "已经把首页收成左侧导航、中央标题和底部输入框三层结构，同时保留对话、Channels、任务、Skills 四个一级入口。",
+        "meta": "生成完成",
+        "status": "done"
+      },
+      {
+        "id": "m3",
+        "role": "user",
+        "content": "顶部不要模型选择，首页也不要快捷入口。",
+        "meta": "今天 00:17",
+        "status": "done"
+      },
+      {
+        "id": "m4",
+        "role": "assistant",
+        "content": "已更新为只显示 OpenCrab 标题，去掉顶部模型选择、右上角按钮、语音输入和首页快捷入口。",
+        "meta": "生成完成",
+        "status": "done"
+      }
+    ],
+    "conversation-a9adb559-abd4-4bac-9f43-0b36c91852f4": [
+      {
+        "id": "message-34096e52-70a7-4597-85fd-f90d1cd9a408",
+        "role": "user",
+        "content": "附件：55.png",
+        "attachments": [
+          {
+            "id": "upload-2791da8c-aed4-45df-954a-6e0102c03373",
+            "name": "55.png",
+            "kind": "image",
+            "size": 239521,
+            "mimeType": "image/png"
+          }
+        ],
+        "meta": "今天 02:31",
+        "status": "done"
+      },
+      {
+        "id": "message-4e97b694-232f-48e1-9155-66da83ac8b6b",
+        "role": "assistant",
+        "content": "从截图看，这是一个 **Solana Explorer** 上的交易详情页，当前可见的信息是：\n\n- 这笔交易里有一条 `System Program: Transfer`\n- 转账方向：\n  - `From Address`：`is6MTRHE...`\n  - `To Address`：`4iFRTus...`\n- 转账金额：`0.027 SOL`\n- 下方 `Program Instruction Logs` 显示：\n  - `#1 System Instruction` 成功\n  - `#2 Compute Budget Instruction` 成功\n  - `#3 Compute Budget Instruction` 成功\n  - `#4 System Instruction` 成功\n\n这表示：\n- 这笔交易 **执行成功了**\n- 至少包含一次普通的 SOL 转账\n- 前面的 `Compute Budget Instruction` 一般是设置计算资源参数，不代表额外转账，属于较常见的交易组成部分\n\n如果你是想确认“这是不是被转走的钱”，就这张图本身来看，**确实有 0.027 SOL 从上面的发送地址转到了下面的接收地址**。\n\n如果你愿意，我下一步可以继续帮你做其中一种：\n1. 用更白话解释这笔交易是不是正常  \n2. 教你怎么看这两个地址是不是你的  \n3. 帮你判断这像不像被盗转账  \n4. 逐项解释整笔交易每一栏是什么意思",
+        "meta": "生成完成 · gpt-5.4",
+        "status": "done"
+      }
+    ]
+  },
+  "settings": {
+    "defaultModel": "gpt-5.4",
+    "defaultReasoningEffort": "high"
+  }
+}

@@ -5,12 +5,22 @@ export type FolderItem = {
   name: string;
 };
 
+export type AttachmentItem = {
+  id: string;
+  name: string;
+  kind: "image" | "text";
+  size: number;
+  mimeType: string;
+};
+
 export type ConversationItem = {
   id: string;
   title: string;
   timeLabel: string;
   preview: string;
   folderId: string | null;
+  codexThreadId?: string | null;
+  lastAssistantModel?: string | null;
 };
 
 export type ChannelItem = {
@@ -38,7 +48,14 @@ export type ConversationMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  attachments?: AttachmentItem[];
   meta?: string;
+  status?: "pending" | "done";
+};
+
+export type AppSettings = {
+  defaultModel: string;
+  defaultReasoningEffort: "minimal" | "low" | "medium" | "high" | "xhigh";
 };
 
 export const folders: FolderItem[] = [
@@ -84,6 +101,7 @@ export const conversationMessages: Record<string, ConversationMessage[]> = {
       role: "user",
       content: "先把 opencrab 的首页搭成更接近 ChatGPT 的极简结构。",
       meta: "今天 00:14",
+      status: "done",
     },
     {
       id: "m2",
@@ -91,12 +109,14 @@ export const conversationMessages: Record<string, ConversationMessage[]> = {
       content:
         "已经把首页收成左侧导航、中央标题和底部输入框三层结构，同时保留对话、Channels、任务、Skills 四个一级入口。",
       meta: "生成完成",
+      status: "done",
     },
     {
       id: "m3",
       role: "user",
       content: "顶部不要模型选择，首页也不要快捷入口。",
       meta: "今天 00:17",
+      status: "done",
     },
     {
       id: "m4",
@@ -104,6 +124,7 @@ export const conversationMessages: Record<string, ConversationMessage[]> = {
       content:
         "已更新为只显示 OpenCrab 标题，去掉顶部模型选择、右上角按钮、语音输入和首页快捷入口。",
       meta: "生成完成",
+      status: "done",
     },
   ],
 };
@@ -144,4 +165,9 @@ export const skills: SkillItem[] = [
 export const currentUser = {
   name: "sky tong",
   initial: "S",
+};
+
+export const appSettings: AppSettings = {
+  defaultModel: "gpt-5.4",
+  defaultReasoningEffort: "medium",
 };
