@@ -53,7 +53,7 @@
 - `footer_profile`
 
 说明：
-- `primary_actions` 对应 `新对话`、`搜索`
+- `primary_actions` 对应 `新对话`
 - `primary_nav_items` 对应 `对话`、`Channels`、`任务`、`Skills`
 - `section_items` 会随着当前一级入口变化
 
@@ -348,7 +348,6 @@ V1 说明：
 - `is_sidebar_collapsed`
 - `active_modal`
 - `active_dropdown`
-- `search_query`
 - `selected_upload_items`
 - `is_dragging_file`
 - `toast_queue`

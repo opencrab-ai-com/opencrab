@@ -116,7 +116,6 @@ V1 说明：
 - `folder_id`
 - `source`
 - `status`
-- `search`
 - `cursor`
 - `limit`
 
