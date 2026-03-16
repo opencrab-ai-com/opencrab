@@ -1,3 +1,4 @@
+import { AppPage } from "@/components/ui/app-page";
 import { DetailCard } from "@/components/ui/detail-card";
 import { PageHeader } from "@/components/ui/page-header";
 import { tasks } from "@/lib/mock-data";
@@ -11,8 +12,7 @@ export default async function TaskDetailPage({
   const task = tasks.find((item) => item.id === taskId);
 
   return (
-    <div className="min-h-screen px-6 py-8 lg:px-10">
-      <div className="mx-auto max-w-[920px] space-y-6">
+    <AppPage contentClassName="space-y-6">
         <PageHeader
           title={task?.name ?? "任务"}
           description="任务详情页会展示调度方式、最近执行记录、结果摘要和回流目标。"
@@ -22,7 +22,6 @@ export default async function TaskDetailPage({
           description="后续这里会接入 run history、暂停/恢复和立即执行动作。"
           meta={task?.nextRun ?? "未找到"}
         />
-      </div>
-    </div>
+    </AppPage>
   );
 }

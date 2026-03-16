@@ -1,41 +1,53 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { execFile } from "node:child_process";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { promisify } from "node:util";
+import {
+  OPENCRAB_RUNTIME_DIR,
+  OPENCRAB_UPLOADS_DIR as UPLOADS_DIR,
+  OPENCRAB_UPLOADS_INDEX_PATH as UPLOADS_INDEX_PATH,
+} from "@/lib/resources/runtime-paths";
 import type { UploadedAttachment } from "@/lib/resources/opencrab-api-types";
-
-const STORE_DIR = path.join(process.cwd(), ".opencrab");
-const UPLOADS_DIR = path.join(STORE_DIR, "uploads");
-const UPLOADS_INDEX_PATH = path.join(UPLOADS_DIR, "index.json");
+const execFileAsync = promisify(execFile);
 
 type StoredAttachment = UploadedAttachment & {
   storedPath: string;
+  promptPath?: string;
 };
 
 export async function saveUpload(file: File) {
-  const name = sanitizeFileName(file.name || "upload");
-  const mimeType = file.type || getMimeTypeFromName(name);
-  const kind = getAttachmentKind(name, mimeType);
+  const originalName = file.name || "upload";
+  const safeName = sanitizeFileName(originalName);
+  const mimeType = file.type || getMimeTypeFromName(originalName);
+  const kind = getAttachmentKind(originalName, mimeType);
 
   if (!kind) {
-    throw new Error("当前只支持上传图片和文本文件。");
+    throw new Error("当前支持上传图片、文本文件、PDF 和 Word 文档。");
   }
 
   ensureUploadStore();
 
   const id = `upload-${crypto.randomUUID()}`;
-  const storedName = `${id}-${name}`;
+  const storedName = `${id}-${safeName}`;
   const storedPath = path.join(UPLOADS_DIR, storedName);
   const arrayBuffer = await file.arrayBuffer();
 
   await fs.writeFile(storedPath, Buffer.from(arrayBuffer));
 
+  const promptPath =
+    kind === "text"
+      ? await buildPromptPath({ name: originalName, mimeType, storedPath })
+      : undefined;
+
   const attachment: StoredAttachment = {
     id,
-    name,
+    name: originalName,
     kind,
     size: file.size,
     mimeType,
     storedPath,
+    promptPath,
   };
 
   const items = readIndex();
@@ -74,6 +86,8 @@ function ensureUploadStore() {
     writeFileSync(UPLOADS_INDEX_PATH, "[]", "utf8");
   }
 }
+
+const STORE_DIR = OPENCRAB_RUNTIME_DIR;
 
 function readIndex() {
   ensureUploadStore();
@@ -124,8 +138,20 @@ function getAttachmentKind(name: string, mimeType: string) {
     ".yml",
     ".yaml",
   ]);
+  const documentExtensions = new Set([".pdf", ".doc", ".docx"]);
+  const documentMimeTypes = new Set([
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ]);
 
-  if (mimeType.startsWith("text/") || mimeType === "application/json" || textExtensions.has(extension)) {
+  if (
+    mimeType.startsWith("text/") ||
+    mimeType === "application/json" ||
+    textExtensions.has(extension) ||
+    documentExtensions.has(extension) ||
+    documentMimeTypes.has(mimeType)
+  ) {
     return "text" as const;
   }
 
@@ -133,7 +159,10 @@ function getAttachmentKind(name: string, mimeType: string) {
 }
 
 function sanitizeFileName(name: string) {
-  return name.replace(/[^a-zA-Z0-9._-]/g, "-");
+  const trimmed = name.trim();
+  const sanitized = trimmed.replace(/[\\/:\0]/g, "-");
+
+  return sanitized || "upload";
 }
 
 function getMimeTypeFromName(name: string) {
@@ -160,7 +189,85 @@ function getMimeTypeFromName(name: string) {
       return "image/webp";
     case ".gif":
       return "image/gif";
+    case ".pdf":
+      return "application/pdf";
+    case ".doc":
+      return "application/msword";
+    case ".docx":
+      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     default:
       return "application/octet-stream";
   }
+}
+
+async function buildPromptPath(input: {
+  name: string;
+  mimeType: string;
+  storedPath: string;
+}) {
+  const extension = path.extname(input.name).toLowerCase();
+
+  if (isPlainTextLike(extension, input.mimeType)) {
+    return input.storedPath;
+  }
+
+  const extractedText = await extractDocumentText(input.storedPath, extension);
+  const extractedPath = `${input.storedPath}.txt`;
+
+  await fs.writeFile(extractedPath, extractedText, "utf8");
+
+  return extractedPath;
+}
+
+function isPlainTextLike(extension: string, mimeType: string) {
+  const textExtensions = new Set([
+    ".txt",
+    ".md",
+    ".markdown",
+    ".json",
+    ".csv",
+    ".ts",
+    ".tsx",
+    ".js",
+    ".jsx",
+    ".py",
+    ".html",
+    ".css",
+    ".xml",
+    ".yml",
+    ".yaml",
+  ]);
+
+  return mimeType.startsWith("text/") || mimeType === "application/json" || textExtensions.has(extension);
+}
+
+async function extractDocumentText(filePath: string, extension: string) {
+  if (extension === ".pdf") {
+    const { stdout } = await execFileAsync("node", [path.join(process.cwd(), "scripts/pdf_extract.mjs"), filePath]);
+    const text = stdout.trim();
+
+    if (!text) {
+      throw new Error("这个 PDF 里没有提取到可用文字，暂时还不支持纯扫描版 PDF。");
+    }
+
+    return text;
+  }
+
+  if (extension === ".doc" || extension === ".docx") {
+    const { stdout } = await execFileAsync("textutil", [
+      "-convert",
+      "txt",
+      "-stdout",
+      filePath,
+    ]);
+    const text = stdout.trim();
+
+    if (!text) {
+      throw new Error("这个 Word 文档没有提取到可用文字，请换一个包含文本内容的文档试试。");
+    }
+
+    return text;
+  }
+
+  throw new Error("当前还不支持读取这个文档格式。");
 }

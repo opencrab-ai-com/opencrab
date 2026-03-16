@@ -17,17 +17,29 @@ import {
   deleteConversation as deleteConversationResource,
   deleteFolder as deleteFolderResource,
   getAppSnapshot,
+  getCodexBrowserSessionStatus as getCodexBrowserSessionStatusResource,
   getCodexOptions as getCodexOptionsResource,
+  getCodexStatus as getCodexStatusResource,
   streamReplyToConversation,
   updateConversation,
   updateFolder as updateFolderResource,
   updateSettings as updateSettingsResource,
   uploadAttachments as uploadAttachmentsResource,
+  warmCodexBrowserSession as warmCodexBrowserSessionResource,
 } from "@/lib/resources/opencrab-api";
+import {
+  buildUserMessagePreview,
+  formatClientMessageTime,
+  getUserFacingError,
+} from "@/lib/opencrab/messages";
 import type {
   AppSnapshot,
+  BrowserConnectionMode,
+  CodexBrowserSessionStatus,
   CodexModelOption,
   CodexReasoningEffort,
+  CodexSandboxMode,
+  CodexStatusResponse,
   UploadedAttachment,
 } from "@/lib/resources/opencrab-api-types";
 
@@ -42,18 +54,26 @@ type OpenCrabContextValue = {
   conversations: ConversationItem[];
   conversationMessages: Record<string, ConversationMessage[]>;
   codexModels: CodexModelOption[];
+  codexStatus: CodexStatusResponse | null;
+  browserSessionStatus: CodexBrowserSessionStatus | null;
+  selectedBrowserConnectionMode: BrowserConnectionMode;
   selectedModel: string;
   selectedReasoningEffort: CodexReasoningEffort;
+  selectedSandboxMode: CodexSandboxMode;
   expandedFolders: Record<string, boolean>;
   isHydrated: boolean;
   isMutating: boolean;
   isSendingMessage: boolean;
   isUploadingAttachments: boolean;
   activeStreamingConversationId: string | null;
+  activeStreamingConversationIds: string[];
   errorMessage: string | null;
   clearError: () => void;
+  isConversationStreaming: (conversationId?: string | null) => boolean;
   setSelectedModel: (model: string) => Promise<void>;
   setSelectedReasoningEffort: (effort: CodexReasoningEffort) => Promise<void>;
+  setSelectedSandboxMode: (mode: CodexSandboxMode) => Promise<void>;
+  setSelectedBrowserConnectionMode: (mode: BrowserConnectionMode) => Promise<void>;
   toggleFolder: (folderId: string) => void;
   createFolder: (name: string) => Promise<void>;
   renameFolder: (folderId: string, name: string) => Promise<void>;
@@ -64,7 +84,7 @@ type OpenCrabContextValue = {
   createConversation: (input?: { title?: string; folderId?: string | null }) => Promise<string>;
   uploadAttachments: (files: File[]) => Promise<UploadedAttachment[]>;
   sendMessage: (input: SendMessageInput) => Promise<string | null>;
-  stopMessage: () => void;
+  stopMessage: (conversationId?: string | null) => void;
 };
 
 const OpenCrabContext = createContext<OpenCrabContextValue | null>(null);
@@ -88,9 +108,16 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     Record<string, ConversationMessage[]>
   >({});
   const [codexModels, setCodexModels] = useState<CodexModelOption[]>([]);
+  const [codexStatus, setCodexStatus] = useState<CodexStatusResponse | null>(null);
+  const [browserSessionStatus, setBrowserSessionStatus] =
+    useState<CodexBrowserSessionStatus | null>(null);
+  const [selectedBrowserConnectionMode, setSelectedBrowserConnectionModeState] =
+    useState<BrowserConnectionMode>("current-browser");
   const [selectedModel, setSelectedModelState] = useState("");
   const [selectedReasoningEffort, setSelectedReasoningEffortState] =
     useState<CodexReasoningEffort>("medium");
+  const [selectedSandboxMode, setSelectedSandboxModeState] =
+    useState<CodexSandboxMode>("workspace-write");
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
   const [isHydrated, setIsHydrated] = useState(false);
   const [isMutating, setIsMutating] = useState(false);
@@ -99,8 +126,9 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
   const [activeStreamingConversationId, setActiveStreamingConversationId] = useState<string | null>(
     null,
   );
+  const [activeStreamingConversationIds, setActiveStreamingConversationIds] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const activeStreamRef = useRef<ActiveStreamState | null>(null);
+  const activeStreamsRef = useRef<Map<string, ActiveStreamState>>(new Map());
 
   const applySnapshot = useCallback((snapshot: AppSnapshot) => {
     setFolders(snapshot.folders);
@@ -180,36 +208,22 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
   useEffect(() => {
     let active = true;
 
-    async function hydrate() {
+    async function hydrateSnapshot() {
       try {
-        const [snapshot, codexOptions] = await Promise.all([
-          getAppSnapshot(),
-          getCodexOptionsResource(),
-        ]);
+        const snapshot = await getAppSnapshot();
 
         if (!active) {
           return;
         }
 
         applySnapshot(snapshot);
-        setCodexModels(codexOptions.models);
-        const nextModel = snapshot.settings.defaultModel || codexOptions.defaultModel;
-        setSelectedModelState(nextModel);
-        const defaultModelOption =
-          codexOptions.models.find((item) => item.id === nextModel) || codexOptions.models[0];
-
-        if (defaultModelOption) {
-          setSelectedReasoningEffortState(
-            defaultModelOption.reasoningOptions.some(
-              (item) => item.effort === snapshot.settings.defaultReasoningEffort,
-            )
-              ? snapshot.settings.defaultReasoningEffort
-              : defaultModelOption.defaultReasoningEffort,
-          );
-        }
+        setSelectedModelState(snapshot.settings.defaultModel || "");
+        setSelectedReasoningEffortState(snapshot.settings.defaultReasoningEffort || "medium");
+        setSelectedSandboxModeState(snapshot.settings.defaultSandboxMode || "workspace-write");
+        setSelectedBrowserConnectionModeState(snapshot.settings.browserConnectionMode || "current-browser");
       } catch (error) {
         if (active) {
-          setErrorMessage(error instanceof Error ? error.message : "初始化失败，请刷新后重试。");
+          setErrorMessage(getUserFacingError(error, "初始化失败，请刷新后重试。"));
         }
       } finally {
         if (active) {
@@ -218,7 +232,63 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       }
     }
 
-    void hydrate();
+    async function hydrateCodexMeta() {
+      try {
+        const [codexOptions, status, browserStatus] = await Promise.all([
+          getCodexOptionsResource(),
+          getCodexStatusResource(),
+          getCodexBrowserSessionStatusResource(),
+        ]);
+
+        if (!active) {
+          return;
+        }
+
+        setCodexModels(codexOptions.models);
+        setCodexStatus(status);
+        setBrowserSessionStatus(browserStatus);
+        setSelectedModelState((current) => {
+          const resolvedModelId = current || codexOptions.defaultModel;
+
+          setSelectedReasoningEffortState((effort) => {
+            const resolvedModel =
+              codexOptions.models.find((item) => item.id === resolvedModelId) || codexOptions.models[0];
+
+            if (!resolvedModel) {
+              return effort;
+            }
+
+            return resolvedModel.reasoningOptions.some((item) => item.effort === effort)
+              ? effort
+              : resolvedModel.defaultReasoningEffort;
+          });
+
+          return resolvedModelId;
+        });
+
+        void warmCodexBrowserSessionResource()
+          .then((nextStatus) => {
+            if (active) {
+              setBrowserSessionStatus(nextStatus);
+            }
+          })
+          .catch(() => {
+            // Ignore warmup noise here; the visible status card keeps the current state.
+          });
+      } catch (error) {
+        if (active) {
+          setCodexStatus({
+            ok: false,
+            error: getUserFacingError(error, "当前无法读取 Codex 状态。"),
+            loginStatus: "missing",
+            loginMethod: "chatgpt",
+          });
+        }
+      }
+    }
+
+    void hydrateSnapshot();
+    void hydrateCodexMeta();
 
     return () => {
       active = false;
@@ -233,15 +303,25 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     setErrorMessage(null);
   }, []);
 
-  const clearStreamState = useCallback((key: string) => {
-    if (activeStreamRef.current?.key !== key) {
-      return;
-    }
-
-    activeStreamRef.current = null;
-    setActiveStreamingConversationId(null);
-    setIsSendingMessage(false);
+  const syncStreamingState = useCallback(() => {
+    const activeStreams = Array.from(activeStreamsRef.current.values());
+    const conversationIds = activeStreams.map((item) => item.conversationId);
+    setActiveStreamingConversationIds(conversationIds);
+    setActiveStreamingConversationId(conversationIds[0] ?? null);
+    setIsSendingMessage(activeStreams.length > 0);
   }, []);
+
+  const clearStreamState = useCallback(
+    (key: string) => {
+      if (!activeStreamsRef.current.has(key)) {
+        return;
+      }
+
+      activeStreamsRef.current.delete(key);
+      syncStreamingState();
+    },
+    [syncStreamingState],
+  );
 
   const setSelectedModel = useCallback(
     async (model: string) => {
@@ -267,7 +347,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
         });
         applySnapshot(result.snapshot);
       } catch (error) {
-        setErrorMessage(error instanceof Error ? error.message : "保存设置失败，请稍后再试。");
+        setErrorMessage(getUserFacingError(error, "保存设置失败，请稍后再试。"));
       }
     },
     [applySnapshot, codexModels, selectedReasoningEffort],
@@ -284,10 +364,49 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
         });
         applySnapshot(result.snapshot);
       } catch (error) {
-        setErrorMessage(error instanceof Error ? error.message : "保存设置失败，请稍后再试。");
+        setErrorMessage(getUserFacingError(error, "保存设置失败，请稍后再试。"));
       }
     },
     [applySnapshot, selectedModel],
+  );
+
+  const setSelectedSandboxMode = useCallback(
+    async (mode: CodexSandboxMode) => {
+      setSelectedSandboxModeState(mode);
+
+      try {
+        const result = await updateSettingsResource({
+          defaultModel: selectedModel,
+          defaultReasoningEffort: selectedReasoningEffort,
+          defaultSandboxMode: mode,
+        });
+        applySnapshot(result.snapshot);
+      } catch (error) {
+        setErrorMessage(getUserFacingError(error, "保存设置失败，请稍后再试。"));
+      }
+    },
+    [applySnapshot, selectedModel, selectedReasoningEffort],
+  );
+
+  const setSelectedBrowserConnectionMode = useCallback(
+    async (mode: BrowserConnectionMode) => {
+      setSelectedBrowserConnectionModeState(mode);
+
+      try {
+        const result = await updateSettingsResource({
+          defaultModel: selectedModel,
+          defaultReasoningEffort: selectedReasoningEffort,
+          defaultSandboxMode: selectedSandboxMode,
+          browserConnectionMode: mode,
+        });
+        applySnapshot(result.snapshot);
+        const nextStatus = await warmCodexBrowserSessionResource();
+        setBrowserSessionStatus(nextStatus);
+      } catch (error) {
+        setErrorMessage(getUserFacingError(error, "保存设置失败，请稍后再试。"));
+      }
+    },
+    [applySnapshot, selectedModel, selectedReasoningEffort, selectedSandboxMode],
   );
 
   const runMutation = useCallback(async <T,>(action: () => Promise<T>) => {
@@ -297,7 +416,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     try {
       return await action();
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "操作失败，请稍后再试。");
+      setErrorMessage(getUserFacingError(error, "操作失败，请稍后再试。"));
       throw error;
     } finally {
       setIsMutating(false);
@@ -409,36 +528,49 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       const result = await uploadAttachmentsResource(files);
       return result.attachments;
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "上传附件失败，请稍后再试。");
+      setErrorMessage(getUserFacingError(error, "上传附件失败，请稍后再试。"));
       return [];
     } finally {
       setIsUploadingAttachments(false);
     }
   }, []);
 
-  const stopMessage = useCallback(() => {
-    const activeStream = activeStreamRef.current;
+  const stopMessage = useCallback(
+    (conversationId?: string | null) => {
+      const activeStream = conversationId
+        ? Array.from(activeStreamsRef.current.values()).find((item) => item.conversationId === conversationId)
+        : Array.from(activeStreamsRef.current.values())[0];
 
-    if (!activeStream) {
-      return;
+      if (!activeStream) {
+        return;
+      }
+
+      activeStream.controller.abort();
+      patchMessage(activeStream.conversationId, activeStream.assistantMessageId, (message) => ({
+        ...message,
+        content: message.content.trim() || "已停止当前回复。",
+        meta: `已停止 · ${activeStream.model}`,
+        status: "stopped",
+      }));
+      clearStreamState(activeStream.key);
+    },
+    [clearStreamState, patchMessage],
+  );
+
+  const isConversationStreaming = useCallback((conversationId?: string | null) => {
+    if (!conversationId) {
+      return false;
     }
 
-    activeStream.controller.abort();
-    patchMessage(activeStream.conversationId, activeStream.assistantMessageId, (message) => ({
-      ...message,
-      content: message.content.trim() || "已停止当前回复。",
-      meta: `已停止 · ${activeStream.model}`,
-      status: "stopped",
-    }));
-    clearStreamState(activeStream.key);
-  }, [clearStreamState, patchMessage]);
+    return Array.from(activeStreamsRef.current.values()).some((item) => item.conversationId === conversationId);
+  }, []);
 
   const sendMessage = useCallback(
     async (input: SendMessageInput) => {
       const content = input.content?.trim() || "";
       const attachments = input.attachments || [];
 
-      if ((!content && attachments.length === 0) || isSendingMessage) {
+      if (!content && attachments.length === 0) {
         return null;
       }
 
@@ -456,15 +588,14 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
         const assistantMessageId = `message-${crypto.randomUUID()}`;
         const streamKey = crypto.randomUUID();
         const controller = new AbortController();
-        activeStreamRef.current = {
+        activeStreamsRef.current.set(streamKey, {
           key: streamKey,
           conversationId,
           assistantMessageId,
           controller,
           model: selectedModel,
-        };
-        setActiveStreamingConversationId(conversationId);
-        setIsSendingMessage(true);
+        });
+        syncStreamingState();
 
         const preview = buildUserMessagePreview(content, attachments.map((attachment) => attachment.name));
         patchConversation(conversationId, {
@@ -476,6 +607,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
             id: userMessageId,
             role: "user",
             content: preview,
+            timestamp: new Date().toISOString(),
             attachments: attachments.map((attachment) => ({
               id: attachment.id,
               name: attachment.name,
@@ -490,6 +622,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
             id: assistantMessageId,
             role: "assistant",
             content: "",
+            timestamp: new Date().toISOString(),
             thinking: ["OpenCrab 正在思考和整理上下文..."],
             meta: `OpenCrab 正在回复中... · ${selectedModel}`,
             status: "pending",
@@ -503,6 +636,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
             attachmentIds: attachments.map((attachment) => attachment.id),
             model: selectedModel,
             reasoningEffort: selectedReasoningEffort,
+            sandboxMode: selectedSandboxMode,
             userMessageId,
             assistantMessageId,
           },
@@ -537,7 +671,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
                 meta: `回复失败 · ${selectedModel}`,
                 status: "stopped",
               }));
-              setErrorMessage(event.error);
+              setErrorMessage(getUserFacingError(event.error, "消息发送失败，请稍后再试。"));
               clearStreamState(streamKey);
             },
           },
@@ -552,16 +686,17 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
             meta: `回复失败 · ${selectedModel}`,
             status: "stopped",
           }));
-          setErrorMessage(error instanceof Error ? error.message : "消息发送失败，请稍后再试。");
+          setErrorMessage(getUserFacingError(error, "消息发送失败，请稍后再试。"));
           clearStreamState(streamKey);
         });
 
         return conversationId;
       } catch (error) {
-        setErrorMessage(error instanceof Error ? error.message : "消息发送失败，请稍后再试。");
+        setErrorMessage(getUserFacingError(error, "消息发送失败，请稍后再试。"));
         setIsSendingMessage(false);
         setActiveStreamingConversationId(null);
-        activeStreamRef.current = null;
+        activeStreamsRef.current.clear();
+        syncStreamingState();
         return null;
       }
     },
@@ -571,11 +706,12 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       clearStreamState,
       conversations,
       createConversation,
-      isSendingMessage,
       patchConversation,
       patchMessage,
       selectedModel,
       selectedReasoningEffort,
+      selectedSandboxMode,
+      syncStreamingState,
     ],
   );
 
@@ -585,18 +721,26 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       conversations,
       conversationMessages,
       codexModels,
+      codexStatus,
+      browserSessionStatus,
+      selectedBrowserConnectionMode,
       selectedModel,
       selectedReasoningEffort,
+      selectedSandboxMode,
       expandedFolders,
       isHydrated,
       isMutating,
       isSendingMessage,
       isUploadingAttachments,
       activeStreamingConversationId,
+      activeStreamingConversationIds,
       errorMessage,
       clearError,
+      isConversationStreaming,
       setSelectedModel,
       setSelectedReasoningEffort,
+      setSelectedSandboxMode,
+      setSelectedBrowserConnectionMode,
       toggleFolder,
       createFolder,
       renameFolder,
@@ -614,18 +758,26 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       conversations,
       conversationMessages,
       codexModels,
+      codexStatus,
+      browserSessionStatus,
+      selectedBrowserConnectionMode,
       selectedModel,
       selectedReasoningEffort,
+      selectedSandboxMode,
       expandedFolders,
       isHydrated,
       isMutating,
       isSendingMessage,
       isUploadingAttachments,
       activeStreamingConversationId,
+      activeStreamingConversationIds,
       errorMessage,
       clearError,
+      isConversationStreaming,
       setSelectedModel,
       setSelectedReasoningEffort,
+      setSelectedSandboxMode,
+      setSelectedBrowserConnectionMode,
       toggleFolder,
       createFolder,
       renameFolder,
@@ -651,27 +803,4 @@ export function useOpenCrabApp() {
   }
 
   return context;
-}
-
-function buildUserMessagePreview(content: string, attachmentNames: string[]) {
-  const parts = [];
-
-  if (content) {
-    parts.push(content);
-  }
-
-  if (attachmentNames.length > 0) {
-    parts.push(`附件：${attachmentNames.join("、")}`);
-  }
-
-  return parts.join("\n");
-}
-
-function formatClientMessageTime() {
-  const time = new Intl.DateTimeFormat("zh-CN", {
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date());
-
-  return `今天 ${time}`;
 }

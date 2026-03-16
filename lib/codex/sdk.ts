@@ -1,6 +1,11 @@
 import { Codex } from "@openai/codex-sdk";
+import { execFile } from "node:child_process";
 import { readFileSync } from "node:fs";
-import type { CodexReasoningEffort } from "@/lib/resources/opencrab-api-types";
+import { promisify } from "node:util";
+import { buildChromeDevtoolsMcpConfig, ensureBrowserSession } from "@/lib/codex/browser-session";
+import type { CodexReasoningEffort, CodexSandboxMode } from "@/lib/resources/opencrab-api-types";
+
+const execFileAsync = promisify(execFile);
 
 const DEFAULT_MODEL = process.env.OPENCRAB_CODEX_MODEL || "gpt-5.4";
 const DEFAULT_REASONING_EFFORT = normalizeReasoningEffort(
@@ -21,6 +26,7 @@ type GenerateCodexReplyInput = {
   }>;
   model?: string;
   reasoningEffort?: CodexReasoningEffort;
+  sandboxMode?: CodexSandboxMode;
 };
 
 type StreamCodexReplyInput = GenerateCodexReplyInput & {
@@ -59,11 +65,14 @@ export async function generateCodexReply({
   textAttachments = [],
   model,
   reasoningEffort,
+  sandboxMode,
 }: GenerateCodexReplyInput) {
+  await ensureBrowserSession();
+  await ensureCodexLogin();
   const codex = getCodexClient();
   const thread = threadId
-    ? codex.resumeThread(threadId, buildThreadOptions({ model, reasoningEffort }))
-    : codex.startThread(buildThreadOptions({ model, reasoningEffort }));
+    ? codex.resumeThread(threadId, buildThreadOptions({ model, reasoningEffort, sandboxMode }))
+    : codex.startThread(buildThreadOptions({ model, reasoningEffort, sandboxMode }));
 
   const prompt = buildPrompt({
     conversationTitle,
@@ -97,9 +106,16 @@ export async function generateCodexReply({
 }
 
 export async function getCodexStatus() {
-  const codex = getCodexClient();
-  const probeThread = codex.startThread(buildThreadOptions());
-  const result = await probeThread.run("只回复：Codex 状态正常");
+  const login = await getCodexLoginStatus();
+
+  if (!login.ok) {
+    return {
+      ok: false as const,
+      error: login.error,
+      loginStatus: "missing" as const,
+      loginMethod: "chatgpt" as const,
+    };
+  }
 
   return {
     ok: true,
@@ -108,9 +124,11 @@ export async function getCodexStatus() {
     sandboxMode: DEFAULT_SANDBOX_MODE,
     networkAccessEnabled: DEFAULT_NETWORK_ACCESS,
     approvalPolicy: DEFAULT_APPROVAL_POLICY,
-    reply: result.finalResponse?.trim() || "",
-    threadId: probeThread.id,
-    usage: result.usage,
+    reply: "Codex 已登录",
+    threadId: null,
+    usage: null,
+    loginStatus: "logged_in" as const,
+    loginMethod: "chatgpt" as const,
   };
 }
 
@@ -122,12 +140,15 @@ export async function* streamCodexReply({
   textAttachments = [],
   model,
   reasoningEffort,
+  sandboxMode,
   signal,
 }: StreamCodexReplyInput): AsyncGenerator<CodexReplyStreamEvent> {
+  await ensureBrowserSession();
+  await ensureCodexLogin();
   const codex = getCodexClient();
   const thread = threadId
-    ? codex.resumeThread(threadId, buildThreadOptions({ model, reasoningEffort }))
-    : codex.startThread(buildThreadOptions({ model, reasoningEffort }));
+    ? codex.resumeThread(threadId, buildThreadOptions({ model, reasoningEffort, sandboxMode }))
+    : codex.startThread(buildThreadOptions({ model, reasoningEffort, sandboxMode }));
 
   const prompt = buildPrompt({
     conversationTitle,
@@ -221,6 +242,7 @@ function getCodexClient() {
     env: buildChatGptLoginEnv(),
     config: {
       show_raw_agent_reasoning: true,
+      mcp_servers: buildChromeDevtoolsMcpConfig(),
     },
   });
 }
@@ -246,10 +268,11 @@ function buildChatGptLoginEnv() {
 function buildThreadOptions(input?: {
   model?: string;
   reasoningEffort?: CodexReasoningEffort;
+  sandboxMode?: CodexSandboxMode;
 }) {
   return {
     model: input?.model || DEFAULT_MODEL,
-    sandboxMode: DEFAULT_SANDBOX_MODE,
+    sandboxMode: input?.sandboxMode || DEFAULT_SANDBOX_MODE,
     workingDirectory: process.cwd(),
     skipGitRepoCheck: true,
     modelReasoningEffort: input?.reasoningEffort || DEFAULT_REASONING_EFFORT,
@@ -296,7 +319,7 @@ function normalizeSandboxMode(value: string | undefined) {
     case "danger-full-access":
       return value;
     default:
-      return "read-only" as const;
+      return "workspace-write" as const;
   }
 }
 
@@ -347,5 +370,38 @@ function getThinkingEntry(item: {
       return item.message ? `遇到一个中间错误：${item.message}` : null;
     default:
       return null;
+  }
+}
+
+async function getCodexLoginStatus() {
+  try {
+    const { stdout, stderr } = await execFileAsync("codex", ["login", "status"], {
+      env: buildChatGptLoginEnv() as NodeJS.ProcessEnv,
+    });
+    const output = `${stdout}\n${stderr}`.trim();
+
+    if (/Logged in using ChatGPT/i.test(output)) {
+      return {
+        ok: true as const,
+      };
+    }
+
+    return {
+      ok: false as const,
+      error: output || "当前没有检测到 Codex 登录状态，请先执行 codex login。",
+    };
+  } catch (error) {
+    return {
+      ok: false as const,
+      error: error instanceof Error ? error.message : "当前没有检测到 Codex 登录状态，请先执行 codex login。",
+    };
+  }
+}
+
+async function ensureCodexLogin() {
+  const login = await getCodexLoginStatus();
+
+  if (!login.ok) {
+    throw new Error(`${login.error} 请先在本机终端执行 codex login，并确认已使用 ChatGPT 登录。`);
   }
 }

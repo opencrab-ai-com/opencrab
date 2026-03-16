@@ -23,6 +23,10 @@
 # misc
 .DS_Store
 *.pem
+.playwright-cli/
+.opencrab/
+output/
+tmp/
 
 # debug
 npm-debug.log*

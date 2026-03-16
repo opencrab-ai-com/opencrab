@@ -62,9 +62,9 @@ export function DialogShell({ children, onClose }: DialogShellProps) {
 export function DialogHeader({ title, description }: DialogHeaderProps) {
   return (
     <div className="space-y-3">
-      <p className="text-sm text-muted">OpenCrab</p>
-      <h3 className="text-[26px] font-semibold tracking-[-0.04em] text-text">{title}</h3>
-      {description ? <p className="text-[15px] leading-7 text-muted-strong">{description}</p> : null}
+      <p className="text-[13px] text-muted">OpenCrab</p>
+      <h3 className="text-[22px] font-semibold tracking-[-0.04em] text-text">{title}</h3>
+      {description ? <p className="text-[14px] leading-6 text-muted-strong">{description}</p> : null}
     </div>
   );
 }
@@ -79,7 +79,7 @@ export function DialogSecondaryButton({ children, onClick, disabled }: DialogBut
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="rounded-full border border-line bg-surface-muted px-5 py-2.5 text-[14px] font-medium text-text transition hover:bg-[#ecece7] disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-full border border-line bg-surface-muted px-5 py-2.5 text-[13px] font-medium text-text transition hover:bg-[#ecece7] disabled:cursor-not-allowed disabled:opacity-60"
     >
       {children}
     </button>
@@ -92,7 +92,7 @@ export function DialogPrimaryButton({ children, onClick, disabled }: DialogButto
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="rounded-full bg-[#111111] px-5 py-2.5 text-[14px] font-medium text-white transition hover:bg-[#262626] disabled:cursor-not-allowed disabled:bg-[#c9c9c5]"
+      className="rounded-full bg-[#111111] px-5 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#262626] disabled:cursor-not-allowed disabled:bg-[#c9c9c5]"
     >
       {children}
     </button>

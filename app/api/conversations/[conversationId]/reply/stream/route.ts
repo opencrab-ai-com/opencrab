@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { streamCodexReply } from "@/lib/codex/sdk";
 import { formatMessageTime } from "@/lib/conversations/utils";
+import { buildUserMessagePreview } from "@/lib/opencrab/messages";
 import { addMessage, findConversation, updateConversation } from "@/lib/resources/mock-store";
 import type { ReplyStreamEvent } from "@/lib/resources/opencrab-api-types";
 import { getUploadsByIds } from "@/lib/resources/upload-store";
-import type { CodexReasoningEffort } from "@/lib/resources/opencrab-api-types";
+import type { CodexReasoningEffort, CodexSandboxMode } from "@/lib/resources/opencrab-api-types";
 
 export async function POST(
   request: Request,
@@ -16,6 +17,7 @@ export async function POST(
       content?: string;
       model?: string;
       reasoningEffort?: CodexReasoningEffort;
+      sandboxMode?: CodexSandboxMode;
       attachmentIds?: string[];
       userMessageId?: string;
       assistantMessageId?: string;
@@ -45,6 +47,7 @@ export async function POST(
         kind: attachment.kind,
         size: attachment.size,
         mimeType: attachment.mimeType,
+        wasUsedInReply: true,
       })),
       meta: formatMessageTime(new Date()),
       status: "done",
@@ -57,7 +60,7 @@ export async function POST(
       .filter((attachment) => attachment.kind === "text")
       .map((attachment) => ({
         name: attachment.name,
-        storedPath: attachment.storedPath,
+        storedPath: attachment.promptPath || attachment.storedPath,
       }));
 
     const encoder = new TextEncoder();
@@ -79,6 +82,7 @@ export async function POST(
             content,
             model: body.model,
             reasoningEffort: body.reasoningEffort,
+            sandboxMode: body.sandboxMode,
             imagePaths,
             textAttachments,
             signal: request.signal,
@@ -108,7 +112,11 @@ export async function POST(
               role: "assistant",
               content: event.text,
               thinking: event.thinking,
-              meta: `生成完成 · ${event.model}`,
+              usedAttachmentNames: attachments.map((attachment) => attachment.name),
+              meta:
+                attachments.length > 0
+                  ? `生成完成 · ${event.model} · 已使用 ${attachments.length} 个附件`
+                  : `生成完成 · ${event.model}`,
               status: "done",
             });
 
@@ -174,18 +182,4 @@ export async function POST(
 
     return NextResponse.json({ error: message }, { status: 500 });
   }
-}
-
-function buildUserMessagePreview(content: string | undefined, attachmentNames: string[]) {
-  const parts = [];
-
-  if (content) {
-    parts.push(content);
-  }
-
-  if (attachmentNames.length > 0) {
-    parts.push(`附件：${attachmentNames.join("、")}`);
-  }
-
-  return parts.join("\n");
 }

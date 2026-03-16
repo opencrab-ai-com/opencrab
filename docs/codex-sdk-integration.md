@@ -1,44 +1,43 @@
-# Codex SDK 接入说明
+# Codex Integration
 
-`opencrab` 当前通过 `@openai/codex-sdk` 接入 Codex。
+`OpenCrab` 通过 `@openai/codex-sdk` 接入 Codex，当前只支持 `Sign in with ChatGPT` 登录，不使用 API key。
 
-当前实现只支持 `Sign in with ChatGPT`，不走 API key。
+## Key Files
 
-## 当前接法
+- `lib/codex/sdk.ts`
+- `lib/codex/options.ts`
+- `lib/codex/browser-session.ts`
+- `app/api/codex/status/route.ts`
+- `app/api/conversations/[conversationId]/reply/route.ts`
+- `app/api/conversations/[conversationId]/reply/stream/route.ts`
 
-- 服务端封装：`/Users/sky/SkyProjects/opencrab/lib/codex/sdk.ts`
-- 模型与推理选项：`/Users/sky/SkyProjects/opencrab/lib/codex/options.ts`
-- 对话回复接口：`/Users/sky/SkyProjects/opencrab/app/api/conversations/[conversationId]/reply/route.ts`
-- 状态探活接口：`/Users/sky/SkyProjects/opencrab/app/api/codex/status/route.ts`
-- 附件上传接口：`/Users/sky/SkyProjects/opencrab/app/api/uploads/route.ts`
+## Design Decisions
 
-## 关键设计
+- 一个 OpenCrab 对话对应一个 Codex thread
+- 新对话通过 `startThread()` 创建
+- 已有对话通过 `resumeThread(threadId)` 续接
+- 登录状态由本机 `codex login status` 判断
+- 前端永远只调用 OpenCrab 自己的 `/api/*`
+- 模型列表来自本机 `~/.codex/models_cache.json`
 
-- 使用 `Codex.startThread()` 创建新线程
-- 使用 `Codex.resumeThread(threadId)` 续接已有对话
-- 每个 `conversation` 持久化自己的 `codexThreadId`
-- Web 前端只调用应用自己的 `/api/*`，不直接暴露 Codex SDK
-- 默认使用中文回复
-- 显式屏蔽 `OPENAI_API_KEY` 和 `CODEX_API_KEY`，强制复用本机 Codex 登录态
-- 模型列表读取本机 `~/.codex/models_cache.json`
-- 推理强度按每个模型自己的 `supported_reasoning_levels` 提供
-- `+` 入口支持图片上传和文本文件上传
+## Browser Tool Integration
 
-## 本地准备
+为了支持浏览器工具并尽量复用连接，OpenCrab 采用两层桥接：
 
-1. 安装依赖：`npm install`
-2. 先在本机完成 Codex 登录：`codex login`
-3. 检查登录状态：`codex login status`
-4. 准备环境变量：参考 `/Users/sky/SkyProjects/opencrab/.env.example`
-5. 启动开发环境：`npm run dev`
-6. 检查 Codex 连通性：访问 `GET /api/codex/status`
+1. OpenCrab 进程内维护浏览器 bridge
+2. Codex CLI 通过 `scripts/browser_mcp_stdio_proxy.mjs` 以 `stdio` 方式接入
 
-## 默认配置
+这样可以避免把不兼容的 HTTP MCP 配置直接塞给 Codex CLI。
 
-- 模型：`gpt-5.4`
-- 推理强度：`medium`
-- sandbox：`read-only`
-- approval policy：`never`
-- network access：`false`
+## Default Behavior
 
-这些默认值都可以通过环境变量覆盖。
+- 默认模型：`gpt-5.4`
+- 默认推理强度：`medium`
+- 默认 sandbox：`workspace-write`
+- 默认 approval policy：`never`
+- 默认浏览器模式：`current-browser`
+
+## Notes
+
+- 登录成功不代表浏览器工具一定可用，这两类状态要分开看
+- 如果页面提示 Codex 不可用，先检查 `codex login status`

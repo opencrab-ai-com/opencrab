@@ -9,12 +9,11 @@ export async function GET() {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Codex SDK 状态检查失败。";
 
-    return NextResponse.json(
-      {
-        ok: false,
-        error: message,
-      },
-      { status: 500 },
-    );
+    return NextResponse.json({
+      ok: false,
+      error: message,
+      loginStatus: "missing",
+      loginMethod: "chatgpt",
+    });
   }
 }

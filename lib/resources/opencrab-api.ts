@@ -1,7 +1,11 @@
 import type {
   AppSnapshot,
+  BrowserConnectionMode,
+  CodexBrowserSessionStatus,
+  CodexStatusResponse,
   CodexOptionsResponse,
   CodexReasoningEffort,
+  CodexSandboxMode,
   CreateConversationResult,
   ReplyStreamEvent,
   SnapshotMutationResult,
@@ -21,10 +25,41 @@ export async function getCodexOptions() {
   });
 }
 
+export async function getCodexStatus() {
+  const response = await fetch("/api/codex/status", {
+    method: "GET",
+  });
+
+  try {
+    return (await response.json()) as CodexStatusResponse;
+  } catch {
+    return {
+      ok: false,
+      error: "当前无法读取 Codex 登录状态，请稍后重试。",
+      loginStatus: "missing",
+      loginMethod: "chatgpt",
+    } satisfies CodexStatusResponse;
+  }
+}
+
+export async function getCodexBrowserSessionStatus() {
+  return request<CodexBrowserSessionStatus>("/api/codex/browser-session", {
+    method: "GET",
+  });
+}
+
+export async function warmCodexBrowserSession() {
+  return request<CodexBrowserSessionStatus>("/api/codex/browser-session", {
+    method: "POST",
+  });
+}
+
 export async function updateSettings(
   patch: Partial<{
     defaultModel: string;
     defaultReasoningEffort: CodexReasoningEffort;
+    defaultSandboxMode: CodexSandboxMode;
+    browserConnectionMode: BrowserConnectionMode;
   }>,
 ) {
   return request<SnapshotMutationResult>("/api/settings", {
@@ -117,6 +152,7 @@ export async function replyToConversation(
     model: string;
     reasoningEffort: CodexReasoningEffort;
     attachmentIds?: string[];
+    sandboxMode?: CodexSandboxMode;
   },
 ) {
   return request<
@@ -147,6 +183,7 @@ export async function streamReplyToConversation(
     attachmentIds?: string[];
     userMessageId: string;
     assistantMessageId: string;
+    sandboxMode: CodexSandboxMode;
   },
   options: {
     signal?: AbortSignal;

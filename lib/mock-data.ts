@@ -11,6 +11,7 @@ export type AttachmentItem = {
   kind: "image" | "text";
   size: number;
   mimeType: string;
+  wasUsedInReply?: boolean;
 };
 
 export type ConversationItem = {
@@ -48,7 +49,9 @@ export type ConversationMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  timestamp?: string;
   attachments?: AttachmentItem[];
+  usedAttachmentNames?: string[];
   thinking?: string[];
   meta?: string;
   status?: "pending" | "done" | "stopped";
@@ -57,6 +60,8 @@ export type ConversationMessage = {
 export type AppSettings = {
   defaultModel: string;
   defaultReasoningEffort: "minimal" | "low" | "medium" | "high" | "xhigh";
+  defaultSandboxMode: "read-only" | "workspace-write" | "danger-full-access";
+  browserConnectionMode: "current-browser" | "managed-browser";
 };
 
 export const folders: FolderItem[] = [
@@ -171,4 +176,6 @@ export const currentUser = {
 export const appSettings: AppSettings = {
   defaultModel: "gpt-5.4",
   defaultReasoningEffort: "medium",
+  defaultSandboxMode: "workspace-write",
+  browserConnectionMode: "current-browser",
 };

@@ -22,6 +22,9 @@ type ComposerProps = {
   submitLabel?: string;
   autoFocus?: boolean;
   disabled?: boolean;
+  canSubmit?: boolean;
+  disableUploads?: boolean;
+  disableOptionSelects?: boolean;
   isUploading?: boolean;
   isStreaming?: boolean;
   modelOptions: CodexModelOption[];
@@ -41,6 +44,9 @@ export function Composer({
   submitLabel = "发送",
   autoFocus = false,
   disabled = false,
+  canSubmit = true,
+  disableUploads = false,
+  disableOptionSelects = false,
   isUploading = false,
   isStreaming = false,
   modelOptions,
@@ -53,6 +59,7 @@ export function Composer({
   const [attachments, setAttachments] = useState<UploadedAttachment[]>([]);
   const [isUploadMenuOpen, setIsUploadMenuOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<null | "model" | "reasoning">(null);
+  const [isComposing, setIsComposing] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const textInputRef = useRef<HTMLInputElement | null>(null);
@@ -92,7 +99,7 @@ export function Composer({
   async function handleSubmit() {
     const trimmedValue = currentValue.trim();
 
-    if ((!trimmedValue && attachments.length === 0) || disabled) {
+    if ((!trimmedValue && attachments.length === 0) || disabled || !canSubmit) {
       return;
     }
 
@@ -144,7 +151,7 @@ export function Composer({
               key={attachment.id}
               type="button"
               onClick={() => removeAttachment(attachment.id)}
-              className="flex items-center gap-2 rounded-full border border-line bg-surface-muted px-3 py-1.5 text-[13px] text-text transition hover:bg-[#f0efe9]"
+              className="flex items-center gap-2 rounded-full border border-line bg-surface-muted px-3 py-1.5 text-[12px] text-text transition hover:bg-[#f0efe9]"
             >
               <AttachmentKindIcon kind={attachment.kind} />
               <span>{attachment.name}</span>
@@ -157,12 +164,18 @@ export function Composer({
       <textarea
         id="opencrab-composer"
         name="opencrab_composer"
-        className="min-h-[88px] w-full resize-none border-0 bg-transparent text-[18px] leading-8 text-text outline-none placeholder:text-[#a0a097] disabled:cursor-not-allowed"
+        className="min-h-[88px] w-full resize-none border-0 bg-transparent text-[16px] leading-6 text-text outline-none placeholder:text-[#a0a097] disabled:cursor-not-allowed"
         placeholder={placeholder}
         value={currentValue}
         disabled={disabled || isStreaming}
         onChange={(event) => handleChange(event.target.value)}
+        onCompositionStart={() => setIsComposing(true)}
+        onCompositionEnd={() => setIsComposing(false)}
         onKeyDown={(event) => {
+          if (isComposing || event.nativeEvent.isComposing) {
+            return;
+          }
+
           if (event.key === "Enter" && !event.shiftKey) {
             event.preventDefault();
             void handleSubmit();
@@ -181,18 +194,18 @@ export function Composer({
                 setActiveMenu(null);
               }}
               className="flex h-11 w-11 items-center justify-center rounded-full border border-[#0b66da] text-[#0b66da] transition hover:bg-[#eef5ff] disabled:opacity-50"
-              disabled={disabled || isUploading || isStreaming}
+              disabled={disableUploads || isUploading || isStreaming}
               aria-label="添加文件"
             >
               <PlusIcon />
             </button>
 
             {isUploadMenuOpen ? (
-              <div className="absolute bottom-[calc(100%+10px)] left-0 z-20 min-w-[168px] rounded-[20px] border border-line bg-surface p-2 shadow-[0_18px_48px_rgba(15,23,42,0.14)]">
+              <div className="absolute bottom-[calc(100%+10px)] left-0 z-20 min-w-[156px] rounded-[20px] border border-line bg-surface p-2 shadow-[0_18px_48px_rgba(15,23,42,0.14)]">
                 <button
                   type="button"
                   onClick={() => imageInputRef.current?.click()}
-                  className="flex w-full items-center gap-3 rounded-[14px] px-3 py-2.5 text-left text-[14px] text-text transition hover:bg-surface-muted"
+                  className="flex w-full items-center gap-2.5 rounded-[14px] px-3 py-2 text-left text-[12px] text-text transition hover:bg-surface-muted"
                 >
                   <ImageIcon />
                   <span>上传图片</span>
@@ -200,10 +213,10 @@ export function Composer({
                 <button
                   type="button"
                   onClick={() => textInputRef.current?.click()}
-                  className="flex w-full items-center gap-3 rounded-[14px] px-3 py-2.5 text-left text-[14px] text-text transition hover:bg-surface-muted"
+                  className="flex w-full items-center gap-2.5 rounded-[14px] px-3 py-2 text-left text-[12px] text-text transition hover:bg-surface-muted"
                 >
                   <TextFileIcon />
-                  <span>上传文本文件</span>
+                  <span>上传文件</span>
                 </button>
               </div>
             ) : null}
@@ -214,42 +227,23 @@ export function Composer({
               accept="image/png,image/jpeg,image/webp,image/gif"
               multiple
               className="hidden"
-              onChange={(event) => void handleFilesSelected(event.target.files)}
+              onChange={(event) => {
+                void handleFilesSelected(event.target.files);
+                event.currentTarget.value = "";
+              }}
             />
             <input
               ref={textInputRef}
               type="file"
-              accept=".txt,.md,.markdown,.json,.csv,.ts,.tsx,.js,.jsx,.py,.html,.css,.xml,.yml,.yaml,text/*,application/json"
+              accept=".txt,.md,.markdown,.json,.csv,.ts,.tsx,.js,.jsx,.py,.html,.css,.xml,.yml,.yaml,.pdf,.doc,.docx,text/*,application/json,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               multiple
               className="hidden"
-              onChange={(event) => void handleFilesSelected(event.target.files)}
+              onChange={(event) => {
+                void handleFilesSelected(event.target.files);
+                event.currentTarget.value = "";
+              }}
             />
           </div>
-
-          <DropdownChip
-            label={selectedReasoningOption?.label || "推理强度"}
-            valueLabel={selectedReasoningOption ? undefined : "推理强度"}
-            isOpen={activeMenu === "reasoning"}
-            onToggle={() => {
-              setActiveMenu((current) => (current === "reasoning" ? null : "reasoning"));
-              setIsUploadMenuOpen(false);
-            }}
-            disabled={disabled || isStreaming || reasoningOptions.length === 0}
-          >
-            {reasoningOptions.map((option) => (
-              <MenuItem
-                key={option.effort}
-                title={option.label}
-                description={option.description}
-                isActive={option.effort === selectedReasoningEffort}
-                compact
-                onClick={async () => {
-                  await onReasoningEffortChange(option.effort);
-                  setActiveMenu(null);
-                }}
-              />
-            ))}
-          </DropdownChip>
 
           <DropdownChip
             label={selectedModelOption?.label || "模型"}
@@ -259,7 +253,7 @@ export function Composer({
               setActiveMenu((current) => (current === "model" ? null : "model"));
               setIsUploadMenuOpen(false);
             }}
-            disabled={disabled || isStreaming || modelOptions.length === 0}
+            disabled={disableOptionSelects || isStreaming || modelOptions.length === 0}
           >
             {modelOptions.map((option) => (
               <MenuItem
@@ -276,7 +270,32 @@ export function Composer({
             ))}
           </DropdownChip>
 
-          {isUploading ? <p className="text-[13px] text-muted-strong">正在上传附件...</p> : null}
+          <DropdownChip
+            label={selectedReasoningOption?.label || "推理强度"}
+            valueLabel={selectedReasoningOption ? undefined : "推理强度"}
+            isOpen={activeMenu === "reasoning"}
+            onToggle={() => {
+              setActiveMenu((current) => (current === "reasoning" ? null : "reasoning"));
+              setIsUploadMenuOpen(false);
+            }}
+            disabled={disableOptionSelects || isStreaming || reasoningOptions.length === 0}
+          >
+            {reasoningOptions.map((option) => (
+              <MenuItem
+                key={option.effort}
+                title={option.label}
+                description={option.description}
+                isActive={option.effort === selectedReasoningEffort}
+                compact
+                onClick={async () => {
+                  await onReasoningEffortChange(option.effort);
+                  setActiveMenu(null);
+                }}
+              />
+            ))}
+          </DropdownChip>
+
+          {isUploading ? <p className="text-[12px] text-muted-strong">正在上传附件...</p> : null}
         </div>
 
         <div className="flex items-center justify-end gap-2">
@@ -290,7 +309,11 @@ export function Composer({
 
               void handleSubmit();
             }}
-            disabled={isStreaming ? false : (!currentValue.trim() && attachments.length === 0) || disabled}
+            disabled={
+              isStreaming
+                ? false
+                : (!currentValue.trim() && attachments.length === 0) || disabled || !canSubmit
+            }
             aria-label={submitLabel}
             className={`flex h-11 w-11 items-center justify-center rounded-full text-white transition ${
               isStreaming
@@ -329,7 +352,7 @@ function DropdownChip({
         type="button"
         onClick={onToggle}
         disabled={disabled}
-        className="flex min-h-11 items-center gap-2 rounded-full border border-line bg-surface-muted px-4 py-2 text-[15px] text-[#247cff] transition hover:bg-[#f0f4ff] disabled:opacity-50"
+        className="flex min-h-10 items-center gap-2 rounded-full border border-line bg-surface-muted px-4 py-2 text-[14px] text-[#247cff] transition hover:bg-[#f0f4ff] disabled:opacity-50"
       >
         <span>{valueLabel || label}</span>
         <ChevronDownIcon />
@@ -361,9 +384,9 @@ function MenuItem({ title, description, isActive, compact = false, onClick }: Me
         isActive ? "bg-[#eef5ff]" : "hover:bg-surface-muted"
       }`}
     >
-      <span className={`${compact ? "text-[13px]" : "text-[14px]"} font-medium text-text`}>{title}</span>
+      <span className={`${compact ? "text-[12px]" : "text-[13px]"} font-medium text-text`}>{title}</span>
       {!compact && description ? (
-        <span className="text-[12px] leading-5 text-muted-strong">{description}</span>
+        <span className="text-[11px] leading-5 text-muted-strong">{description}</span>
       ) : null}
     </button>
   );

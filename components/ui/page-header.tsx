@@ -6,9 +6,9 @@ type PageHeaderProps = {
 export function PageHeader({ title, description }: PageHeaderProps) {
   return (
     <div className="mb-10">
-      <p className="text-sm text-muted">OpenCrab</p>
-      <h1 className="mt-2 text-[34px] font-semibold tracking-[-0.04em] text-text">{title}</h1>
-      <p className="mt-3 max-w-[640px] text-[16px] leading-7 text-muted-strong">{description}</p>
+      <p className="text-[13px] text-muted">OpenCrab</p>
+      <h1 className="mt-2 text-[28px] font-semibold tracking-[-0.04em] text-text">{title}</h1>
+      <p className="mt-3 max-w-[640px] text-[14px] leading-6 text-muted-strong">{description}</p>
     </div>
   );
 }

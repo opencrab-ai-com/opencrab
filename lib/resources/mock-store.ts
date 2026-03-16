@@ -1,16 +1,16 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import path from "node:path";
 import {
   appSettings as seedAppSettings,
   conversationMessages as seedConversationMessages,
   conversations as seedConversations,
   folders as seedFolders,
 } from "@/lib/mock-data";
+import {
+  OPENCRAB_MOCK_STORE_PATH,
+  OPENCRAB_RUNTIME_DIR,
+} from "@/lib/resources/runtime-paths";
 import type { AppSettings, ConversationItem, ConversationMessage } from "@/lib/mock-data";
 import type { AppSnapshot } from "@/lib/resources/opencrab-api-types";
-
-const STORE_DIR = path.join(process.cwd(), ".opencrab");
-const STORE_PATH = path.join(STORE_DIR, "mock-store.json");
 
 export function getSnapshot(): AppSnapshot {
   return cloneSnapshot(readState());
@@ -133,7 +133,11 @@ export function addMessage(
     id: message.id ?? createId("message"),
     role: message.role,
     content: message.content,
+    timestamp: message.timestamp ?? new Date().toISOString(),
     attachments: message.attachments ? structuredClone(message.attachments) : undefined,
+    usedAttachmentNames: message.usedAttachmentNames
+      ? structuredClone(message.usedAttachmentNames)
+      : undefined,
     thinking: message.thinking ? structuredClone(message.thinking) : undefined,
     meta: message.meta,
     status: message.status,
@@ -203,6 +207,9 @@ function ensureStoreFile() {
   }
 }
 
+const STORE_DIR = OPENCRAB_RUNTIME_DIR;
+const STORE_PATH = OPENCRAB_MOCK_STORE_PATH;
+
 function createSeedState(): AppSnapshot {
   return {
     folders: structuredClone(seedFolders),
@@ -224,12 +231,67 @@ function normalizeSnapshot(snapshot: Partial<AppSnapshot>): AppSnapshot {
       codexThreadId: conversation.codexThreadId ?? null,
       lastAssistantModel: conversation.lastAssistantModel ?? null,
     })),
-    conversationMessages: structuredClone(snapshot.conversationMessages || seedConversationMessages),
+    conversationMessages: Object.fromEntries(
+      Object.entries(structuredClone(snapshot.conversationMessages || seedConversationMessages)).map(
+        ([conversationId, messages]) => [conversationId, normalizeMessages(messages)],
+      ),
+    ),
     settings: {
       ...seedAppSettings,
       ...(snapshot.settings || {}),
     },
   };
+}
+
+function inferMessageTimestamp(meta: string | undefined) {
+  if (!meta) {
+    return undefined;
+  }
+
+  const todayMatch = meta.match(/^今天\s+(\d{2}):(\d{2})$/);
+
+  if (todayMatch) {
+    const now = new Date();
+    return new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      Number(todayMatch[1]),
+      Number(todayMatch[2]),
+    ).toISOString();
+  }
+
+  const yesterdayMatch = meta.match(/^昨天\s+(\d{2}):(\d{2})$/);
+
+  if (yesterdayMatch) {
+    const now = new Date();
+    return new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - 1,
+      Number(yesterdayMatch[1]),
+      Number(yesterdayMatch[2]),
+    ).toISOString();
+  }
+
+  return undefined;
+}
+
+function normalizeMessages(messages: ConversationMessage[]) {
+  let lastKnownTimestamp: string | undefined;
+
+  return messages.map((message) => {
+    const inferredTimestamp = message.timestamp ?? inferMessageTimestamp(message.meta) ?? lastKnownTimestamp;
+
+    if (inferredTimestamp) {
+      lastKnownTimestamp = inferredTimestamp;
+    }
+
+    return {
+      ...message,
+      timestamp: inferredTimestamp,
+    };
+  });
 }
 
 function createId(prefix: string) {

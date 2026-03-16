@@ -21,8 +21,8 @@ export function AppShell({ sidebar, children }: AppShellProps) {
   const pathname = usePathname();
 
   return (
-    <div className="grid min-h-screen grid-cols-1 bg-background lg:grid-cols-[320px_1fr]">
-      <aside className="flex min-h-0 flex-col gap-1.5 border-b border-line bg-sidebar px-3 py-3.5 lg:h-screen lg:border-r lg:border-b-0">
+    <div className="grid min-h-screen grid-cols-1 bg-background lg:grid-cols-[304px_1fr]">
+      <aside className="flex min-h-0 flex-col gap-1.5 border-b border-line bg-sidebar px-2.5 py-3.5 lg:h-screen lg:border-r lg:border-b-0">
         <div className="flex min-h-9 items-center gap-3">
           <Link
             href="/"
@@ -31,7 +31,7 @@ export function AppShell({ sidebar, children }: AppShellProps) {
           >
             <BrandIcon />
           </Link>
-          <span className="text-[17px] font-semibold tracking-[-0.02em] text-text">OpenCrab</span>
+          <span className="text-[16px] font-semibold tracking-[-0.02em] text-text">OpenCrab</span>
         </div>
 
         <div className="mt-1.5 flex flex-col gap-0.5">
@@ -49,7 +49,7 @@ export function AppShell({ sidebar, children }: AppShellProps) {
               <Link
                 key={item.key}
                 href={item.href}
-                className={`flex min-h-9 items-center gap-3 rounded-xl px-3 text-[15px] transition ${
+                className={`flex min-h-9 items-center gap-3 rounded-xl px-3 text-[14px] transition ${
                   isActive ? "bg-surface font-medium text-text" : "text-text hover:bg-surface-muted"
                 }`}
               >
@@ -66,12 +66,12 @@ export function AppShell({ sidebar, children }: AppShellProps) {
           href="/settings"
           className="mt-2 flex items-center gap-3 border-t border-line px-2 pt-2.5 text-text transition hover:opacity-80"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#d8d9db] text-[13px] font-semibold text-[#5f6368]">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#d8d9db] text-[12px] font-semibold text-[#5f6368]">
             {currentUser.initial}
           </span>
           <span className="flex flex-col">
-            <span className="text-[14px] font-medium">{currentUser.name}</span>
-            <span className="text-[13px] text-muted">设置</span>
+            <span className="text-[13px] font-medium">{currentUser.name}</span>
+            <span className="text-[12px] text-muted">设置</span>
           </span>
         </Link>
       </aside>
@@ -90,7 +90,7 @@ function SidebarAction({ href, children }: SidebarActionProps) {
   return (
     <Link
       href={href}
-      className="flex min-h-9 items-center gap-3 rounded-xl px-3 text-[15px] text-text transition hover:bg-surface-muted"
+      className="flex min-h-9 items-center gap-3 rounded-xl px-3 text-[14px] text-text transition hover:bg-surface-muted"
     >
       <span className="text-muted-strong">
         <PlusIcon />

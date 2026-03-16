@@ -62,3 +62,72 @@ button {
 svg {
   fill: none;
 }
+
+.markdown-body > :first-child {
+  margin-top: 0;
+}
+
+.markdown-body > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body p,
+.markdown-body ul,
+.markdown-body ol,
+.markdown-body pre,
+.markdown-body blockquote,
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  margin: 0 0 0.9rem;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 1.35rem;
+}
+
+.markdown-body li + li {
+  margin-top: 0.3rem;
+}
+
+.markdown-body blockquote {
+  border-left: 3px solid var(--line-strong);
+  padding-left: 0.9rem;
+  color: var(--muted-strong);
+}
+
+.markdown-body pre {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #f6f6f2;
+  padding: 0.95rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+.markdown-body pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 0.9rem;
+  font-size: 0.875rem;
+}
+
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid var(--line);
+  padding: 0.55rem 0.7rem;
+  text-align: left;
+}
+
+.markdown-body th {
+  background: #f6f6f2;
+}

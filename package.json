@@ -6,13 +6,19 @@
     "dev": "next dev --hostname 127.0.0.1 --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "clean:runtime": "node scripts/clean_runtime.mjs"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "@openai/codex-sdk": "^0.114.0",
     "next": "16.1.6",
+    "pdf-parse": "^2.4.5",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

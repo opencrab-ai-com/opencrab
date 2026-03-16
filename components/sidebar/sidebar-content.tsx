@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
 import {
   DialogActions,
@@ -55,6 +55,7 @@ export function SidebarContent() {
   const {
     folders,
     conversations,
+    conversationMessages,
     expandedFolders,
     isHydrated,
     isMutating,
@@ -72,6 +73,10 @@ export function SidebarContent() {
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [createFolderDialog, setCreateFolderDialog] = useState<CreateFolderDialogState | null>(null);
   const [renameDialog, setRenameDialog] = useState<RenameDialogState | null>(null);
+  const [openActionMenu, setOpenActionMenu] = useState<null | {
+    kind: "folder" | "conversation";
+    id: string;
+  }>(null);
 
   const isConversationArea = pathname === "/" || pathname.startsWith("/conversations");
   const activeConversationId = pathname.startsWith("/conversations/") ? pathname.split("/")[2] : null;
@@ -81,10 +86,27 @@ export function SidebarContent() {
       buildSidebarViewModel({
         folders,
         conversations,
+        conversationMessages,
         expandedFolders,
       }),
-    [conversations, expandedFolders, folders],
+    [conversationMessages, conversations, expandedFolders, folders],
   );
+
+  useEffect(() => {
+    function handlePointerDown(event: MouseEvent) {
+      const target = event.target as HTMLElement | null;
+
+      if (!target?.closest("[data-sidebar-action-root='true']")) {
+        setOpenActionMenu(null);
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+    };
+  }, []);
 
   if (!isConversationArea) {
     return <div className="h-full" />;
@@ -282,44 +304,29 @@ export function SidebarContent() {
 
           return (
             <div key={folder.id} className="rounded-xl">
-              <div
-                className="group flex min-h-8 items-center gap-2 rounded-xl px-3 text-[14px] text-text transition hover:bg-surface-muted"
-                onDragOver={(event) => event.preventDefault()}
+              <FolderRow
+                id={folder.id}
+                name={folder.name}
+                count={folderConversations.length}
+                isExpanded={isExpanded}
+                isMenuOpen={openActionMenu?.kind === "folder" && openActionMenu.id === folder.id}
+                onToggle={() => toggleFolder(folder.id)}
+                onRename={() => handleOpenRenameFolderDialog(folder.id)}
+                onDelete={() => handleDeleteFolder(folder.id)}
+                onMenuToggle={() =>
+                  setOpenActionMenu((current) =>
+                    current?.kind === "folder" && current.id === folder.id
+                      ? null
+                      : { kind: "folder", id: folder.id },
+                  )
+                }
                 onDrop={() => {
                   void handleDropToFolder(folder.id);
                 }}
-              >
-                <button
-                  type="button"
-                  onClick={() => toggleFolder(folder.id)}
-                  className="flex min-h-8 flex-1 items-center justify-between text-left"
-                >
-                  <span className="truncate">{folder.name}</span>
-                  <span className="flex items-center gap-2 text-[12px] text-muted">
-                    <span>{folderConversations.length}</span>
-                    <span className={`transition ${isExpanded ? "rotate-90" : ""}`}>›</span>
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleOpenRenameFolderDialog(folder.id)}
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-muted opacity-60 transition hover:bg-surface hover:opacity-100"
-                  aria-label={`重命名文件夹 ${folder.name}`}
-                >
-                  <EditIcon />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDeleteFolder(folder.id)}
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-muted opacity-60 transition hover:bg-surface hover:opacity-100"
-                  aria-label={`删除文件夹 ${folder.name}`}
-                >
-                  <TrashIcon />
-                </button>
-              </div>
+              />
 
               {isExpanded ? (
-                <div className="mt-0.5 ml-3 flex flex-col gap-0.5 border-l border-line pl-3">
+                <div id={`folder-${folder.id}`} className="mt-0.5 ml-4 flex flex-col gap-0.5 border-l border-line pl-2.5">
                   {folderConversations.length > 0 ? (
                     folderConversations.map((item) => (
                       <ConversationRow
@@ -328,12 +335,22 @@ export function SidebarContent() {
                         isActive={activeConversationId === item.id}
                         onRename={handleOpenRenameConversationDialog}
                         onDelete={handleDeleteConversation}
+                        isMenuOpen={
+                          openActionMenu?.kind === "conversation" && openActionMenu.id === item.id
+                        }
+                        onMenuToggle={() =>
+                          setOpenActionMenu((current) =>
+                            current?.kind === "conversation" && current.id === item.id
+                              ? null
+                              : { kind: "conversation", id: item.id },
+                          )
+                        }
                         onDragStart={setDraggingConversationId}
                         onDragEnd={() => setDraggingConversationId(null)}
                       />
                     ))
                   ) : (
-                    <div className="px-3 py-2 text-[12px] text-muted">拖动对话到这里</div>
+                    <div className="px-3 py-2 text-[11px] text-muted">拖动对话到这里</div>
                   )}
                 </div>
               ) : null}
@@ -357,12 +374,22 @@ export function SidebarContent() {
               isActive={activeConversationId === item.id}
               onRename={handleOpenRenameConversationDialog}
               onDelete={handleDeleteConversation}
+              isMenuOpen={
+                openActionMenu?.kind === "conversation" && openActionMenu.id === item.id
+              }
+              onMenuToggle={() =>
+                setOpenActionMenu((current) =>
+                  current?.kind === "conversation" && current.id === item.id
+                    ? null
+                    : { kind: "conversation", id: item.id },
+                )
+              }
               onDragStart={setDraggingConversationId}
               onDragEnd={() => setDraggingConversationId(null)}
             />
           ))
         ) : (
-          <div className="px-3 py-2 text-[12px] text-muted">
+          <div className="px-3 py-2 text-[11px] text-muted">
             {isHydrated ? "拖动文件夹里的对话回到这里" : "正在加载对话..."}
           </div>
         )}
@@ -422,7 +449,7 @@ type SidebarSectionProps = {
 function SidebarSection({ title, action, onDragOver, onDrop, children }: SidebarSectionProps) {
   return (
     <section className="mt-2" onDragOver={onDragOver} onDrop={onDrop}>
-      <div className="mb-0.5 flex min-h-7 items-center justify-between px-3 text-[14px] text-muted">
+      <div className="mb-0.5 flex min-h-7 items-center justify-between px-3 text-[13px] text-muted">
         <span>{title}</span>
         {action ?? <span className="text-[18px] leading-none">›</span>}
       </div>
@@ -434,8 +461,10 @@ function SidebarSection({ title, action, onDragOver, onDrop, children }: Sidebar
 type ConversationRowProps = {
   conversation: ConversationItem;
   isActive: boolean;
+  isMenuOpen: boolean;
   onRename: (conversationId: string) => void;
   onDelete: (conversationId: string) => void;
+  onMenuToggle: () => void;
   onDragStart: (conversationId: string) => void;
   onDragEnd: () => void;
 };
@@ -443,8 +472,10 @@ type ConversationRowProps = {
 function ConversationRow({
   conversation,
   isActive,
+  isMenuOpen,
   onRename,
   onDelete,
+  onMenuToggle,
   onDragStart,
   onDragEnd,
 }: ConversationRowProps) {
@@ -453,30 +484,152 @@ function ConversationRow({
       draggable
       onDragStart={() => onDragStart(conversation.id)}
       onDragEnd={onDragEnd}
-      className={`flex min-h-8 items-center justify-between gap-3 rounded-xl px-3 text-[14px] transition ${
+      className={`group/row relative flex min-h-8 items-center justify-between gap-2 rounded-xl pl-3 pr-2 text-[13px] transition ${
         isActive ? "bg-surface text-text" : "text-text hover:bg-surface-muted"
       }`}
     >
-      <Link href={`/conversations/${conversation.id}`} className="flex min-h-8 flex-1 items-center justify-between gap-3">
-        <span className="truncate">{conversation.title}</span>
+      <Link
+        href={`/conversations/${conversation.id}`}
+        className="flex min-h-8 flex-1 items-center justify-between gap-3"
+      >
+        <span className="truncate text-[13px]">{conversation.title}</span>
         <span className="shrink-0 text-[12px] text-muted">{conversation.timeLabel}</span>
       </Link>
+      <RowActionMenu
+        label={conversation.title}
+        kind="conversation"
+        isOpen={isMenuOpen}
+        onToggle={onMenuToggle}
+        onRename={() => onRename(conversation.id)}
+        onDelete={() => onDelete(conversation.id)}
+      />
+    </div>
+  );
+}
+
+type FolderRowProps = {
+  id: string;
+  name: string;
+  count: number;
+  isExpanded: boolean;
+  isMenuOpen: boolean;
+  onToggle: () => void;
+  onRename: () => void;
+  onDelete: () => void;
+  onMenuToggle: () => void;
+  onDrop: () => void;
+};
+
+function FolderRow({
+  id,
+  name,
+  count,
+  isExpanded,
+  isMenuOpen,
+  onToggle,
+  onRename,
+  onDelete,
+  onMenuToggle,
+  onDrop,
+}: FolderRowProps) {
+  return (
+    <div
+      className="group/folder relative"
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={onDrop}
+    >
+      <div className="flex min-h-8 items-center gap-2 rounded-xl px-2.5 text-text transition hover:bg-surface-muted">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="flex min-h-8 flex-1 items-center gap-2 overflow-hidden text-left"
+          aria-expanded={isExpanded}
+          aria-controls={`folder-${id}`}
+        >
+          <span className="text-muted-strong">
+            <FolderIcon />
+          </span>
+          <span className="truncate text-[14px] font-medium">{name}</span>
+          <span className="ml-auto flex items-center gap-1.5 text-[12px] text-muted">
+            <span>{count}</span>
+            <span className={`transition ${isExpanded ? "rotate-90" : ""}`}>›</span>
+          </span>
+        </button>
+
+        <RowActionMenu
+          label={name}
+          kind="folder"
+          isOpen={isMenuOpen}
+          onToggle={onMenuToggle}
+          onRename={onRename}
+          onDelete={onDelete}
+        />
+      </div>
+    </div>
+  );
+}
+
+type RowActionMenuProps = {
+  label: string;
+  kind: "folder" | "conversation";
+  isOpen: boolean;
+  onToggle: () => void;
+  onRename: () => void;
+  onDelete: () => void;
+};
+
+function RowActionMenu({ label, kind, isOpen, onToggle, onRename, onDelete }: RowActionMenuProps) {
+  return (
+    <div data-sidebar-action-root="true" className="relative shrink-0">
       <button
         type="button"
-        onClick={() => onRename(conversation.id)}
-        className="flex h-[26px] w-[26px] items-center justify-center rounded-lg text-muted transition hover:bg-surface"
-        aria-label={`重命名对话 ${conversation.title}`}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onToggle();
+        }}
+        className={`flex h-7 w-7 items-center justify-center rounded-lg transition ${
+          isOpen
+            ? "bg-surface text-[#6f6f68] opacity-100"
+            : "bg-transparent text-[#8a8a84] opacity-0 group-hover/folder:bg-surface group-hover/folder:text-[#6f6f68] group-hover/folder:opacity-100 group-focus-within/folder:bg-surface group-focus-within/folder:text-[#6f6f68] group-focus-within/folder:opacity-100 group-hover/row:bg-surface group-hover/row:text-[#6f6f68] group-hover/row:opacity-100 group-focus-within/row:bg-surface group-focus-within/row:text-[#6f6f68] group-focus-within/row:opacity-100"
+        }`}
+        style={{ visibility: "visible" }}
+        aria-label={`${kind === "folder" ? "文件夹" : "对话"} ${label} 更多操作`}
       >
-        <EditIcon />
+        <span aria-hidden="true" className="translate-y-[-1px] text-[18px] leading-none">
+          ...
+        </span>
       </button>
-      <button
-        type="button"
-        onClick={() => onDelete(conversation.id)}
-        className="flex h-[26px] w-[26px] items-center justify-center rounded-lg text-muted transition hover:bg-surface"
-        aria-label={`删除对话 ${conversation.title}`}
-      >
-        <TrashIcon />
-      </button>
+
+      {isOpen ? (
+        <div className="absolute top-[calc(100%+8px)] right-0 z-20 min-w-[132px] rounded-[18px] border border-line bg-surface p-1.5 shadow-[0_16px_36px_rgba(15,23,42,0.14)]">
+        <button
+          type="button"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onRename();
+          }}
+          className="flex w-full items-center gap-2 rounded-[10px] px-3 py-2 text-left text-[12px] text-text transition hover:bg-surface-muted"
+        >
+          <EditIcon />
+          <span>重命名</span>
+        </button>
+        <div className="my-1 h-px bg-line" />
+        <button
+          type="button"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onDelete();
+          }}
+          className="flex w-full items-center gap-2 rounded-[10px] px-3 py-2 text-left text-[12px] text-[#a34942] transition hover:bg-[#fff6f5]"
+        >
+          <TrashIcon />
+          <span>删除</span>
+        </button>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -497,6 +650,19 @@ function EditIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </svg>
+  );
+}
+
+function FolderIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-[16px] w-[16px] fill-none stroke-current" strokeWidth="1.9">
+      <path
+        d="M3.75 8.25A2.25 2.25 0 0 1 6 6h4.05l1.35 1.6H18A2.25 2.25 0 0 1 20.25 9.85v6.4A2.25 2.25 0 0 1 18 18.5H6a2.25 2.25 0 0 1-2.25-2.25z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M3.9 9h16.2" strokeLinecap="round" />
     </svg>
   );
 }
@@ -554,7 +720,7 @@ function CreateFolderDialog({
             }
           }}
           placeholder="例如：产品讨论"
-          className="h-12 w-full rounded-2xl border border-line bg-surface-muted px-4 text-[15px] text-text outline-none transition placeholder:text-[#a0a097] focus:border-[#d8d7d1] focus:bg-surface"
+          className="h-12 w-full rounded-2xl border border-line bg-surface-muted px-4 text-[14px] text-text outline-none transition placeholder:text-[#a0a097] focus:border-[#d8d7d1] focus:bg-surface"
         />
       </div>
 
@@ -604,7 +770,7 @@ function RenameDialog({
               void onConfirm();
             }
           }}
-          className="h-12 w-full rounded-2xl border border-line bg-surface-muted px-4 text-[15px] text-text outline-none transition placeholder:text-[#a0a097] focus:border-[#d8d7d1] focus:bg-surface"
+          className="h-12 w-full rounded-2xl border border-line bg-surface-muted px-4 text-[14px] text-text outline-none transition placeholder:text-[#a0a097] focus:border-[#d8d7d1] focus:bg-surface"
         />
       </div>
 
@@ -633,7 +799,7 @@ function SidebarStatusBanner({
 }: SidebarStatusBannerProps) {
   return (
     <div
-      className={`mb-2 rounded-2xl border px-3 py-2 text-[13px] ${
+      className={`mb-2 rounded-2xl border px-3 py-2 text-[12px] ${
         tone === "error"
           ? "border-[#f0d5d2] bg-[#fff6f5] text-[#a34942]"
           : "border-line bg-surface text-muted-strong"
@@ -642,7 +808,7 @@ function SidebarStatusBanner({
       <div className="flex items-center justify-between gap-3">
         <span>{children}</span>
         {actionLabel && onAction ? (
-          <button type="button" onClick={onAction} className="shrink-0 text-[12px] font-medium">
+          <button type="button" onClick={onAction} className="shrink-0 text-[11px] font-medium">
             {actionLabel}
           </button>
         ) : null}
