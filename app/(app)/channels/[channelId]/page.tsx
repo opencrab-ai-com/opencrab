@@ -1,7 +1,7 @@
 import { AppPage } from "@/components/ui/app-page";
 import { DetailCard } from "@/components/ui/detail-card";
 import { PageHeader } from "@/components/ui/page-header";
-import { channels } from "@/lib/mock-data";
+import { channels } from "@/lib/seed-data";
 
 export default async function ChannelDetailPage({
   params,

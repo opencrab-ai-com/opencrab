@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { deleteConversation, updateConversation } from "@/lib/resources/mock-store";
+import { deleteConversation, updateConversation } from "@/lib/resources/local-store";
 
 export async function PATCH(
   request: Request,

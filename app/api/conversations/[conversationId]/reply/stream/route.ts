@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { streamCodexReply } from "@/lib/codex/sdk";
 import { formatMessageTime } from "@/lib/conversations/utils";
 import { buildUserMessagePreview } from "@/lib/opencrab/messages";
-import { addMessage, findConversation, updateConversation } from "@/lib/resources/mock-store";
+import { addMessage, findConversation, updateConversation } from "@/lib/resources/local-store";
 import type { ReplyStreamEvent } from "@/lib/resources/opencrab-api-types";
-import { getUploadsByIds } from "@/lib/resources/upload-store";
+import { getUploadsByIds, registerOutputAttachmentsFromText } from "@/lib/resources/upload-store";
 import type { CodexReasoningEffort, CodexSandboxMode } from "@/lib/resources/opencrab-api-types";
 
 export async function POST(
@@ -87,6 +87,16 @@ export async function POST(
             textAttachments,
             signal: request.signal,
           })) {
+            if (event.type === "thread") {
+              latestThreadId = event.threadId;
+              updateConversation(conversationId, {
+                codexThreadId: event.threadId,
+                lastAssistantModel: body.model || conversation.lastAssistantModel || null,
+              });
+              emit(event);
+              continue;
+            }
+
             if (event.type === "thinking") {
               latestThinking = event.entries;
               emit(event);
@@ -107,10 +117,16 @@ export async function POST(
               lastAssistantModel: event.model,
             });
 
+            const outputAttachments = registerOutputAttachmentsFromText(event.text);
+
             const assistantMessageResult = addMessage(conversationId, {
               id: assistantMessageId,
               role: "assistant",
               content: event.text,
+              attachments: outputAttachments.map((attachment) => ({
+                ...attachment,
+                wasUsedInReply: false,
+              })),
               thinking: event.thinking,
               usedAttachmentNames: attachments.map((attachment) => attachment.name),
               meta:

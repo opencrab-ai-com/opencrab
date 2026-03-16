@@ -22,6 +22,7 @@ npm run dev
 
 ```bash
 npm run lint
+npm run typecheck
 npm run build
 ```
 
@@ -29,10 +30,30 @@ npm run build
 
 首次运行后，仓库下会自动生成：
 
-- `.opencrab/`
 - `.playwright-cli/`（仅在调试浏览器技能时）
 
+OpenCrab 自己的运行时数据会写到：
+
+- `$OPENCRAB_HOME/`
+
 这些目录是运行时数据，不需要提交。
+
+如果没有显式设置 `OPENCRAB_HOME`，macOS 默认使用：
+
+- `$HOME/Library/Application Support/OpenCrab/`
+
+`$OPENCRAB_HOME/` 当前会包含：
+
+- `local-store.json`
+- `uploads/`
+- `uploads/index.json`
+- `chrome-debug-profile/`
+
+如果你想一键清理这些本地运行产物：
+
+```bash
+npm run clean:runtime
+```
 
 ## Debugging Codex
 

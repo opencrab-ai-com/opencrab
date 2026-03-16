@@ -5,7 +5,7 @@ import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
-import type { AttachmentItem } from "@/lib/mock-data";
+import type { AttachmentItem } from "@/lib/seed-data";
 import { buildConversationDetailViewModel } from "@/lib/view-models/conversations";
 
 type ConversationThreadProps = {

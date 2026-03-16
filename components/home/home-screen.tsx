@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { OpenCrabMark, OpenCrabWordmark } from "@/components/branding/opencrab-brand";
 import { Composer } from "@/components/composer/composer";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
 import {
@@ -50,7 +51,10 @@ export function HomeScreen({ title, description }: HomeScreenProps) {
   return (
     <div className="flex min-h-screen flex-col lg:h-full lg:min-h-0 lg:overflow-y-auto">
       <div className="flex items-center px-6 pt-5 lg:px-8">
-        <h1 className="text-[18px] font-semibold tracking-[-0.03em] text-text">OpenCrab</h1>
+        <h1 className="flex items-center gap-3">
+          <OpenCrabMark className="h-8 w-8" />
+          <OpenCrabWordmark className="text-[18px] font-semibold tracking-[-0.03em]" />
+        </h1>
       </div>
 
       <section className="flex flex-1 flex-col items-center justify-center gap-8 px-6 pb-14 text-center lg:px-8">

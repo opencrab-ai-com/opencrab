@@ -27,7 +27,7 @@ lib/
   codex/                 # Codex SDK、浏览器连接、模型选项
   conversations/         # 会话时间与标题工具
   opencrab/              # 通用标签、错误、消息工具
-  resources/             # 本地资源层：mock store、uploads、API types
+  resources/             # 本地资源层：local store、uploads、API types
   view-models/           # 左侧栏等视图模型映射
 scripts/
   browser_mcp_stdio_proxy.mjs
@@ -38,13 +38,18 @@ scripts/
 
 运行时数据全部落到本地目录，不属于源码的一部分：
 
-- `.opencrab/`
-  - `mock-store.json`：本地会话快照
+- `$OPENCRAB_HOME/`
+  - `local-store.json`：本地会话快照
   - `uploads/`：上传的附件与提取后的文本
   - `chrome-debug-profile/`：独立浏览器模式的 Chrome profile
 - `.playwright-cli/`：调试浏览器技能时生成的记录
 
 这些目录都已加入 `.gitignore`。
+
+说明：
+
+- 如果没有显式设置 `OPENCRAB_HOME`，macOS 默认使用 `$HOME/Library/Application Support/OpenCrab/`
+- OpenCrab 自己的会话、附件和浏览器 profile 都不会默认落到代码仓库里
 
 ## Core Flows
 
@@ -55,12 +60,12 @@ scripts/
 3. 服务端调用 `app/api/conversations/[conversationId]/reply/stream/route.ts`。
 4. 路由内部通过 `lib/codex/sdk.ts` 调用 Codex SDK。
 5. 同一个 OpenCrab 对话会复用同一个 Codex thread id。
-6. 流式事件回写到消息区，最终快照持久化到 `.opencrab/mock-store.json`。
+6. 流式事件回写到消息区，最终快照持久化到 `$OPENCRAB_HOME/local-store.json`。
 
 ## 2. Attachment Flow
 
 1. 前端上传文件到 `app/api/uploads/route.ts`
-2. `lib/resources/upload-store.ts` 将文件保存到 `.opencrab/uploads/`
+2. `lib/resources/upload-store.ts` 将文件保存到 `$OPENCRAB_HOME/uploads/`
 3. 文本类附件直接复用原文件
 4. PDF 通过 `scripts/pdf_extract.mjs` 提取文本
 5. Word 文档通过 macOS `textutil` 转成纯文本

@@ -10,7 +10,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { getSnapshot } from "@/lib/resources/mock-store";
+import { getSnapshot } from "@/lib/resources/local-store";
 import { OPENCRAB_CHROME_PROFILE_DIR } from "@/lib/resources/runtime-paths";
 import type {
   BrowserConnectionMode,

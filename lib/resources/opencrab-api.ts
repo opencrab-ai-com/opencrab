@@ -11,7 +11,7 @@ import type {
   SnapshotMutationResult,
   UploadedAttachment,
 } from "@/lib/resources/opencrab-api-types";
-import type { ConversationMessage } from "@/lib/mock-data";
+import type { ConversationMessage } from "@/lib/seed-data";
 
 export async function getAppSnapshot() {
   return request<AppSnapshot>("/api/bootstrap", {

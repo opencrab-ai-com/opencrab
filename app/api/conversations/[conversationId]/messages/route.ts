@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { addMessage } from "@/lib/resources/mock-store";
-import type { ConversationMessage } from "@/lib/mock-data";
+import { addMessage } from "@/lib/resources/local-store";
+import type { ConversationMessage } from "@/lib/seed-data";
 
 export async function POST(
   request: Request,

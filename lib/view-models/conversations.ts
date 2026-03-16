@@ -1,5 +1,5 @@
 import { formatConversationTimeLabel } from "@/lib/conversations/utils";
-import type { ConversationItem, ConversationMessage, FolderItem } from "@/lib/mock-data";
+import type { ConversationItem, ConversationMessage, FolderItem } from "@/lib/seed-data";
 
 export type SidebarFolderViewModel = {
   id: string;

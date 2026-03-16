@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { ConversationItem, ConversationMessage, FolderItem } from "@/lib/mock-data";
+import type { ConversationItem, ConversationMessage, FolderItem } from "@/lib/seed-data";
 import { buildConversationTitle } from "@/lib/conversations/utils";
 import {
   createConversation as createConversationResource,
@@ -643,6 +643,13 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
           {
             signal: controller.signal,
             onEvent: (event) => {
+              if (event.type === "thread") {
+                patchConversation(conversationId, {
+                  codexThreadId: event.threadId,
+                });
+                return;
+              }
+
               if (event.type === "thinking") {
                 patchMessage(conversationId, assistantMessageId, {
                   thinking: event.entries,

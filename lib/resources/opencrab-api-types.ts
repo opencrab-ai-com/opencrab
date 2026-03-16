@@ -4,7 +4,7 @@ import type {
   ConversationItem,
   ConversationMessage,
   FolderItem,
-} from "@/lib/mock-data";
+} from "@/lib/seed-data";
 
 export type AppSnapshot = {
   folders: FolderItem[];
@@ -83,6 +83,10 @@ export type CreateConversationResult = SnapshotMutationResult & {
 };
 
 export type ReplyStreamEvent =
+  | {
+      type: "thread";
+      threadId: string | null;
+    }
   | {
       type: "thinking";
       entries: string[];

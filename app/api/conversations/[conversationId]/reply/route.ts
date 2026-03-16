@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { generateCodexReply } from "@/lib/codex/sdk";
 import { formatMessageTime } from "@/lib/conversations/utils";
 import { buildUserMessagePreview } from "@/lib/opencrab/messages";
-import { getUploadsByIds } from "@/lib/resources/upload-store";
-import { addMessage, findConversation, updateConversation } from "@/lib/resources/mock-store";
+import { getUploadsByIds, registerOutputAttachmentsFromText } from "@/lib/resources/upload-store";
+import { addMessage, findConversation, updateConversation } from "@/lib/resources/local-store";
 import type { CodexReasoningEffort, CodexSandboxMode } from "@/lib/resources/opencrab-api-types";
 
 export async function POST(
@@ -73,9 +73,15 @@ export async function POST(
       lastAssistantModel: reply.model,
     });
 
+    const outputAttachments = registerOutputAttachmentsFromText(reply.text);
+
     const assistantMessageResult = addMessage(conversationId, {
       role: "assistant",
       content: reply.text,
+      attachments: outputAttachments.map((attachment) => ({
+        ...attachment,
+        wasUsedInReply: false,
+      })),
       usedAttachmentNames: attachments.map((attachment) => attachment.name),
       meta:
         attachments.length > 0

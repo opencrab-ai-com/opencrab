@@ -73,6 +73,55 @@ export function getUploadById(id: string) {
   return readIndex().find((item) => item.id === id) || null;
 }
 
+export function registerOutputAttachmentsFromText(content: string) {
+  if (!content.trim()) {
+    return [];
+  }
+
+  const items = readIndex();
+  const nextItems = [...items];
+  const registered: UploadedAttachment[] = [];
+
+  for (const filePath of extractCandidatePaths(content)) {
+    if (!existsSync(filePath)) {
+      continue;
+    }
+
+    const existing = nextItems.find((item) => item.storedPath === filePath);
+
+    if (existing) {
+      registered.push(toPublicAttachment(existing));
+      continue;
+    }
+
+    const name = path.basename(filePath);
+    const mimeType = getMimeTypeFromName(name);
+    const kind = getAttachmentKind(name, mimeType);
+
+    if (!kind) {
+      continue;
+    }
+
+    const attachment: StoredAttachment = {
+      id: `output-${crypto.randomUUID()}`,
+      name,
+      kind,
+      size: safeReadFileSize(filePath),
+      mimeType,
+      storedPath: filePath,
+    };
+
+    nextItems.push(attachment);
+    registered.push(toPublicAttachment(attachment));
+  }
+
+  if (nextItems.length !== items.length) {
+    writeIndex(nextItems);
+  }
+
+  return registered;
+}
+
 function ensureUploadStore() {
   if (!existsSync(STORE_DIR)) {
     mkdirSync(STORE_DIR, { recursive: true });
@@ -103,6 +152,59 @@ function readIndex() {
 function writeIndex(items: StoredAttachment[]) {
   ensureUploadStore();
   writeFileSync(UPLOADS_INDEX_PATH, JSON.stringify(items, null, 2), "utf8");
+}
+
+function safeReadFileSize(filePath: string) {
+  try {
+    return readFileSync(filePath).byteLength;
+  } catch {
+    return 0;
+  }
+}
+
+function extractCandidatePaths(content: string) {
+  const supportedExtensions = [
+    "png",
+    "jpg",
+    "jpeg",
+    "webp",
+    "gif",
+    "pdf",
+    "doc",
+    "docx",
+    "txt",
+    "md",
+    "markdown",
+    "json",
+    "csv",
+    "ts",
+    "tsx",
+    "js",
+    "jsx",
+    "py",
+    "html",
+    "css",
+    "xml",
+    "yml",
+    "yaml",
+  ].join("|");
+  const pattern = new RegExp(
+    String.raw`(\/(?:[^\/\n\r\t"'<>` + "`" + String.raw`]+\/)*[^\/\n\r\t"'<>` + "`" + String.raw`]+\.(?:${supportedExtensions}))`,
+    "gi",
+  );
+  const matches = new Set<string>();
+
+  for (const match of content.matchAll(pattern)) {
+    const raw = match[1]?.trim();
+
+    if (!raw) {
+      continue;
+    }
+
+    matches.add(raw.replace(/[),.，。；;！？!]+$/u, ""));
+  }
+
+  return [...matches];
 }
 
 function toPublicAttachment(attachment: StoredAttachment): UploadedAttachment {

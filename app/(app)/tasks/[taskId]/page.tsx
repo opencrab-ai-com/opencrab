@@ -1,7 +1,7 @@
 import { AppPage } from "@/components/ui/app-page";
 import { DetailCard } from "@/components/ui/detail-card";
 import { PageHeader } from "@/components/ui/page-header";
-import { tasks } from "@/lib/mock-data";
+import { tasks } from "@/lib/seed-data";
 
 export default async function TaskDetailPage({
   params,

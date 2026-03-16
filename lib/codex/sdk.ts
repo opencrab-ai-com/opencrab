@@ -41,6 +41,10 @@ type CodexUsage = {
 
 export type CodexReplyStreamEvent =
   | {
+      type: "thread";
+      threadId: string | null;
+    }
+  | {
       type: "thinking";
       entries: string[];
     }
@@ -174,6 +178,11 @@ export async function* streamCodexReply({
   let lastThinkingPayload = "";
   let assistantText = "";
   let usage: CodexUsage = null;
+
+  yield {
+    type: "thread",
+    threadId: thread.id,
+  };
 
   for await (const event of events) {
     if (event.type === "turn.failed" || event.type === "error") {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { deleteFolder, updateFolder } from "@/lib/resources/mock-store";
+import { deleteFolder, updateFolder } from "@/lib/resources/local-store";
 
 export async function PATCH(
   request: Request,

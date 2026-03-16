@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createConversation } from "@/lib/resources/mock-store";
+import { createConversation } from "@/lib/resources/local-store";
 
 export async function POST(request: Request) {
   const body = (await request.json()) as { title?: string; folderId?: string | null };

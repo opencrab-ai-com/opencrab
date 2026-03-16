@@ -18,7 +18,7 @@
 - 已有对话通过 `resumeThread(threadId)` 续接
 - 登录状态由本机 `codex login status` 判断
 - 前端永远只调用 OpenCrab 自己的 `/api/*`
-- 模型列表来自本机 `~/.codex/models_cache.json`
+- 模型列表来自本机 `$HOME/.codex/models_cache.json`
 
 ## Browser Tool Integration
 

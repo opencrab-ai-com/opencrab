@@ -4,12 +4,12 @@ import {
   conversationMessages as seedConversationMessages,
   conversations as seedConversations,
   folders as seedFolders,
-} from "@/lib/mock-data";
+} from "@/lib/seed-data";
 import {
-  OPENCRAB_MOCK_STORE_PATH,
+  OPENCRAB_LOCAL_STORE_PATH,
   OPENCRAB_RUNTIME_DIR,
 } from "@/lib/resources/runtime-paths";
-import type { AppSettings, ConversationItem, ConversationMessage } from "@/lib/mock-data";
+import type { AppSettings, ConversationItem, ConversationMessage } from "@/lib/seed-data";
 import type { AppSnapshot } from "@/lib/resources/opencrab-api-types";
 
 export function getSnapshot(): AppSnapshot {
@@ -208,7 +208,7 @@ function ensureStoreFile() {
 }
 
 const STORE_DIR = OPENCRAB_RUNTIME_DIR;
-const STORE_PATH = OPENCRAB_MOCK_STORE_PATH;
+const STORE_PATH = OPENCRAB_LOCAL_STORE_PATH;
 
 function createSeedState(): AppSnapshot {
   return {

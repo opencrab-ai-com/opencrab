@@ -11,7 +11,7 @@ import {
   DialogSecondaryButton,
   DialogShell,
 } from "@/components/ui/dialog";
-import type { ConversationItem } from "@/lib/mock-data";
+import type { ConversationItem } from "@/lib/seed-data";
 import { buildSidebarViewModel } from "@/lib/view-models/conversations";
 
 type DeleteTarget =

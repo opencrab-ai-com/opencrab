@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import type { AppSettings } from "@/lib/mock-data";
-import { getSnapshot, updateSettings } from "@/lib/resources/mock-store";
+import type { AppSettings } from "@/lib/seed-data";
+import { getSnapshot, updateSettings } from "@/lib/resources/local-store";
 
 export async function GET() {
   return NextResponse.json({

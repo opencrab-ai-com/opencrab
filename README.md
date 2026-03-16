@@ -35,11 +35,37 @@ npm run dev
 
 当前最完整的是对话能力；`Channels`、`任务`、`Skills` 已有页面骨架和路由，但还不是完整实现。
 
+## Useful Scripts
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+npm run clean:runtime
+```
+
 ## Runtime Data
 
-本地运行时会自动生成这些目录：
+OpenCrab 的运行时数据根目录由 `OPENCRAB_HOME` 决定。
 
-- `.opencrab/`
-- `.playwright-cli/`
+如果没有显式设置 `OPENCRAB_HOME`，macOS 默认会使用：
 
-它们属于运行时数据，已经默认忽略，不会作为源码提交。
+```bash
+$HOME/Library/Application Support/OpenCrab
+```
+
+目录结构如下：
+
+```text
+$OPENCRAB_HOME/
+  local-store.json          # 对话、消息、文件夹、设置等本地快照
+  uploads/                  # 上传的原始附件与提取后的文本
+    index.json              # 附件索引
+  chrome-debug-profile/     # 独立浏览器模式使用的 Chrome profile
+```
+
+补充说明：
+
+- OpenCrab 自己的对话内容、上传文件、浏览器 profile 都会写到 `$OPENCRAB_HOME`，不会默认写进代码仓库。
+- 仓库里的 `.playwright-cli/` 只在用浏览器调试技能时才会生成，不属于 OpenCrab 对话运行时数据。
+- 如果你想把运行时数据放到别的目录，可以在启动前设置 `OPENCRAB_HOME`。

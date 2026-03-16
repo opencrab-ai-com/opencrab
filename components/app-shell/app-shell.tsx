@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { currentUser } from "@/lib/mock-data";
-import type { NavKey } from "@/lib/mock-data";
+import { OpenCrabMark, OpenCrabWordmark } from "@/components/branding/opencrab-brand";
+import { currentUser } from "@/lib/seed-data";
+import type { NavKey } from "@/lib/seed-data";
 
 type AppShellProps = {
   sidebar: React.ReactNode;
@@ -29,9 +30,9 @@ export function AppShell({ sidebar, children }: AppShellProps) {
             className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-strong transition hover:bg-surface"
             aria-label="OpenCrab 首页"
           >
-            <BrandIcon />
+            <OpenCrabMark className="h-7 w-7" />
           </Link>
-          <span className="text-[16px] font-semibold tracking-[-0.02em] text-text">OpenCrab</span>
+          <OpenCrabWordmark className="text-[16px] font-semibold tracking-[-0.02em]" />
         </div>
 
         <div className="mt-1.5 flex flex-col gap-0.5">
@@ -97,16 +98,6 @@ function SidebarAction({ href, children }: SidebarActionProps) {
       </span>
       <span>{children}</span>
     </Link>
-  );
-}
-
-function BrandIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-[20px] w-[20px] stroke-current" strokeWidth="1.8">
-      <path d="M7.5 11.8c0-2.9 2.1-5.3 4.9-5.3 2.5 0 4.5 1.5 5.1 3.8" />
-      <path d="M16.6 12.2c0 2.9-2.1 5.3-4.9 5.3-2.5 0-4.5-1.5-5.1-3.8" />
-      <path d="M8.5 9.4 6.6 7.8M17.4 16.2l-1.9-1.6M15.8 8.7l1.6-2M8.2 15.3l-1.6 2" />
-    </svg>
   );
 }
 
