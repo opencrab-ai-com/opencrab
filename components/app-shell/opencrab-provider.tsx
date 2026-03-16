@@ -295,6 +295,50 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     };
   }, [applySnapshot]);
 
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+
+    let active = true;
+
+    async function syncExternalSnapshot() {
+      if (!active || document.visibilityState !== "visible" || activeStreamsRef.current.size > 0) {
+        return;
+      }
+
+      try {
+        const snapshot = await getAppSnapshot();
+
+        if (active) {
+          applySnapshot(snapshot);
+        }
+      } catch {
+        // Keep this silent. External channel sync should not interrupt the user if one poll fails.
+      }
+    }
+
+    const intervalId = window.setInterval(() => {
+      void syncExternalSnapshot();
+    }, 4000);
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        void syncExternalSnapshot();
+      }
+    }
+
+    window.addEventListener("focus", handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [applySnapshot, isHydrated]);
+
   const toggleFolder = useCallback((folderId: string) => {
     setExpandedFolders((current) => ({ ...current, [folderId]: !current[folderId] }));
   }, []);

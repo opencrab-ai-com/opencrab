@@ -492,7 +492,14 @@ function ConversationRow({
         href={`/conversations/${conversation.id}`}
         className="flex min-h-8 flex-1 items-center justify-between gap-3"
       >
-        <span className="truncate text-[13px]">{conversation.title}</span>
+        <span className="flex min-w-0 items-center gap-2">
+          {conversation.source && conversation.source !== "local" ? (
+            <span className="shrink-0 rounded-full border border-line bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-strong">
+              {conversation.source === "telegram" ? "TG" : "FS"}
+            </span>
+          ) : null}
+          <span className="truncate text-[13px]">{conversation.title}</span>
+        </span>
         <span className="shrink-0 text-[12px] text-muted">{conversation.timeLabel}</span>
       </Link>
       <RowActionMenu

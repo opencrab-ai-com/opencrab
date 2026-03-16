@@ -45,6 +45,8 @@ OpenCrab 自己的运行时数据会写到：
 `$OPENCRAB_HOME/` 当前会包含：
 
 - `local-store.json`
+- `channels.json`
+- `channel-secrets.json`
 - `uploads/`
 - `uploads/index.json`
 - `chrome-debug-profile/`
@@ -54,6 +56,21 @@ OpenCrab 自己的运行时数据会写到：
 ```bash
 npm run clean:runtime
 ```
+
+## Channels
+
+`Channels` 第一版支持 Telegram 和飞书。
+
+常用环境变量：
+
+- `OPENCRAB_PUBLIC_BASE_URL`
+- `OPENCRAB_TELEGRAM_BOT_TOKEN`
+- `OPENCRAB_TELEGRAM_WEBHOOK_SECRET`
+- `OPENCRAB_FEISHU_APP_ID`
+- `OPENCRAB_FEISHU_APP_SECRET`
+- `OPENCRAB_FEISHU_VERIFICATION_TOKEN`
+
+也可以直接在 UI 的 `/channels/telegram` 和 `/channels/feishu` 页面里保存配置。
 
 ## Debugging Codex
 

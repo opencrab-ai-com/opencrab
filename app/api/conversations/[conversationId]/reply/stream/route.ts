@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { streamCodexReply } from "@/lib/codex/sdk";
-import { formatMessageTime } from "@/lib/conversations/utils";
-import { buildUserMessagePreview } from "@/lib/opencrab/messages";
-import { addMessage, findConversation, updateConversation } from "@/lib/resources/local-store";
+import {
+  ConversationTurnError,
+  finalizeConversationTurn,
+  prepareConversationTurn,
+} from "@/lib/conversations/run-conversation-turn";
+import { addMessage, updateConversation } from "@/lib/resources/local-store";
 import type { ReplyStreamEvent } from "@/lib/resources/opencrab-api-types";
-import { getUploadsByIds, registerOutputAttachmentsFromText } from "@/lib/resources/upload-store";
 import type { CodexReasoningEffort, CodexSandboxMode } from "@/lib/resources/opencrab-api-types";
 
 export async function POST(
@@ -22,53 +24,23 @@ export async function POST(
       userMessageId?: string;
       assistantMessageId?: string;
     };
-    const content = body.content?.trim();
-    const attachmentIds = Array.isArray(body.attachmentIds) ? body.attachmentIds : [];
-    const attachments = getUploadsByIds(attachmentIds);
-    const conversation = findConversation(conversationId);
-    const userMessageId = body.userMessageId || `message-${crypto.randomUUID()}`;
-    const assistantMessageId = body.assistantMessageId || `message-${crypto.randomUUID()}`;
-
-    if (!content && attachments.length === 0) {
-      return NextResponse.json({ error: "缺少消息内容或附件。" }, { status: 400 });
-    }
-
-    if (!conversation) {
-      return NextResponse.json({ error: "找不到对应对话。" }, { status: 404 });
-    }
-
-    addMessage(conversationId, {
-      id: userMessageId,
-      role: "user",
-      content: buildUserMessagePreview(content, attachments.map((attachment) => attachment.name)),
-      attachments: attachments.map((attachment) => ({
-        id: attachment.id,
-        name: attachment.name,
-        kind: attachment.kind,
-        size: attachment.size,
-        mimeType: attachment.mimeType,
-        wasUsedInReply: true,
-      })),
-      meta: formatMessageTime(new Date()),
-      status: "done",
+    const prepared = prepareConversationTurn({
+      conversationId,
+      content: body.content,
+      model: body.model,
+      reasoningEffort: body.reasoningEffort,
+      sandboxMode: body.sandboxMode,
+      attachmentIds: body.attachmentIds,
+      userMessageId: body.userMessageId,
+      assistantMessageId: body.assistantMessageId,
     });
-
-    const imagePaths = attachments
-      .filter((attachment) => attachment.kind === "image")
-      .map((attachment) => attachment.storedPath);
-    const textAttachments = attachments
-      .filter((attachment) => attachment.kind === "text")
-      .map((attachment) => ({
-        name: attachment.name,
-        storedPath: attachment.promptPath || attachment.storedPath,
-      }));
 
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
         let latestText = "";
         let latestThinking: string[] = [];
-        let latestThreadId: string | null = conversation.codexThreadId ?? null;
+        let latestThreadId: string | null = prepared.conversation.codexThreadId ?? null;
         let didComplete = false;
 
         function emit(event: ReplyStreamEvent) {
@@ -77,21 +49,21 @@ export async function POST(
 
         try {
           for await (const event of streamCodexReply({
-            conversationTitle: conversation.title,
-            threadId: conversation.codexThreadId,
-            content,
+            conversationTitle: prepared.conversation.title,
+            threadId: prepared.conversation.codexThreadId,
+            content: prepared.content,
             model: body.model,
             reasoningEffort: body.reasoningEffort,
             sandboxMode: body.sandboxMode,
-            imagePaths,
-            textAttachments,
+            imagePaths: prepared.imagePaths,
+            textAttachments: prepared.textAttachments,
             signal: request.signal,
           })) {
             if (event.type === "thread") {
               latestThreadId = event.threadId;
               updateConversation(conversationId, {
                 codexThreadId: event.threadId,
-                lastAssistantModel: body.model || conversation.lastAssistantModel || null,
+                lastAssistantModel: body.model || prepared.conversation.lastAssistantModel || null,
               });
               emit(event);
               continue;
@@ -112,28 +84,12 @@ export async function POST(
             latestText = event.text;
             latestThinking = event.thinking;
             latestThreadId = event.threadId;
-            updateConversation(conversationId, {
-              codexThreadId: event.threadId,
-              lastAssistantModel: event.model,
-            });
-
-            const outputAttachments = registerOutputAttachmentsFromText(event.text);
-
-            const assistantMessageResult = addMessage(conversationId, {
-              id: assistantMessageId,
-              role: "assistant",
-              content: event.text,
-              attachments: outputAttachments.map((attachment) => ({
-                ...attachment,
-                wasUsedInReply: false,
-              })),
+            const assistantMessageResult = finalizeConversationTurn(prepared, {
+              text: event.text,
+              model: event.model,
+              threadId: event.threadId,
+              usage: event.usage,
               thinking: event.thinking,
-              usedAttachmentNames: attachments.map((attachment) => attachment.name),
-              meta:
-                attachments.length > 0
-                  ? `生成完成 · ${event.model} · 已使用 ${attachments.length} 个附件`
-                  : `生成完成 · ${event.model}`,
-              status: "done",
             });
 
             emit({
@@ -154,16 +110,16 @@ export async function POST(
             if (latestThreadId) {
               updateConversation(conversationId, {
                 codexThreadId: latestThreadId,
-                lastAssistantModel: body.model || conversation.lastAssistantModel || null,
+                lastAssistantModel: body.model || prepared.conversation.lastAssistantModel || null,
               });
             }
 
             addMessage(conversationId, {
-              id: assistantMessageId,
+              id: prepared.assistantMessageId,
               role: "assistant",
               content: latestText.trim() || "已停止当前回复。",
               thinking: latestThinking,
-              meta: `已停止 · ${body.model || conversation.lastAssistantModel || "Codex"}`,
+              meta: `已停止 · ${body.model || prepared.conversation.lastAssistantModel || "Codex"}`,
               status: "stopped",
             });
           } else {
@@ -194,6 +150,10 @@ export async function POST(
       },
     });
   } catch (error) {
+    if (error instanceof ConversationTurnError) {
+      return NextResponse.json({ error: error.message }, { status: error.statusCode });
+    }
+
     const message = error instanceof Error ? error.message : "Codex SDK 调用失败。";
 
     return NextResponse.json({ error: message }, { status: 500 });

@@ -9,7 +9,12 @@ import {
   OPENCRAB_LOCAL_STORE_PATH,
   OPENCRAB_RUNTIME_DIR,
 } from "@/lib/resources/runtime-paths";
-import type { AppSettings, ConversationItem, ConversationMessage } from "@/lib/seed-data";
+import type {
+  AppSettings,
+  ConversationItem,
+  ConversationMessage,
+  ConversationSource,
+} from "@/lib/seed-data";
 import type { AppSnapshot } from "@/lib/resources/opencrab-api-types";
 
 export function getSnapshot(): AppSnapshot {
@@ -65,7 +70,14 @@ export function updateFolder(folderId: string, name: string) {
   return cloneSnapshot(state);
 }
 
-export function createConversation(input?: { title?: string; folderId?: string | null }) {
+export function createConversation(input?: {
+  title?: string;
+  folderId?: string | null;
+  source?: ConversationSource | null;
+  channelLabel?: string | null;
+  remoteChatLabel?: string | null;
+  remoteUserLabel?: string | null;
+}) {
   const state = readState();
   const conversationId = createId("conversation");
   const conversation: ConversationItem = {
@@ -74,6 +86,10 @@ export function createConversation(input?: { title?: string; folderId?: string |
     timeLabel: "刚刚",
     preview: "新的对话",
     folderId: input?.folderId ?? null,
+    source: input?.source ?? "local",
+    channelLabel: input?.channelLabel ?? null,
+    remoteChatLabel: input?.remoteChatLabel ?? null,
+    remoteUserLabel: input?.remoteUserLabel ?? null,
     codexThreadId: null,
     lastAssistantModel: null,
   };
@@ -93,7 +109,16 @@ export function updateConversation(
   patch: Partial<
     Pick<
       ConversationItem,
-      "title" | "preview" | "timeLabel" | "folderId" | "codexThreadId" | "lastAssistantModel"
+      | "title"
+      | "preview"
+      | "timeLabel"
+      | "folderId"
+      | "source"
+      | "channelLabel"
+      | "remoteChatLabel"
+      | "remoteUserLabel"
+      | "codexThreadId"
+      | "lastAssistantModel"
     >
   >,
 ) {
@@ -134,6 +159,8 @@ export function addMessage(
     role: message.role,
     content: message.content,
     timestamp: message.timestamp ?? new Date().toISOString(),
+    source: message.source ?? "local",
+    remoteMessageId: message.remoteMessageId ?? null,
     attachments: message.attachments ? structuredClone(message.attachments) : undefined,
     usedAttachmentNames: message.usedAttachmentNames
       ? structuredClone(message.usedAttachmentNames)
@@ -228,6 +255,10 @@ function normalizeSnapshot(snapshot: Partial<AppSnapshot>): AppSnapshot {
     folders: structuredClone(snapshot.folders || seedFolders),
     conversations: structuredClone(snapshot.conversations || seedConversations).map((conversation) => ({
       ...conversation,
+      source: conversation.source ?? "local",
+      channelLabel: conversation.channelLabel ?? null,
+      remoteChatLabel: conversation.remoteChatLabel ?? null,
+      remoteUserLabel: conversation.remoteUserLabel ?? null,
       codexThreadId: conversation.codexThreadId ?? null,
       lastAssistantModel: conversation.lastAssistantModel ?? null,
     })),
@@ -289,6 +320,8 @@ function normalizeMessages(messages: ConversationMessage[]) {
 
     return {
       ...message,
+      source: message.source ?? "local",
+      remoteMessageId: message.remoteMessageId ?? null,
       timestamp: inferredTimestamp,
     };
   });

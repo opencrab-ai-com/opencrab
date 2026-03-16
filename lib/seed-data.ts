@@ -5,10 +5,12 @@ export type FolderItem = {
   name: string;
 };
 
+export type ConversationSource = "local" | "telegram" | "feishu";
+
 export type AttachmentItem = {
   id: string;
   name: string;
-  kind: "image" | "text";
+  kind: "image" | "text" | "file";
   size: number;
   mimeType: string;
   wasUsedInReply?: boolean;
@@ -20,6 +22,10 @@ export type ConversationItem = {
   timeLabel: string;
   preview: string;
   folderId: string | null;
+  source?: ConversationSource | null;
+  channelLabel?: string | null;
+  remoteChatLabel?: string | null;
+  remoteUserLabel?: string | null;
   codexThreadId?: string | null;
   lastAssistantModel?: string | null;
 };
@@ -50,6 +56,8 @@ export type ConversationMessage = {
   role: "user" | "assistant";
   content: string;
   timestamp?: string;
+  source?: ConversationSource | null;
+  remoteMessageId?: string | null;
   attachments?: AttachmentItem[];
   usedAttachmentNames?: string[];
   thinking?: string[];

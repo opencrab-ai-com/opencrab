@@ -24,6 +24,7 @@ components/
   sidebar/               # 左侧栏
   ui/                    # 纯展示型基础组件
 lib/
+  channels/              # 渠道协议适配、事件分发、store 与 secret store
   codex/                 # Codex SDK、浏览器连接、模型选项
   conversations/         # 会话时间与标题工具
   opencrab/              # 通用标签、错误、消息工具
@@ -40,6 +41,8 @@ scripts/
 
 - `$OPENCRAB_HOME/`
   - `local-store.json`：本地会话快照
+  - `channels.json`：渠道状态、最近事件、远程会话绑定
+  - `channel-secrets.json`：渠道密钥，服务端私有
   - `uploads/`：上传的附件与提取后的文本
   - `chrome-debug-profile/`：独立浏览器模式的 Chrome profile
 - `.playwright-cli/`：调试浏览器技能时生成的记录
@@ -82,15 +85,31 @@ scripts/
 
 这样做的目的是让浏览器连接尽可能常驻复用，而不是每轮消息都重新建 MCP 配置。
 
+## 4. Channel Flow
+
+1. 外部渠道 webhook 打到 `app/api/channels/<channel>/webhook/route.ts`
+2. 各渠道 adapter 负责协议解析、challenge / secret 校验和回推接口调用
+3. `lib/channels/dispatcher.ts` 负责去重、远程 chat 和 OpenCrab conversation 的绑定
+4. `lib/conversations/run-conversation-turn.ts` 复用现有 Codex 对话能力，产出最终回复
+5. 渠道发送成功后，把最近事件、错误和绑定关系写入 `$OPENCRAB_HOME/channels.json`
+
+设计边界：
+
+- channel secret 不进入前端 `AppSnapshot`
+- 公开状态走 `channels.json`
+- 私密配置走 `channel-secrets.json` 或环境变量
+
 ## State Boundaries
 
 - `resources`：负责持久化与读写
+- `channels`：负责 webhook 协议适配、去重、绑定关系和渠道状态
 - `provider`：负责前端应用状态与流式消息生命周期
 - `view-models`：负责把资源数据映射成左侧栏等 UI 结构
 - `ui`：只负责展示，不直接碰资源层
 
 ## Current Limitations
 
-- `Channels / 任务 / Skills` 目前还是稳定骨架页，核心实现仍以对话为主
+- `Channels` 当前只支持 Telegram / 飞书的文本消息闭环，附件、主动群发、多租户尚未实现
+- `任务 / Skills` 目前还是稳定骨架页
 - 当前持久化层仍是本地 JSON store，不是正式数据库
 - 当前没有多人协作、鉴权、云同步

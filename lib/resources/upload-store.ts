@@ -18,12 +18,28 @@ type StoredAttachment = UploadedAttachment & {
 
 export async function saveUpload(file: File) {
   const originalName = file.name || "upload";
-  const safeName = sanitizeFileName(originalName);
   const mimeType = file.type || getMimeTypeFromName(originalName);
+  const arrayBuffer = await file.arrayBuffer();
+
+  return saveUploadFromBuffer({
+    name: originalName,
+    mimeType,
+    buffer: Buffer.from(arrayBuffer),
+  });
+}
+
+export async function saveUploadFromBuffer(input: {
+  name: string;
+  mimeType?: string | null;
+  buffer: Buffer;
+}) {
+  const originalName = input.name || "upload";
+  const safeName = sanitizeFileName(originalName);
+  const mimeType = input.mimeType || getMimeTypeFromName(originalName);
   const kind = getAttachmentKind(originalName, mimeType);
 
   if (!kind) {
-    throw new Error("当前支持上传图片、文本文件、PDF 和 Word 文档。");
+    throw new Error("当前暂时无法识别这个附件类型。");
   }
 
   ensureUploadStore();
@@ -31,9 +47,8 @@ export async function saveUpload(file: File) {
   const id = `upload-${crypto.randomUUID()}`;
   const storedName = `${id}-${safeName}`;
   const storedPath = path.join(UPLOADS_DIR, storedName);
-  const arrayBuffer = await file.arrayBuffer();
 
-  await fs.writeFile(storedPath, Buffer.from(arrayBuffer));
+  await fs.writeFile(storedPath, input.buffer);
 
   const promptPath =
     kind === "text"
@@ -44,7 +59,7 @@ export async function saveUpload(file: File) {
     id,
     name: originalName,
     kind,
-    size: file.size,
+    size: input.buffer.byteLength,
     mimeType,
     storedPath,
     promptPath,
@@ -255,6 +270,10 @@ function getAttachmentKind(name: string, mimeType: string) {
     documentMimeTypes.has(mimeType)
   ) {
     return "text" as const;
+  }
+
+  if (mimeType.startsWith("application/") || mimeType.startsWith("audio/") || mimeType.startsWith("video/")) {
+    return "file" as const;
   }
 
   return null;

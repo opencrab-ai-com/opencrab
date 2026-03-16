@@ -43,6 +43,16 @@ export function ConversationThread({ conversationId, title }: ConversationThread
             <h1 className="mt-1 text-[22px] font-semibold tracking-[-0.03em] text-text">
               {detailViewModel.title}
             </h1>
+            {activeConversation?.source && activeConversation.source !== "local" ? (
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px] text-muted-strong">
+                <span className="rounded-full border border-line bg-surface px-3 py-1.5">
+                  {activeConversation.source === "telegram" ? "Telegram 对话" : "飞书对话"}
+                </span>
+                <span className="rounded-full border border-line bg-surface px-3 py-1.5">
+                  {activeConversation.remoteUserLabel || activeConversation.remoteChatLabel || "远程会话"}
+                </span>
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -56,7 +66,15 @@ export function ConversationThread({ conversationId, title }: ConversationThread
                   : "self-start border border-line bg-surface text-text shadow-soft"
               }`}
             >
-              <div className="mb-2 text-[11px] text-muted">{message.role === "user" ? "你" : "OpenCrab"}</div>
+              <div className="mb-2 text-[11px] text-muted">
+                {message.role === "assistant"
+                  ? "OpenCrab"
+                  : message.source === "telegram"
+                    ? "Telegram 用户"
+                    : message.source === "feishu"
+                      ? "飞书用户"
+                      : "你"}
+              </div>
               {message.role === "assistant" && message.thinking?.length ? (
                 <ThinkingPanel
                   entries={message.thinking}
@@ -285,6 +303,10 @@ function getAttachmentLabel(attachment: AttachmentItem) {
     attachment.mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
   ) {
     return "Word 文档";
+  }
+
+  if (attachment.kind === "file") {
+    return "文件附件";
   }
 
   return "文本附件";
