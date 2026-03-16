@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Composer } from "@/components/composer/composer";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
+import type { UploadedAttachment } from "@/lib/resources/opencrab-api-types";
 
 type HomeScreenProps = {
   title: string;
@@ -19,6 +20,7 @@ export function HomeScreen({ title, description }: HomeScreenProps) {
     setSelectedModel,
     setSelectedReasoningEffort,
     sendMessage,
+    stopMessage,
     uploadAttachments,
     isSendingMessage,
     isUploadingAttachments,
@@ -26,7 +28,7 @@ export function HomeScreen({ title, description }: HomeScreenProps) {
   } = useOpenCrabApp();
   const [draft, setDraft] = useState("");
 
-  async function handleSubmit(input: { content: string; attachmentIds: string[] }) {
+  async function handleSubmit(input: { content: string; attachments: UploadedAttachment[] }) {
     const conversationId = await sendMessage(input);
 
     if (!conversationId) {
@@ -61,11 +63,13 @@ export function HomeScreen({ title, description }: HomeScreenProps) {
             value={draft}
             onChange={setDraft}
             onSubmit={handleSubmit}
+            onStop={stopMessage}
             onUploadFiles={uploadAttachments}
             autoFocus
-            disabled={isSendingMessage || codexModels.length === 0}
+            disabled={codexModels.length === 0}
             isUploading={isUploadingAttachments}
-            submitLabel={isSendingMessage ? "发送中" : "发送"}
+            isStreaming={isSendingMessage}
+            submitLabel={isSendingMessage ? "停止回复" : "发送"}
             modelOptions={codexModels}
             selectedModel={selectedModel}
             selectedReasoningEffort={selectedReasoningEffort}

@@ -9,7 +9,7 @@ import type {
 
 export type ComposerSubmitInput = {
   content: string;
-  attachmentIds: string[];
+  attachments: UploadedAttachment[];
 };
 
 type ComposerProps = {
@@ -18,10 +18,12 @@ type ComposerProps = {
   onChange?: (value: string) => void;
   onSubmit?: (value: ComposerSubmitInput) => boolean | void | Promise<boolean | void>;
   onUploadFiles?: (files: File[]) => Promise<UploadedAttachment[]>;
+  onStop?: () => void;
   submitLabel?: string;
   autoFocus?: boolean;
   disabled?: boolean;
   isUploading?: boolean;
+  isStreaming?: boolean;
   modelOptions: CodexModelOption[];
   selectedModel: string;
   selectedReasoningEffort: CodexReasoningEffort;
@@ -35,10 +37,12 @@ export function Composer({
   onChange,
   onSubmit,
   onUploadFiles,
+  onStop,
   submitLabel = "发送",
   autoFocus = false,
   disabled = false,
   isUploading = false,
+  isStreaming = false,
   modelOptions,
   selectedModel,
   selectedReasoningEffort,
@@ -94,7 +98,7 @@ export function Composer({
 
     const result = await onSubmit?.({
       content: trimmedValue,
-      attachmentIds: attachments.map((item) => item.id),
+      attachments,
     });
 
     if (result === false) {
@@ -156,7 +160,7 @@ export function Composer({
         className="min-h-[88px] w-full resize-none border-0 bg-transparent text-[18px] leading-8 text-text outline-none placeholder:text-[#a0a097] disabled:cursor-not-allowed"
         placeholder={placeholder}
         value={currentValue}
-        disabled={disabled}
+        disabled={disabled || isStreaming}
         onChange={(event) => handleChange(event.target.value)}
         onKeyDown={(event) => {
           if (event.key === "Enter" && !event.shiftKey) {
@@ -177,7 +181,7 @@ export function Composer({
                 setActiveMenu(null);
               }}
               className="flex h-11 w-11 items-center justify-center rounded-full border border-[#0b66da] text-[#0b66da] transition hover:bg-[#eef5ff] disabled:opacity-50"
-              disabled={disabled || isUploading}
+              disabled={disabled || isUploading || isStreaming}
               aria-label="添加文件"
             >
               <PlusIcon />
@@ -230,7 +234,7 @@ export function Composer({
               setActiveMenu((current) => (current === "reasoning" ? null : "reasoning"));
               setIsUploadMenuOpen(false);
             }}
-            disabled={disabled || reasoningOptions.length === 0}
+            disabled={disabled || isStreaming || reasoningOptions.length === 0}
           >
             {reasoningOptions.map((option) => (
               <MenuItem
@@ -255,7 +259,7 @@ export function Composer({
               setActiveMenu((current) => (current === "model" ? null : "model"));
               setIsUploadMenuOpen(false);
             }}
-            disabled={disabled || modelOptions.length === 0}
+            disabled={disabled || isStreaming || modelOptions.length === 0}
           >
             {modelOptions.map((option) => (
               <MenuItem
@@ -278,12 +282,23 @@ export function Composer({
         <div className="flex items-center justify-end gap-2">
           <button
             type="button"
-            onClick={() => void handleSubmit()}
-            disabled={(!currentValue.trim() && attachments.length === 0) || disabled}
+            onClick={() => {
+              if (isStreaming) {
+                onStop?.();
+                return;
+              }
+
+              void handleSubmit();
+            }}
+            disabled={isStreaming ? false : (!currentValue.trim() && attachments.length === 0) || disabled}
             aria-label={submitLabel}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-[#111111] text-white transition hover:bg-[#262626] disabled:cursor-not-allowed disabled:bg-[#c9c9c5]"
+            className={`flex h-11 w-11 items-center justify-center rounded-full text-white transition ${
+              isStreaming
+                ? "bg-[#d45745] hover:bg-[#bf4635]"
+                : "bg-[#111111] hover:bg-[#262626] disabled:cursor-not-allowed disabled:bg-[#c9c9c5]"
+            }`}
           >
-            <SendIcon />
+            {isStreaming ? <StopIcon /> : <SendIcon />}
           </button>
         </div>
       </div>
@@ -366,6 +381,14 @@ function SendIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] stroke-current" strokeWidth="1.8">
       <path d="m5 12 13-6-3 6 3 6z" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function StopIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-[16px] w-[16px] fill-current">
+      <rect x="7" y="7" width="10" height="10" rx="2.5" />
     </svg>
   );
 }

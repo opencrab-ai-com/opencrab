@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import type { ConversationItem, ConversationMessage, FolderItem } from "@/lib/mock-data";
@@ -15,13 +16,13 @@ import {
   createFolder as createFolderResource,
   deleteConversation as deleteConversationResource,
   deleteFolder as deleteFolderResource,
-  getCodexOptions as getCodexOptionsResource,
   getAppSnapshot,
-  replyToConversation,
+  getCodexOptions as getCodexOptionsResource,
+  streamReplyToConversation,
+  updateConversation,
+  updateFolder as updateFolderResource,
   updateSettings as updateSettingsResource,
   uploadAttachments as uploadAttachmentsResource,
-  updateFolder as updateFolderResource,
-  updateConversation,
 } from "@/lib/resources/opencrab-api";
 import type {
   AppSnapshot,
@@ -29,6 +30,12 @@ import type {
   CodexReasoningEffort,
   UploadedAttachment,
 } from "@/lib/resources/opencrab-api-types";
+
+type SendMessageInput = {
+  conversationId?: string;
+  content?: string;
+  attachments?: UploadedAttachment[];
+};
 
 type OpenCrabContextValue = {
   folders: FolderItem[];
@@ -42,6 +49,7 @@ type OpenCrabContextValue = {
   isMutating: boolean;
   isSendingMessage: boolean;
   isUploadingAttachments: boolean;
+  activeStreamingConversationId: string | null;
   errorMessage: string | null;
   clearError: () => void;
   setSelectedModel: (model: string) => Promise<void>;
@@ -55,17 +63,22 @@ type OpenCrabContextValue = {
   moveConversation: (conversationId: string, folderId: string | null) => Promise<void>;
   createConversation: (input?: { title?: string; folderId?: string | null }) => Promise<string>;
   uploadAttachments: (files: File[]) => Promise<UploadedAttachment[]>;
-  sendMessage: (input: {
-    conversationId?: string;
-    content?: string;
-    attachmentIds?: string[];
-  }) => Promise<string | null>;
+  sendMessage: (input: SendMessageInput) => Promise<string | null>;
+  stopMessage: () => void;
 };
 
 const OpenCrabContext = createContext<OpenCrabContextValue | null>(null);
 
 type OpenCrabProviderProps = {
   children: React.ReactNode;
+};
+
+type ActiveStreamState = {
+  key: string;
+  conversationId: string;
+  assistantMessageId: string;
+  controller: AbortController;
+  model: string;
 };
 
 export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
@@ -83,7 +96,11 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
   const [isMutating, setIsMutating] = useState(false);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [isUploadingAttachments, setIsUploadingAttachments] = useState(false);
+  const [activeStreamingConversationId, setActiveStreamingConversationId] = useState<string | null>(
+    null,
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const activeStreamRef = useRef<ActiveStreamState | null>(null);
 
   const applySnapshot = useCallback((snapshot: AppSnapshot) => {
     setFolders(snapshot.folders);
@@ -108,6 +125,58 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     });
   }, []);
 
+  const patchConversation = useCallback(
+    (conversationId: string, patch: Partial<ConversationItem>) => {
+      setConversations((current) => {
+        const target = current.find((item) => item.id === conversationId);
+
+        if (!target) {
+          return current;
+        }
+
+        const updated = { ...target, ...patch };
+
+        return [updated, ...current.filter((item) => item.id !== conversationId)];
+      });
+    },
+    [],
+  );
+
+  const appendMessages = useCallback((conversationId: string, nextMessages: ConversationMessage[]) => {
+    setConversationMessages((current) => ({
+      ...current,
+      [conversationId]: [...(current[conversationId] ?? []), ...nextMessages],
+    }));
+  }, []);
+
+  const patchMessage = useCallback(
+    (
+      conversationId: string,
+      messageId: string,
+      updater: Partial<ConversationMessage> | ((message: ConversationMessage) => ConversationMessage),
+    ) => {
+      setConversationMessages((current) => {
+        const messages = current[conversationId] ?? [];
+
+        return {
+          ...current,
+          [conversationId]: messages.map((message) => {
+            if (message.id !== messageId) {
+              return message;
+            }
+
+            if (typeof updater === "function") {
+              return updater(message);
+            }
+
+            return { ...message, ...updater };
+          }),
+        };
+      });
+    },
+    [],
+  );
+
   useEffect(() => {
     let active = true;
 
@@ -127,8 +196,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
         const nextModel = snapshot.settings.defaultModel || codexOptions.defaultModel;
         setSelectedModelState(nextModel);
         const defaultModelOption =
-          codexOptions.models.find((item) => item.id === nextModel) ||
-          codexOptions.models[0];
+          codexOptions.models.find((item) => item.id === nextModel) || codexOptions.models[0];
 
         if (defaultModelOption) {
           setSelectedReasoningEffortState(
@@ -163,6 +231,16 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
 
   const clearError = useCallback(() => {
     setErrorMessage(null);
+  }, []);
+
+  const clearStreamState = useCallback((key: string) => {
+    if (activeStreamRef.current?.key !== key) {
+      return;
+    }
+
+    activeStreamRef.current = null;
+    setActiveStreamingConversationId(null);
+    setIsSendingMessage(false);
   }, []);
 
   const setSelectedModel = useCallback(
@@ -338,43 +416,167 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     }
   }, []);
 
-  const sendMessage = useCallback(
-    async (input: { conversationId?: string; content?: string; attachmentIds?: string[] }) => {
-      const content = input.content?.trim() || "";
-      const attachmentIds = input.attachmentIds || [];
+  const stopMessage = useCallback(() => {
+    const activeStream = activeStreamRef.current;
 
-      if (!content && attachmentIds.length === 0) {
+    if (!activeStream) {
+      return;
+    }
+
+    activeStream.controller.abort();
+    patchMessage(activeStream.conversationId, activeStream.assistantMessageId, (message) => ({
+      ...message,
+      content: message.content.trim() || "已停止当前回复。",
+      meta: `已停止 · ${activeStream.model}`,
+      status: "stopped",
+    }));
+    clearStreamState(activeStream.key);
+  }, [clearStreamState, patchMessage]);
+
+  const sendMessage = useCallback(
+    async (input: SendMessageInput) => {
+      const content = input.content?.trim() || "";
+      const attachments = input.attachments || [];
+
+      if ((!content && attachments.length === 0) || isSendingMessage) {
         return null;
       }
 
-      setIsSendingMessage(true);
       setErrorMessage(null);
 
       try {
         let conversationId = input.conversationId;
 
         if (!conversationId || !conversations.some((item) => item.id === conversationId)) {
-          const titleSource = content || "带附件的新对话";
+          const titleSource = content || attachments[0]?.name || "带附件的新对话";
           conversationId = await createConversation({ title: buildConversationTitle(titleSource) });
         }
 
-        const result = await replyToConversation(conversationId, {
-          content: content || undefined,
-          attachmentIds,
+        const userMessageId = `message-${crypto.randomUUID()}`;
+        const assistantMessageId = `message-${crypto.randomUUID()}`;
+        const streamKey = crypto.randomUUID();
+        const controller = new AbortController();
+        activeStreamRef.current = {
+          key: streamKey,
+          conversationId,
+          assistantMessageId,
+          controller,
           model: selectedModel,
-          reasoningEffort: selectedReasoningEffort,
+        };
+        setActiveStreamingConversationId(conversationId);
+        setIsSendingMessage(true);
+
+        const preview = buildUserMessagePreview(content, attachments.map((attachment) => attachment.name));
+        patchConversation(conversationId, {
+          preview,
+          timeLabel: "刚刚",
         });
-        applySnapshot(result.snapshot);
+        appendMessages(conversationId, [
+          {
+            id: userMessageId,
+            role: "user",
+            content: preview,
+            attachments: attachments.map((attachment) => ({
+              id: attachment.id,
+              name: attachment.name,
+              kind: attachment.kind,
+              size: attachment.size,
+              mimeType: attachment.mimeType,
+            })),
+            meta: formatClientMessageTime(),
+            status: "done",
+          },
+          {
+            id: assistantMessageId,
+            role: "assistant",
+            content: "",
+            thinking: ["OpenCrab 正在思考和整理上下文..."],
+            meta: `OpenCrab 正在回复中... · ${selectedModel}`,
+            status: "pending",
+          },
+        ]);
+
+        void streamReplyToConversation(
+          conversationId,
+          {
+            content: content || undefined,
+            attachmentIds: attachments.map((attachment) => attachment.id),
+            model: selectedModel,
+            reasoningEffort: selectedReasoningEffort,
+            userMessageId,
+            assistantMessageId,
+          },
+          {
+            signal: controller.signal,
+            onEvent: (event) => {
+              if (event.type === "thinking") {
+                patchMessage(conversationId, assistantMessageId, {
+                  thinking: event.entries,
+                });
+                return;
+              }
+
+              if (event.type === "assistant") {
+                patchMessage(conversationId, assistantMessageId, {
+                  content: event.text,
+                  meta: `OpenCrab 正在回复中... · ${selectedModel}`,
+                  status: "pending",
+                });
+                return;
+              }
+
+              if (event.type === "done") {
+                applySnapshot(event.snapshot);
+                clearStreamState(streamKey);
+                return;
+              }
+
+              patchMessage(conversationId, assistantMessageId, (message) => ({
+                ...message,
+                content: message.content.trim() || "这次回复失败了，请重试。",
+                meta: `回复失败 · ${selectedModel}`,
+                status: "stopped",
+              }));
+              setErrorMessage(event.error);
+              clearStreamState(streamKey);
+            },
+          },
+        ).catch((error) => {
+          if (controller.signal.aborted) {
+            return;
+          }
+
+          patchMessage(conversationId, assistantMessageId, (message) => ({
+            ...message,
+            content: message.content.trim() || "这次回复失败了，请重试。",
+            meta: `回复失败 · ${selectedModel}`,
+            status: "stopped",
+          }));
+          setErrorMessage(error instanceof Error ? error.message : "消息发送失败，请稍后再试。");
+          clearStreamState(streamKey);
+        });
 
         return conversationId;
       } catch (error) {
         setErrorMessage(error instanceof Error ? error.message : "消息发送失败，请稍后再试。");
-        return null;
-      } finally {
         setIsSendingMessage(false);
+        setActiveStreamingConversationId(null);
+        activeStreamRef.current = null;
+        return null;
       }
     },
-    [applySnapshot, conversations, createConversation, selectedModel, selectedReasoningEffort],
+    [
+      appendMessages,
+      applySnapshot,
+      clearStreamState,
+      conversations,
+      createConversation,
+      isSendingMessage,
+      patchConversation,
+      patchMessage,
+      selectedModel,
+      selectedReasoningEffort,
+    ],
   );
 
   const value = useMemo<OpenCrabContextValue>(
@@ -390,6 +592,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       isMutating,
       isSendingMessage,
       isUploadingAttachments,
+      activeStreamingConversationId,
       errorMessage,
       clearError,
       setSelectedModel,
@@ -404,6 +607,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       createConversation,
       uploadAttachments,
       sendMessage,
+      stopMessage,
     }),
     [
       folders,
@@ -417,6 +621,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       isMutating,
       isSendingMessage,
       isUploadingAttachments,
+      activeStreamingConversationId,
       errorMessage,
       clearError,
       setSelectedModel,
@@ -431,6 +636,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       createConversation,
       uploadAttachments,
       sendMessage,
+      stopMessage,
     ],
   );
 
@@ -445,4 +651,27 @@ export function useOpenCrabApp() {
   }
 
   return context;
+}
+
+function buildUserMessagePreview(content: string, attachmentNames: string[]) {
+  const parts = [];
+
+  if (content) {
+    parts.push(content);
+  }
+
+  if (attachmentNames.length > 0) {
+    parts.push(`附件：${attachmentNames.join("、")}`);
+  }
+
+  return parts.join("\n");
+}
+
+function formatClientMessageTime() {
+  const time = new Intl.DateTimeFormat("zh-CN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date());
+
+  return `今天 ${time}`;
 }

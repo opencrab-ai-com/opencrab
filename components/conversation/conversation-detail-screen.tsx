@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Composer } from "@/components/composer/composer";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
 import { ConversationThread } from "@/components/conversation/conversation-thread";
+import type { UploadedAttachment } from "@/lib/resources/opencrab-api-types";
 
 type ConversationDetailScreenProps = {
   conversationId: string;
@@ -20,6 +21,7 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
     isHydrated,
     isSendingMessage,
     isUploadingAttachments,
+    stopMessage,
     errorMessage,
     sendMessage,
     uploadAttachments,
@@ -49,7 +51,7 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
     );
   }
 
-  async function handleSubmit(input: { content: string; attachmentIds: string[] }) {
+  async function handleSubmit(input: { content: string; attachments: UploadedAttachment[] }) {
     const nextConversationId = await sendMessage({ conversationId, ...input });
 
     if (!nextConversationId) {
@@ -75,10 +77,12 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
             value={draft}
             onChange={setDraft}
             onSubmit={handleSubmit}
+            onStop={stopMessage}
             onUploadFiles={uploadAttachments}
-            disabled={isSendingMessage || codexModels.length === 0}
+            disabled={codexModels.length === 0}
             isUploading={isUploadingAttachments}
-            submitLabel={isSendingMessage ? "发送中" : "发送"}
+            isStreaming={isSendingMessage}
+            submitLabel={isSendingMessage ? "停止回复" : "发送"}
             modelOptions={codexModels}
             selectedModel={selectedModel}
             selectedReasoningEffort={selectedReasoningEffort}

@@ -43,3 +43,32 @@ export type SnapshotMutationResult = {
 export type CreateConversationResult = SnapshotMutationResult & {
   conversationId: string;
 };
+
+export type ReplyStreamEvent =
+  | {
+      type: "thinking";
+      entries: string[];
+    }
+  | {
+      type: "assistant";
+      text: string;
+    }
+  | {
+      type: "done";
+      snapshot: AppSnapshot;
+      assistant: {
+        text: string;
+        model: string;
+        threadId: string | null;
+        usage: {
+          input_tokens: number;
+          cached_input_tokens: number;
+          output_tokens: number;
+        } | null;
+        thinking: string[];
+      };
+    }
+  | {
+      type: "error";
+      error: string;
+    };

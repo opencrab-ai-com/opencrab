@@ -23,6 +23,34 @@ type GenerateCodexReplyInput = {
   reasoningEffort?: CodexReasoningEffort;
 };
 
+type StreamCodexReplyInput = GenerateCodexReplyInput & {
+  signal?: AbortSignal;
+};
+
+type CodexUsage = {
+  input_tokens: number;
+  cached_input_tokens: number;
+  output_tokens: number;
+} | null;
+
+export type CodexReplyStreamEvent =
+  | {
+      type: "thinking";
+      entries: string[];
+    }
+  | {
+      type: "assistant";
+      text: string;
+    }
+  | {
+      type: "done";
+      text: string;
+      threadId: string | null;
+      model: string;
+      usage: CodexUsage;
+      thinking: string[];
+    };
+
 export async function generateCodexReply({
   conversationTitle,
   threadId,
@@ -86,9 +114,114 @@ export async function getCodexStatus() {
   };
 }
 
+export async function* streamCodexReply({
+  conversationTitle,
+  threadId,
+  content,
+  imagePaths = [],
+  textAttachments = [],
+  model,
+  reasoningEffort,
+  signal,
+}: StreamCodexReplyInput): AsyncGenerator<CodexReplyStreamEvent> {
+  const codex = getCodexClient();
+  const thread = threadId
+    ? codex.resumeThread(threadId, buildThreadOptions({ model, reasoningEffort }))
+    : codex.startThread(buildThreadOptions({ model, reasoningEffort }));
+
+  const prompt = buildPrompt({
+    conversationTitle,
+    content,
+    textAttachments,
+  });
+
+  const { events } = await thread.runStreamed(
+    [
+      {
+        type: "text",
+        text: prompt,
+      },
+      ...imagePaths.map((path) => ({
+        type: "local_image" as const,
+        path,
+      })),
+    ],
+    { signal },
+  );
+
+  const thinkingMap = new Map<string, string>();
+  let lastThinkingPayload = "";
+  let assistantText = "";
+  let usage: CodexUsage = null;
+
+  for await (const event of events) {
+    if (event.type === "turn.failed" || event.type === "error") {
+      throw new Error(event.type === "error" ? event.message : event.error.message);
+    }
+
+    if (event.type === "turn.completed") {
+      usage = event.usage;
+      continue;
+    }
+
+    if (event.type !== "item.started" && event.type !== "item.updated" && event.type !== "item.completed") {
+      continue;
+    }
+
+    const item = event.item;
+
+    if (item.type === "agent_message") {
+      if (item.text !== assistantText) {
+        assistantText = item.text;
+        yield {
+          type: "assistant",
+          text: assistantText,
+        };
+      }
+      continue;
+    }
+
+    const nextThinkingEntry = getThinkingEntry(item);
+
+    if (!nextThinkingEntry) {
+      continue;
+    }
+
+    thinkingMap.set(item.id, nextThinkingEntry);
+    const entries = Array.from(thinkingMap.values());
+    const serialized = JSON.stringify(entries);
+
+    if (serialized !== lastThinkingPayload) {
+      lastThinkingPayload = serialized;
+      yield {
+        type: "thinking",
+        entries,
+      };
+    }
+  }
+
+  const text = assistantText.trim();
+
+  if (!text) {
+    throw new Error("Codex SDK 未返回可用内容。");
+  }
+
+  yield {
+    type: "done",
+    text,
+    threadId: thread.id,
+    model: model || DEFAULT_MODEL,
+    usage,
+    thinking: Array.from(thinkingMap.values()),
+  };
+}
+
 function getCodexClient() {
   return new Codex({
     env: buildChatGptLoginEnv(),
+    config: {
+      show_raw_agent_reasoning: true,
+    },
   });
 }
 
@@ -164,5 +297,55 @@ function normalizeSandboxMode(value: string | undefined) {
       return value;
     default:
       return "read-only" as const;
+  }
+}
+
+function getThinkingEntry(item: {
+  type: string;
+  id: string;
+  text?: string;
+  status?: string;
+  command?: string;
+  query?: string;
+  server?: string;
+  tool?: string;
+  message?: string;
+  items?: Array<{ text: string; completed: boolean }>;
+}) {
+  switch (item.type) {
+    case "reasoning":
+      return item.text?.trim() || null;
+    case "command_execution":
+      if (!item.command) {
+        return null;
+      }
+
+      if (item.status === "failed") {
+        return `正在执行命令，但上一次尝试失败：${item.command}`;
+      }
+
+      if (item.status === "completed") {
+        return `已完成一项命令执行：${item.command}`;
+      }
+
+      return `正在执行命令：${item.command}`;
+    case "web_search":
+      return item.query ? `正在检索资料：${item.query}` : null;
+    case "mcp_tool_call":
+      if (!item.server || !item.tool) {
+        return null;
+      }
+
+      return `正在调用工具：${item.server} / ${item.tool}`;
+    case "todo_list":
+      return item.items?.length
+        ? `正在规划步骤：${item.items
+            .map((todo) => `${todo.completed ? "已完成" : "待处理"} ${todo.text}`)
+            .join("；")}`
+        : null;
+    case "error":
+      return item.message ? `遇到一个中间错误：${item.message}` : null;
+    default:
+      return null;
   }
 }

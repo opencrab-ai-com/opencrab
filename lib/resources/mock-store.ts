@@ -134,6 +134,7 @@ export function addMessage(
     role: message.role,
     content: message.content,
     attachments: message.attachments ? structuredClone(message.attachments) : undefined,
+    thinking: message.thinking ? structuredClone(message.thinking) : undefined,
     meta: message.meta,
     status: message.status,
   };

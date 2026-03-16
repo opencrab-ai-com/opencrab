@@ -57,7 +57,27 @@ export function ConversationThread({ conversationId, title }: ConversationThread
               }`}
             >
               <div className="mb-2 text-xs text-muted">{message.role === "user" ? "你" : "OpenCrab"}</div>
-              <p className="whitespace-pre-wrap text-[15px] leading-7">{message.content}</p>
+              {message.role === "assistant" && message.thinking?.length ? (
+                <div className="mb-3 rounded-[18px] border border-dashed border-line bg-surface-muted px-4 py-3">
+                  <div className="mb-2 flex items-center gap-2 text-[12px] font-medium text-muted-strong">
+                    <ThinkingSpinner isActive={message.status === "pending"} />
+                    <span>{message.status === "pending" ? "Thinking" : "本轮思考过程"}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {message.thinking.map((entry, index) => (
+                      <p key={`${message.id}-thinking-${index}`} className="whitespace-pre-wrap text-[13px] leading-6 text-muted-strong">
+                        {entry}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {message.content ? (
+                <p className="whitespace-pre-wrap text-[15px] leading-7">{message.content}</p>
+              ) : message.role === "assistant" && message.status === "pending" ? (
+                <p className="text-[15px] leading-7 text-muted-strong">OpenCrab 正在回复中...</p>
+              ) : null}
               {message.attachments?.length ? (
                 <div className="mt-3 flex flex-wrap gap-3">
                   {message.attachments.map((attachment) => (
@@ -65,7 +85,12 @@ export function ConversationThread({ conversationId, title }: ConversationThread
                   ))}
                 </div>
               ) : null}
-              {message.meta ? <div className="mt-3 text-xs text-muted">{message.meta}</div> : null}
+              {message.meta ? (
+                <div className="mt-3 flex items-center gap-2 text-xs text-muted">
+                  {message.role === "assistant" && message.status === "pending" ? <ThinkingSpinner isActive /> : null}
+                  <span>{message.meta}</span>
+                </div>
+              ) : null}
             </article>
           ))}
           <div ref={bottomRef} />
@@ -120,5 +145,19 @@ function TextFileIcon() {
       <path d="M11 2.5V6h3.5" />
       <path d="M7.5 9h5M7.5 12h5M7.5 15H11" strokeLinecap="round" />
     </svg>
+  );
+}
+
+function ThinkingSpinner({ isActive = false }: { isActive?: boolean }) {
+  return (
+    <span className="flex items-center gap-1">
+      <span className={`h-1.5 w-1.5 rounded-full bg-current ${isActive ? "animate-pulse" : "opacity-70"}`} />
+      <span
+        className={`h-1.5 w-1.5 rounded-full bg-current ${isActive ? "animate-pulse [animation-delay:120ms]" : "opacity-50"}`}
+      />
+      <span
+        className={`h-1.5 w-1.5 rounded-full bg-current ${isActive ? "animate-pulse [animation-delay:240ms]" : "opacity-30"}`}
+      />
+    </span>
   );
 }

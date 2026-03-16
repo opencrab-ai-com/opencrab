@@ -49,8 +49,9 @@ export type ConversationMessage = {
   role: "user" | "assistant";
   content: string;
   attachments?: AttachmentItem[];
+  thinking?: string[];
   meta?: string;
-  status?: "pending" | "done";
+  status?: "pending" | "done" | "stopped";
 };
 
 export type AppSettings = {

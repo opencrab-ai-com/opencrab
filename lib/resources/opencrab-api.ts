@@ -3,6 +3,7 @@ import type {
   CodexOptionsResponse,
   CodexReasoningEffort,
   CreateConversationResult,
+  ReplyStreamEvent,
   SnapshotMutationResult,
   UploadedAttachment,
 } from "@/lib/resources/opencrab-api-types";
@@ -135,6 +136,80 @@ export async function replyToConversation(
     method: "POST",
     body: JSON.stringify(input),
   });
+}
+
+export async function streamReplyToConversation(
+  conversationId: string,
+  input: {
+    content?: string;
+    model: string;
+    reasoningEffort: CodexReasoningEffort;
+    attachmentIds?: string[];
+    userMessageId: string;
+    assistantMessageId: string;
+  },
+  options: {
+    signal?: AbortSignal;
+    onEvent: (event: ReplyStreamEvent) => void;
+  },
+) {
+  const response = await fetch(`/api/conversations/${conversationId}/reply/stream`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+    signal: options.signal,
+  });
+
+  if (!response.ok) {
+    try {
+      const error = (await response.json()) as { error?: string };
+      throw new Error(error.error || `API request failed: ${response.status}`);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+
+      throw new Error(`API request failed: ${response.status}`);
+    }
+  }
+
+  if (!response.body) {
+    throw new Error("流式响应不可用，请稍后再试。");
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+
+    if (done) {
+      break;
+    }
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+
+      if (!trimmedLine) {
+        continue;
+      }
+
+      options.onEvent(JSON.parse(trimmedLine) as ReplyStreamEvent);
+    }
+  }
+
+  const lastLine = buffer.trim();
+
+  if (lastLine) {
+    options.onEvent(JSON.parse(lastLine) as ReplyStreamEvent);
+  }
 }
 
 async function request<T>(input: string, init: RequestInit) {
