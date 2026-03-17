@@ -3,7 +3,7 @@
 ## Requirements
 
 - macOS
-- Node.js 18+
+- Node.js `20.9+`
 - 已安装并可执行 `codex`
 - 已完成 `codex login`
 
@@ -47,8 +47,11 @@ OpenCrab 自己的运行时数据会写到：
 - `local-store.json`
 - `channels.json`
 - `channel-secrets.json`
+- `runtime-config.json`
+- `skills.json`
 - `uploads/`
 - `uploads/index.json`
+- `tunnels/`
 - `chrome-debug-profile/`
 
 如果你想一键清理这些本地运行产物：
@@ -61,6 +64,11 @@ npm run clean:runtime
 
 `Channels` 第一版支持 Telegram 和飞书。
 
+当前行为：
+
+- Telegram：通过 webhook 接入，自动尝试配置公网地址；支持文本、图片和文件消息
+- 飞书：默认通过长连接接入；Webhook 只保留兼容模式，当前主要支持文本消息
+
 常用环境变量：
 
 - `OPENCRAB_PUBLIC_BASE_URL`
@@ -69,8 +77,14 @@ npm run clean:runtime
 - `OPENCRAB_FEISHU_APP_ID`
 - `OPENCRAB_FEISHU_APP_SECRET`
 - `OPENCRAB_FEISHU_VERIFICATION_TOKEN`
+- `OPENCRAB_FEISHU_ENCRYPT_KEY`
 
 也可以直接在 UI 的 `/channels/telegram` 和 `/channels/feishu` 页面里保存配置。
+
+如果你主要在本机调试：
+
+- Telegram 仍然需要一个可被 Telegram 访问到的公网地址
+- 飞书长连接模式不需要公网地址
 
 ## Debugging Codex
 
@@ -109,3 +123,4 @@ codex login status
 
 - PDF 目前支持可提取文字的 PDF，不支持纯扫描 OCR
 - Word 提取依赖 macOS 自带 `textutil`
+- Telegram 渠道会把图片和文件下载进 OpenCrab 的上传存储，再参与后续回复

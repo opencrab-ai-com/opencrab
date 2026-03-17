@@ -24,11 +24,18 @@ export function buildSidebarViewModel(input: {
   conversationMessages: Record<string, ConversationMessage[]>;
   expandedFolders: Record<string, boolean>;
 }): SidebarViewModel {
+  const conversationOrder = new Map(
+    input.conversations.map((conversation, index) => [conversation.id, index]),
+  );
+  const latestTimestampMap = new Map(
+    input.conversations.map((conversation) => [
+      conversation.id,
+      getConversationLatestTimestamp(input.conversationMessages[conversation.id] ?? []),
+    ]),
+  );
+
   const enhanceConversation = (conversation: ConversationItem) => {
-    const messages = input.conversationMessages[conversation.id] ?? [];
-    const lastTimestamp = [...messages]
-      .reverse()
-      .find((message) => Boolean(message.timestamp))?.timestamp;
+    const lastTimestamp = latestTimestampMap.get(conversation.id) ?? null;
 
     return {
       ...conversation,
@@ -40,14 +47,24 @@ export function buildSidebarViewModel(input: {
 
   const sortByLatest = (items: ConversationItem[]) =>
     [...items].sort((left, right) => {
-      const leftMessages = input.conversationMessages[left.id] ?? [];
-      const rightMessages = input.conversationMessages[right.id] ?? [];
-      const leftTimestamp = [...leftMessages].reverse().find((message) => Boolean(message.timestamp))?.timestamp;
-      const rightTimestamp = [...rightMessages].reverse().find((message) => Boolean(message.timestamp))?.timestamp;
-      const leftValue = leftTimestamp ? new Date(leftTimestamp).getTime() : 0;
-      const rightValue = rightTimestamp ? new Date(rightTimestamp).getTime() : 0;
+      const leftTimestamp = latestTimestampMap.get(left.id) ?? null;
+      const rightTimestamp = latestTimestampMap.get(right.id) ?? null;
+      const leftValue = leftTimestamp ? new Date(leftTimestamp).getTime() : null;
+      const rightValue = rightTimestamp ? new Date(rightTimestamp).getTime() : null;
 
-      return rightValue - leftValue;
+      if (leftValue !== null && rightValue !== null && leftValue !== rightValue) {
+        return rightValue - leftValue;
+      }
+
+      if (leftValue !== null && rightValue === null) {
+        return -1;
+      }
+
+      if (leftValue === null && rightValue !== null) {
+        return 1;
+      }
+
+      return (conversationOrder.get(left.id) ?? 0) - (conversationOrder.get(right.id) ?? 0);
     });
 
   const recentConversations = sortByLatest(
@@ -66,6 +83,16 @@ export function buildSidebarViewModel(input: {
     folders,
     recentConversations,
   };
+}
+
+function getConversationLatestTimestamp(messages: ConversationMessage[]) {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    if (messages[index]?.timestamp) {
+      return messages[index].timestamp ?? null;
+    }
+  }
+
+  return null;
 }
 
 export function buildConversationDetailViewModel(input: {

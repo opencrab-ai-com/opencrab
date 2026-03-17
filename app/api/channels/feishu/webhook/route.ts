@@ -1,19 +1,16 @@
 import { NextResponse } from "next/server";
-import { findEventByDedupeKey, markChannelError } from "@/lib/channels/channel-store";
-import {
-  handleInboundChannelTextMessage,
-  recordIgnoredInboundEvent,
-  recordOutboundDelivery,
-} from "@/lib/channels/dispatcher";
+import { markChannelError } from "@/lib/channels/channel-store";
 import {
   assertFeishuWebhookAuth,
+  normalizeFeishuWebhookBody,
   parseFeishuWebhook,
-  sendFeishuTextMessage,
 } from "@/lib/channels/feishu";
+import { enqueueFeishuInboundMessage } from "@/lib/channels/feishu-inbound";
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as Record<string, unknown>;
+    const rawBody = (await request.json()) as Record<string, unknown>;
+    const body = normalizeFeishuWebhookBody(rawBody, request.headers);
 
     assertFeishuWebhookAuth(body);
 
@@ -29,32 +26,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true, ignored: true });
     }
 
-    if (findEventByDedupeKey("feishu", parsed.dedupeKey)) {
-      recordIgnoredInboundEvent({
-        channelId: "feishu",
-        dedupeKey: parsed.dedupeKey,
-        remoteChatId: parsed.remoteChatId,
-        remoteMessageId: parsed.remoteMessageId,
-        summary: "重复飞书事件，已忽略。",
-      });
-
-      return NextResponse.json({ ok: true, duplicate: true });
-    }
-
-    const handled = await handleInboundChannelTextMessage({
-      channelId: "feishu",
-      ...parsed,
-    });
-    const delivery = await sendFeishuTextMessage(parsed.remoteChatId, handled.replyText);
-
-    recordOutboundDelivery({
-      channelId: "feishu",
-      binding: handled.binding,
-      remoteMessageId: delivery.remoteMessageId,
-      text: handled.replyText,
-    });
-
-    return NextResponse.json({ ok: true });
+    return NextResponse.json(enqueueFeishuInboundMessage(parsed));
   } catch (error) {
     const message = error instanceof Error ? error.message : "飞书 webhook 处理失败。";
     markChannelError("feishu", message);

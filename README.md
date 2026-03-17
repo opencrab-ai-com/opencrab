@@ -36,7 +36,8 @@ OpenCrab 是一个面向普通用户的、本地优先的 Codex 工作台。
 - 支持文件夹管理对话，整体交互接近大家熟悉的 ChatGPT 形态
 - 支持图片、文件上传，以及常见文档格式的文本提取
 - 支持浏览器工具接入，覆盖 current-browser 和 managed-browser 两种模式
-- 已支持 Telegram 和飞书渠道接入，包括 webhook 入站、会话绑定和消息回推
+- 已支持 Telegram 和飞书渠道接入：Telegram 走 webhook，飞书默认走长连接
+- 支持 Skills 目录浏览、详情查看、状态管理和自定义技能条目
 - 运行时数据和 secret 默认保存在仓库之外
 
 ## 快速开始
@@ -82,12 +83,18 @@ OPENCRAB_TELEGRAM_WEBHOOK_SECRET=
 OPENCRAB_FEISHU_APP_ID=
 OPENCRAB_FEISHU_APP_SECRET=
 OPENCRAB_FEISHU_VERIFICATION_TOKEN=
+OPENCRAB_FEISHU_ENCRYPT_KEY=
 ```
 
 也可以直接在这些页面里配置：
 
 - `/channels/telegram`
 - `/channels/feishu`
+
+说明：
+
+- Telegram 需要公网地址来接 webhook，OpenCrab 会尽量自动处理这一步
+- 飞书默认使用长连接，不需要公网地址；兼容 Webhook 模式时需要同时提供 `OPENCRAB_FEISHU_VERIFICATION_TOKEN` 和 `OPENCRAB_FEISHU_ENCRYPT_KEY`
 
 ## 运行时数据
 
@@ -106,8 +113,11 @@ $OPENCRAB_HOME/
   local-store.json
   channels.json
   channel-secrets.json
+  runtime-config.json
+  skills.json
   uploads/
   uploads/index.json
+  tunnels/
   chrome-debug-profile/
 ```
 
@@ -124,7 +134,7 @@ $OPENCRAB_HOME/
 
 目前最完整的部分还是对话主链路。
 
-`Channels` 已经支持 Telegram 和飞书的一版可用接入流程。`任务` 和 `Skills` 目前还主要是产品骨架，还不是完整功能区。
+`Channels` 已经支持 Telegram 和飞书的一版可用接入流程，其中 Telegram 已支持文本、图片和文件消息的入站与回推，飞书当前以文本消息闭环为主。`Skills` 已经具备目录浏览、详情查看、启用/禁用/卸载状态和自定义条目管理；`任务` 仍然主要是产品骨架。
 
 ## 许可证
 

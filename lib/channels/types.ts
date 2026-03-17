@@ -10,6 +10,10 @@ export type ChannelConfigSummary = {
   webhookPath: string;
   webhookUrl: string | null;
   currentWebhookUrl?: string | null;
+  connectionMode?: "webhook" | "websocket";
+  socketStatus?: "idle" | "connecting" | "connected" | "error";
+  socketConnected?: boolean;
+  lastSocketConnectedAt?: string | null;
   botUsername?: string | null;
   appId?: string | null;
   credentialsVerified?: boolean;
@@ -23,6 +27,7 @@ export type ChannelConfigSummary = {
   hasAppId?: boolean;
   hasAppSecret?: boolean;
   hasVerificationToken?: boolean;
+  hasEncryptKey?: boolean;
 };
 
 export type ChannelRecord = {
@@ -105,6 +110,7 @@ export type FeishuSecrets = {
   appId?: string;
   appSecret?: string;
   verificationToken?: string;
+  encryptKey?: string;
 };
 
 export type ChannelSecretsStore = {

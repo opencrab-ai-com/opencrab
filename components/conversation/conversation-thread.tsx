@@ -97,10 +97,14 @@ export function ConversationThread({ conversationId, title }: ConversationThread
             {activeConversation?.source && activeConversation.source !== "local" ? (
               <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px] text-muted-strong">
                 <span className="rounded-full border border-line bg-surface px-3 py-1.5">
-                  {activeConversation.source === "telegram" ? "Telegram 对话" : "飞书对话"}
+                  {getConversationSourceLabel(activeConversation.source)}
                 </span>
                 <span className="rounded-full border border-line bg-surface px-3 py-1.5">
-                  {activeConversation.remoteUserLabel || activeConversation.remoteChatLabel || "远程会话"}
+                  {activeConversation.source === "task"
+                    ? activeConversation.remoteUserLabel || activeConversation.title
+                    : activeConversation.remoteUserLabel ||
+                      activeConversation.remoteChatLabel ||
+                      "远程会话"}
                 </span>
               </div>
             ) : null}
@@ -124,6 +128,8 @@ export function ConversationThread({ conversationId, title }: ConversationThread
                     ? "Telegram 用户"
                     : message.source === "feishu"
                       ? "飞书用户"
+                      : message.source === "task"
+                        ? "定时任务"
                       : "你"}
               </div>
               {message.role === "assistant" && message.thinking?.length ? (
@@ -174,6 +180,18 @@ export function ConversationThread({ conversationId, title }: ConversationThread
       </div>
     </div>
   );
+}
+
+function getConversationSourceLabel(source: "telegram" | "feishu" | "task") {
+  if (source === "telegram") {
+    return "Telegram 对话";
+  }
+
+  if (source === "feishu") {
+    return "飞书对话";
+  }
+
+  return "定时任务";
 }
 
 function AttachmentCard({ attachment }: { attachment: AttachmentItem }) {

@@ -86,7 +86,8 @@ function getLocalOpenCrabUrl() {
 }
 
 function getTunnelProviderCandidates(): ManagedTunnelProvider[] {
-  return ["cloudflared", "localtunnel"].filter((provider) => isTunnelProviderAvailable(provider));
+  const providers: ManagedTunnelProvider[] = ["cloudflared", "localtunnel"];
+  return providers.filter((provider) => isTunnelProviderAvailable(provider));
 }
 
 async function startManagedTunnel(provider: ManagedTunnelProvider, localUrl: string) {

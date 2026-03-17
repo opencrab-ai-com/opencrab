@@ -114,3 +114,105 @@ export type ReplyStreamEvent =
       type: "error";
       error: string;
     };
+
+export type SkillStatus = "available" | "installed" | "disabled";
+export type SkillOrigin = "codex" | "recommended" | "custom";
+export type SkillAction = "install" | "disable" | "enable" | "uninstall";
+
+export type SkillIconName =
+  | "image"
+  | "book"
+  | "pdf"
+  | "playwright"
+  | "camera"
+  | "puzzle"
+  | "mic"
+  | "sora"
+  | "dotnet"
+  | "cloud"
+  | "doc"
+  | "figma"
+  | "cube"
+  | "gamepad"
+  | "github";
+
+export type SkillRecord = {
+  id: string;
+  name: string;
+  summary: string;
+  status: SkillStatus;
+  statusLabel: string;
+  origin: SkillOrigin;
+  originLabel: string;
+  icon: SkillIconName;
+  sourcePath: string | null;
+  detailsMarkdown: string | null;
+  note: string;
+  updatedAt: string | null;
+  isCustom: boolean;
+};
+
+export type SkillsCatalogResponse = {
+  skills: SkillRecord[];
+};
+
+export type SkillDetailResponse = {
+  skill: SkillRecord | null;
+};
+
+export type TaskSchedulePreset = "daily" | "weekdays" | "weekly" | "interval";
+export type TaskStatus = "active" | "paused";
+export type TaskRunStatus = "running" | "success" | "error";
+
+export type TaskSchedule = {
+  preset: TaskSchedulePreset;
+  time?: string | null;
+  weekday?: number | null;
+  intervalHours?: number | null;
+};
+
+export type TaskRunRecord = {
+  id: string;
+  taskId: string;
+  status: TaskRunStatus;
+  startedAt: string;
+  finishedAt: string | null;
+  summary: string | null;
+  errorMessage: string | null;
+  conversationId: string | null;
+};
+
+export type TaskRecord = {
+  id: string;
+  name: string;
+  prompt: string;
+  schedule: TaskSchedule;
+  status: TaskStatus;
+  isRunning: boolean;
+  timezone: string | null;
+  conversationId: string | null;
+  nextRunAt: string | null;
+  lastRunAt: string | null;
+  lastRunStatus: TaskRunStatus | null;
+  lastRunPreview: string | null;
+  lastError: string | null;
+  createdAt: string;
+  updatedAt: string;
+  scheduleLabel: string;
+  nextRunLabel: string;
+  lastRunLabel: string;
+  runCount: number;
+};
+
+export type TaskDetail = TaskRecord & {
+  conversation: ConversationItem | null;
+  runs: TaskRunRecord[];
+};
+
+export type TaskListResponse = {
+  tasks: TaskRecord[];
+};
+
+export type TaskDetailResponse = {
+  task: TaskDetail | null;
+};

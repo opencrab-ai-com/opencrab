@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { OpenCrabMark, OpenCrabWordmark } from "@/components/branding/opencrab-brand";
 import { Composer } from "@/components/composer/composer";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
@@ -10,6 +9,7 @@ import {
   formatReasoningEffortLabel,
   formatSandboxModeLabel,
 } from "@/lib/opencrab/labels";
+import { usePersistedDraft } from "@/lib/opencrab/use-persisted-draft";
 import type { UploadedAttachment } from "@/lib/resources/opencrab-api-types";
 
 type HomeScreenProps = {
@@ -34,7 +34,7 @@ export function HomeScreen({ title, description }: HomeScreenProps) {
     isUploadingAttachments,
     errorMessage,
   } = useOpenCrabApp();
-  const [draft, setDraft] = useState("");
+  const { draft, setDraft, clearDraft } = usePersistedDraft("opencrab:draft:home");
 
   async function handleSubmit(input: { content: string; attachments: UploadedAttachment[] }) {
     const conversationId = await sendMessage(input);
@@ -43,7 +43,7 @@ export function HomeScreen({ title, description }: HomeScreenProps) {
       return false;
     }
 
-    setDraft("");
+    clearDraft();
     router.push(`/conversations/${conversationId}`);
     return true;
   }

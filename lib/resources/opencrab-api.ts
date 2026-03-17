@@ -2,13 +2,20 @@ import type {
   AppSnapshot,
   BrowserConnectionMode,
   CodexBrowserSessionStatus,
-  CodexStatusResponse,
   CodexOptionsResponse,
   CodexReasoningEffort,
   CodexSandboxMode,
+  CodexStatusResponse,
   CreateConversationResult,
   ReplyStreamEvent,
+  SkillAction,
+  SkillDetailResponse,
+  SkillsCatalogResponse,
   SnapshotMutationResult,
+  TaskDetailResponse,
+  TaskListResponse,
+  TaskSchedule,
+  TaskStatus,
   UploadedAttachment,
 } from "@/lib/resources/opencrab-api-types";
 import type { ConversationMessage } from "@/lib/seed-data";
@@ -45,6 +52,88 @@ export async function getCodexStatus() {
 export async function getCodexBrowserSessionStatus() {
   return request<CodexBrowserSessionStatus>("/api/codex/browser-session", {
     method: "GET",
+  });
+}
+
+export async function getSkillsCatalog() {
+  return request<SkillsCatalogResponse>("/api/skills", {
+    method: "GET",
+  });
+}
+
+export async function getSkillDetail(skillId: string) {
+  return request<SkillDetailResponse>(`/api/skills/${skillId}`, {
+    method: "GET",
+  });
+}
+
+export async function createSkill(input: {
+  name: string;
+  summary: string;
+  detailsMarkdown?: string;
+}) {
+  return request<SkillDetailResponse>("/api/skills", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function mutateSkill(skillId: string, action: SkillAction) {
+  return request<SkillDetailResponse>(`/api/skills/${skillId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ action }),
+  });
+}
+
+export async function getTasks() {
+  return request<TaskListResponse>("/api/tasks", {
+    method: "GET",
+  });
+}
+
+export async function getTaskDetail(taskId: string) {
+  return request<TaskDetailResponse>(`/api/tasks/${taskId}`, {
+    method: "GET",
+  });
+}
+
+export async function createTask(input: {
+  name: string;
+  prompt: string;
+  timezone?: string | null;
+  schedule: TaskSchedule;
+}) {
+  return request<TaskDetailResponse>("/api/tasks", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function updateTask(
+  taskId: string,
+  patch: Partial<{
+    name: string;
+    prompt: string;
+    timezone: string | null;
+    schedule: TaskSchedule;
+    status: TaskStatus;
+  }>,
+) {
+  return request<TaskDetailResponse>(`/api/tasks/${taskId}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+}
+
+export async function deleteTask(taskId: string) {
+  return request<{ ok: boolean }>(`/api/tasks/${taskId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function runTask(taskId: string) {
+  return request<TaskDetailResponse>(`/api/tasks/${taskId}/run`, {
+    method: "POST",
   });
 }
 

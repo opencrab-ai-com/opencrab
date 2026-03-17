@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { getFeishuSecrets } from "@/lib/channels/secret-store";
 
 type FeishuTokenResponse = {
@@ -19,6 +20,7 @@ type FeishuWebhookBody = {
   type?: string;
   challenge?: string;
   token?: string;
+  encrypt?: string;
   header?: {
     event_id?: string;
     event_type?: string;
@@ -65,19 +67,53 @@ export type FeishuWebhookParseResult =
       kind: "challenge";
       challenge: string;
     }
-  | {
-      kind: "message";
-      dedupeKey: string;
-      remoteMessageId: string;
-      remoteChatId: string;
-      remoteChatLabel: string;
-      remoteUserId: string | null;
-      remoteUserLabel: string | null;
-      text: string;
-    }
+  | ({ kind: "message" } & FeishuInboundMessage)
   | {
       kind: "unsupported";
     };
+
+export type FeishuInboundMessage = {
+  dedupeKey: string;
+  remoteMessageId: string;
+  remoteChatId: string;
+  remoteChatLabel: string;
+  remoteUserId: string | null;
+  remoteUserLabel: string | null;
+  text: string;
+};
+
+type FeishuEventMessagePayload = {
+  sender?: NonNullable<FeishuWebhookBody["event"]>["sender"];
+  message?: NonNullable<FeishuWebhookBody["event"]>["message"];
+  chat?: NonNullable<FeishuWebhookBody["event"]>["chat"];
+  user?: NonNullable<FeishuWebhookBody["event"]>["user"];
+};
+
+export function normalizeFeishuWebhookBody(
+  body: FeishuWebhookBody,
+  headers: Headers,
+): FeishuWebhookBody {
+  const encryptKey = getFeishuSecrets().encryptKey?.trim();
+
+  if (!encryptKey) {
+    return body;
+  }
+
+  assertFeishuWebhookSignature(body, headers, encryptKey);
+
+  if (!body.encrypt) {
+    return body;
+  }
+
+  const decrypted = decryptFeishuPayload(body.encrypt, encryptKey);
+  const parsed = JSON.parse(decrypted) as FeishuWebhookBody;
+
+  return {
+    ...parsed,
+    token: parsed.token || body.token,
+    header: parsed.header || body.header,
+  };
+}
 
 export function assertFeishuWebhookAuth(body: FeishuWebhookBody) {
   const verificationToken = getFeishuSecrets().verificationToken;
@@ -108,25 +144,45 @@ export function parseFeishuWebhook(body: FeishuWebhookBody): FeishuWebhookParseR
     return { kind: "unsupported" };
   }
 
-  const text = extractFeishuText(message.content);
-  const chatId = message.chat_id;
-  const messageId = message.message_id;
+  const parsed = parseFeishuEventMessage(body.event || {}, body.header?.event_id);
 
-  if (!text || !chatId || !messageId) {
+  if (!parsed) {
     return { kind: "unsupported" };
   }
 
   return {
     kind: "message",
-    dedupeKey: `feishu:${body.header?.event_id || messageId}`,
+    ...parsed,
+  };
+}
+
+export function parseFeishuEventMessage(
+  event: FeishuEventMessagePayload,
+  eventId?: string,
+): FeishuInboundMessage | null {
+  const text = extractFeishuText(event.message?.content);
+  const chatId = event.message?.chat_id;
+  const messageId = event.message?.message_id;
+
+  if (
+    event.message?.message_type !== "text" ||
+    !text ||
+    !chatId ||
+    !messageId
+  ) {
+    return null;
+  }
+
+  return {
+    dedupeKey: `feishu:${eventId || messageId}`,
     remoteMessageId: messageId,
     remoteChatId: chatId,
-    remoteChatLabel: body.event?.chat?.name || chatId,
+    remoteChatLabel: event.chat?.name || chatId,
     remoteUserId:
-      body.event?.sender?.sender_id?.open_id ||
-      body.event?.sender?.sender_id?.user_id ||
+      event.sender?.sender_id?.open_id ||
+      event.sender?.sender_id?.user_id ||
       null,
-    remoteUserLabel: body.event?.user?.name || null,
+    remoteUserLabel: event.user?.name || null,
     text,
   };
 }
@@ -222,4 +278,46 @@ function extractFeishuText(content: string | undefined) {
   } catch {
     return null;
   }
+}
+
+function assertFeishuWebhookSignature(
+  body: FeishuWebhookBody,
+  headers: Headers,
+  encryptKey: string,
+) {
+  const timestamp = headers.get("x-lark-request-timestamp");
+  const nonce = headers.get("x-lark-request-nonce");
+  const signature = headers.get("x-lark-signature");
+
+  if (!timestamp || !nonce || !signature) {
+    throw new Error("飞书 webhook 缺少签名头。");
+  }
+
+  const computedSignature = crypto
+    .createHash("sha256")
+    .update(timestamp + nonce + encryptKey + JSON.stringify(body))
+    .digest("hex");
+
+  if (computedSignature !== signature) {
+    throw new Error("飞书 webhook 签名校验失败。");
+  }
+}
+
+function decryptFeishuPayload(encrypt: string, encryptKey: string) {
+  const key = crypto.createHash("sha256").update(encryptKey).digest();
+  const encryptedBuffer = Buffer.from(encrypt, "base64");
+  const decipher = crypto.createDecipheriv(
+    "aes-256-cbc",
+    key,
+    encryptedBuffer.subarray(0, 16),
+  );
+
+  let decrypted = decipher.update(
+    encryptedBuffer.subarray(16).toString("hex"),
+    "hex",
+    "utf8",
+  );
+  decrypted += decipher.final("utf8");
+
+  return decrypted;
 }

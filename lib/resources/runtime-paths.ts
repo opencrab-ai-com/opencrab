@@ -10,6 +10,8 @@ export const OPENCRAB_UPLOADS_INDEX_PATH = path.join(OPENCRAB_UPLOADS_DIR, "inde
 export const OPENCRAB_LOCAL_STORE_PATH = path.join(OPENCRAB_RUNTIME_DIR, "local-store.json");
 export const OPENCRAB_CHANNEL_STORE_PATH = path.join(OPENCRAB_RUNTIME_DIR, "channels.json");
 export const OPENCRAB_RUNTIME_CONFIG_PATH = path.join(OPENCRAB_RUNTIME_DIR, "runtime-config.json");
+export const OPENCRAB_SKILLS_STORE_PATH = path.join(OPENCRAB_RUNTIME_DIR, "skills.json");
+export const OPENCRAB_TASKS_STORE_PATH = path.join(OPENCRAB_RUNTIME_DIR, "tasks.json");
 export const OPENCRAB_CHANNEL_SECRET_STORE_PATH = path.join(
   OPENCRAB_RUNTIME_DIR,
   "channel-secrets.json",

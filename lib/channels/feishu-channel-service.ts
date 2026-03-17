@@ -4,9 +4,13 @@ import {
   updateChannelRecord,
 } from "@/lib/channels/channel-store";
 import { verifyFeishuApp } from "@/lib/channels/feishu";
+import {
+  ensureFeishuSocketConnection,
+  stopFeishuSocketConnection,
+} from "@/lib/channels/feishu-socket-service";
 import { getFeishuSecrets } from "@/lib/channels/secret-store";
 
-export async function syncFeishuChannelState() {
+export async function syncFeishuChannelState(input: { restartSocket?: boolean; disconnect?: boolean } = {}) {
   const feishuSecrets = getFeishuSecrets();
 
   if (!feishuSecrets.appId || !feishuSecrets.appSecret) {
@@ -18,29 +22,60 @@ export async function syncFeishuChannelState() {
   }
 
   try {
+    if (input.disconnect) {
+      stopFeishuSocketConnection();
+      updateChannelRecord("feishu", {
+        status: "disconnected",
+        lastError: null,
+        configSummary: {
+          connectionMode: "websocket",
+          socketStatus: "idle",
+          socketConnected: false,
+        },
+      });
+
+      return {
+        ok: true,
+        detail: getChannelDetail("feishu"),
+        message: "飞书长连接已断开。",
+      };
+    }
+
     const app = await verifyFeishuApp();
+    const socket = await ensureFeishuSocketConnection({
+      forceRestart: input.restartSocket,
+    });
     const now = new Date().toISOString();
 
     updateChannelRecord("feishu", {
-      status: "ready",
-      lastError: null,
+      status: socket.ok ? "ready" : "error",
+      lastError: socket.ok ? null : socket.message,
       configSummary: {
         appId: app.appId,
         credentialsVerified: true,
         lastVerifiedAt: now,
+        connectionMode: "websocket",
+        socketStatus: socket.ok ? "connected" : "error",
+        socketConnected: socket.ok,
+        lastSocketConnectedAt: socket.ok ? now : null,
       },
     });
 
     return {
-      ok: true,
+      ok: socket.ok,
       detail: getChannelDetail("feishu"),
-      message: "飞书配置已校验通过，tenant access token 可正常获取。",
+      message: socket.ok
+        ? "飞书配置已校验通过，长连接也已经启动。"
+        : socket.message,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : "飞书状态同步失败。";
     markChannelError("feishu", message);
     updateChannelRecord("feishu", {
       configSummary: {
+        connectionMode: "websocket",
+        socketStatus: "error",
+        socketConnected: false,
         credentialsVerified: false,
       },
     });

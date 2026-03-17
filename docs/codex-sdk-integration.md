@@ -19,6 +19,7 @@
 - 登录状态由本机 `codex login status` 判断
 - 前端永远只调用 OpenCrab 自己的 `/api/*`
 - 模型列表来自本机 `$HOME/.codex/models_cache.json`
+- 非网页渠道也会复用同一套 `runConversationTurn(...)` 能力，而不是各自重复实现一遍回复逻辑
 
 ## Browser Tool Integration
 
@@ -41,3 +42,4 @@
 
 - 登录成功不代表浏览器工具一定可用，这两类状态要分开看
 - 如果页面提示 Codex 不可用，先检查 `codex login status`
+- 设置页里的默认模型、推理强度和 sandbox 会影响网页对话，也会影响 Telegram / 飞书渠道的后续回合

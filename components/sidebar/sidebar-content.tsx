@@ -12,7 +12,6 @@ import {
   DialogShell,
 } from "@/components/ui/dialog";
 import type { ConversationItem } from "@/lib/seed-data";
-import { getSkillViewModels } from "@/lib/view-models/skills";
 import { buildSidebarViewModel } from "@/lib/view-models/conversations";
 
 type DeleteTarget =
@@ -80,10 +79,7 @@ export function SidebarContent() {
   }>(null);
 
   const isConversationArea = pathname === "/" || pathname.startsWith("/conversations");
-  const isSkillsArea = pathname === "/skills" || pathname.startsWith("/skills/");
   const activeConversationId = pathname.startsWith("/conversations/") ? pathname.split("/")[2] : null;
-  const activeSkillId = pathname.startsWith("/skills/") ? pathname.split("/")[2] : null;
-  const skillViewModels = useMemo(() => getSkillViewModels(), []);
 
   const sidebarViewModel = useMemo(
     () =>
@@ -111,10 +107,6 @@ export function SidebarContent() {
       document.removeEventListener("mousedown", handlePointerDown);
     };
   }, []);
-
-  if (isSkillsArea) {
-    return <SkillsSidebar skills={skillViewModels} activeSkillId={activeSkillId} />;
-  }
 
   if (!isConversationArea) {
     return <div className="h-full" />;
@@ -466,70 +458,6 @@ function SidebarSection({ title, action, onDragOver, onDrop, children }: Sidebar
   );
 }
 
-function SkillsSidebar({
-  skills,
-  activeSkillId,
-}: {
-  skills: ReturnType<typeof getSkillViewModels>;
-  activeSkillId: string | null;
-}) {
-  const enabledCount = skills.filter((skill) => skill.isEnabled).length;
-
-  return (
-    <>
-      <SidebarSection
-        title="Skills"
-        action={
-          <span className="rounded-full border border-line bg-surface px-2.5 py-1 text-[11px] text-muted-strong">
-            {enabledCount}/{skills.length} 已启用
-          </span>
-        }
-      >
-        <Link
-          href="/skills"
-          className={`flex min-h-10 items-center justify-between rounded-xl px-3 text-[13px] transition ${
-            !activeSkillId ? "bg-surface font-medium text-text" : "text-text hover:bg-surface-muted"
-          }`}
-        >
-          <span>总览</span>
-          <span className="text-[12px] text-muted">全部</span>
-        </Link>
-
-        {skills.map((skill) => (
-          <Link
-            key={skill.id}
-            href={`/skills/${skill.id}`}
-            className={`flex min-h-12 items-center justify-between gap-3 rounded-xl px-3 transition ${
-              activeSkillId === skill.id
-                ? "bg-surface text-text"
-                : "text-text hover:bg-surface-muted"
-            }`}
-          >
-            <span className="min-w-0">
-              <span className="flex items-center gap-2 text-[13px] font-medium">
-                <span
-                  className={`h-2 w-2 rounded-full ${
-                    skill.isEnabled ? "bg-[#2d8a4b]" : "bg-[#b5b5ad]"
-                  }`}
-                />
-                <span className="truncate">{skill.name}</span>
-              </span>
-              <span className="mt-1 block truncate text-[12px] text-muted">{skill.category}</span>
-            </span>
-            <span className="shrink-0 text-[12px] text-muted">{skill.status}</span>
-          </Link>
-        ))}
-      </SidebarSection>
-
-      <SidebarSection title="说明">
-        <div className="rounded-xl border border-line bg-surface px-3 py-3 text-[12px] leading-6 text-muted-strong">
-          Skills 当前只做能力说明和边界整理，不在这里直接做复杂配置。
-        </div>
-      </SidebarSection>
-    </>
-  );
-}
-
 type ConversationRowProps = {
   conversation: ConversationItem;
   isActive: boolean;
@@ -567,7 +495,7 @@ function ConversationRow({
         <span className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
           {conversation.source && conversation.source !== "local" ? (
             <span className="shrink-0 rounded-full border border-line bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-strong">
-              {conversation.source === "telegram" ? "TG" : "FS"}
+              {getConversationSourceBadge(conversation.source)}
             </span>
           ) : null}
           <span className="block min-w-0 truncate text-[13px]">{conversation.title}</span>
@@ -584,6 +512,22 @@ function ConversationRow({
       />
     </div>
   );
+}
+
+function getConversationSourceBadge(source: ConversationItem["source"]) {
+  if (source === "telegram") {
+    return "TG";
+  }
+
+  if (source === "feishu") {
+    return "FS";
+  }
+
+  if (source === "task") {
+    return "任务";
+  }
+
+  return "";
 }
 
 type FolderRowProps = {

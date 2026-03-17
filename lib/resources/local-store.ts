@@ -38,6 +38,32 @@ export function createFolder(name: string) {
   return cloneSnapshot(state);
 }
 
+export function ensureFolder(name: string) {
+  const trimmedName = name.trim();
+
+  if (!trimmedName) {
+    return null;
+  }
+
+  const state = readState();
+  const existing =
+    state.folders.find((item) => item.name.trim().toLowerCase() === trimmedName.toLowerCase()) ?? null;
+
+  if (existing) {
+    return structuredClone(existing);
+  }
+
+  const folder = {
+    id: createId("folder"),
+    name: trimmedName,
+  };
+
+  state.folders.push(folder);
+  writeState(state);
+
+  return structuredClone(folder);
+}
+
 export function deleteFolder(folderId: string) {
   const state = readState();
   const relatedConversationIds = state.conversations

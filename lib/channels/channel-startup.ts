@@ -1,5 +1,10 @@
 import { getChannelDetail } from "@/lib/channels/channel-store";
-import { getTelegramSecrets, syncAllChannelConfigsFromSecrets } from "@/lib/channels/secret-store";
+import { syncFeishuChannelState } from "@/lib/channels/feishu-channel-service";
+import {
+  getFeishuSecrets,
+  getTelegramSecrets,
+  syncAllChannelConfigsFromSecrets,
+} from "@/lib/channels/secret-store";
 import { syncTelegramChannelState } from "@/lib/channels/telegram-channel-service";
 import { ensurePublicBaseUrl } from "@/lib/tunnel/public-url-service";
 import { ensureTunnelWatchdog } from "@/lib/tunnel/tunnel-watchdog";
@@ -41,22 +46,34 @@ async function runChannelStartupSync() {
   ensureTunnelWatchdog();
 
   const telegramSecrets = getTelegramSecrets();
+  const feishuSecrets = getFeishuSecrets();
 
-  if (!telegramSecrets.botToken || telegramSecrets.enabled === false) {
-    return;
+  if (telegramSecrets.botToken && telegramSecrets.enabled !== false) {
+    const telegram = getChannelDetail("telegram");
+
+    if (!process.env.OPENCRAB_PUBLIC_BASE_URL?.trim()) {
+      await ensurePublicBaseUrl();
+    }
+
+    if (
+      !telegram.configSummary.webhookConfigured ||
+      telegram.status !== "ready" ||
+      Boolean(telegram.lastError)
+    ) {
+      await syncTelegramChannelState({ rebind: true });
+    }
   }
 
-  const telegram = getChannelDetail("telegram");
+  if (feishuSecrets.appId && feishuSecrets.appSecret) {
+    const feishu = getChannelDetail("feishu");
 
-  if (!process.env.OPENCRAB_PUBLIC_BASE_URL?.trim()) {
-    await ensurePublicBaseUrl();
-  }
-
-  if (
-    !telegram.configSummary.webhookConfigured ||
-    telegram.status !== "ready" ||
-    Boolean(telegram.lastError)
-  ) {
-    await syncTelegramChannelState({ rebind: true });
+    if (
+      !feishu.configSummary.socketConnected ||
+      !feishu.configSummary.credentialsVerified ||
+      feishu.status !== "ready" ||
+      Boolean(feishu.lastError)
+    ) {
+      await syncFeishuChannelState();
+    }
   }
 }

@@ -5,7 +5,7 @@ export type FolderItem = {
   name: string;
 };
 
-export type ConversationSource = "local" | "telegram" | "feishu";
+export type ConversationSource = "local" | "telegram" | "feishu" | "task";
 
 export type AttachmentItem = {
   id: string;

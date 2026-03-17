@@ -36,7 +36,8 @@ It keeps the product surface simple: chat is the main entry, Codex is the execut
 - Folder-based conversation organization with a familiar ChatGPT-style layout
 - File and image uploads, plus text extraction for common document formats
 - Browser tool integration for current-browser and managed-browser workflows
-- Channel support for Telegram and Feishu, including webhook intake, conversation binding, and reply delivery
+- Channel support for Telegram and Feishu: Telegram uses webhooks, while Feishu uses persistent socket connections by default
+- Skills catalog browsing, detail pages, local status management, and custom skill entries
 - Local runtime data and secrets stored outside the repository by default
 
 ## Getting Started
@@ -82,12 +83,18 @@ OPENCRAB_TELEGRAM_WEBHOOK_SECRET=
 OPENCRAB_FEISHU_APP_ID=
 OPENCRAB_FEISHU_APP_SECRET=
 OPENCRAB_FEISHU_VERIFICATION_TOKEN=
+OPENCRAB_FEISHU_ENCRYPT_KEY=
 ```
 
 Channel configuration also works directly from:
 
 - `/channels/telegram`
 - `/channels/feishu`
+
+Notes:
+
+- Telegram needs a public URL for webhooks, and OpenCrab will try to automate that step
+- Feishu uses persistent socket connections by default and does not need a public callback URL; webhook compatibility mode needs both `OPENCRAB_FEISHU_VERIFICATION_TOKEN` and `OPENCRAB_FEISHU_ENCRYPT_KEY`
 
 ## Runtime Data
 
@@ -106,8 +113,11 @@ $OPENCRAB_HOME/
   local-store.json
   channels.json
   channel-secrets.json
+  runtime-config.json
+  skills.json
   uploads/
   uploads/index.json
+  tunnels/
   chrome-debug-profile/
 ```
 
@@ -124,7 +134,7 @@ This keeps conversations, attachments, browser state, and channel secrets out of
 
 The conversation workflow is the most complete part of the product today.
 
-`Channels` already supports Telegram and Feishu in a usable V1 flow. `任务` and `Skills` still exist as product skeletons and are not yet complete feature areas.
+`Channels` already supports Telegram and Feishu in a usable V1 flow. Telegram currently supports inbound and outbound text, image, and file handling; Feishu is still focused on text-message loops. `Skills` already supports catalog browsing, detail pages, local enable/disable state, and custom entries, while `任务` is still mostly a product skeleton.
 
 ## License
 

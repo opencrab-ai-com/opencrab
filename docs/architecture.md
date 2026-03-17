@@ -19,8 +19,10 @@ app/
   api/                   # 服务端 API 路由
 components/
   app-shell/             # 全局壳层与应用状态
+  channels/              # 渠道配置、状态与说明组件
   composer/              # 输入框
   conversation/          # 会话区
+  skills/                # 技能列表与详情
   sidebar/               # 左侧栏
   ui/                    # 纯展示型基础组件
 lib/
@@ -29,6 +31,8 @@ lib/
   conversations/         # 会话时间与标题工具
   opencrab/              # 通用标签、错误、消息工具
   resources/             # 本地资源层：local store、uploads、API types
+  runtime/               # 运行时配置，如公网地址与隧道状态
+  skills/                # 技能目录与状态存储
   view-models/           # 左侧栏等视图模型映射
 scripts/
   browser_mcp_stdio_proxy.mjs
@@ -43,7 +47,10 @@ scripts/
   - `local-store.json`：本地会话快照
   - `channels.json`：渠道状态、最近事件、远程会话绑定
   - `channel-secrets.json`：渠道密钥，服务端私有
+  - `runtime-config.json`：公网地址与隧道状态
+  - `skills.json`：OpenCrab 自己维护的技能状态
   - `uploads/`：上传的附件与提取后的文本
+  - `tunnels/`：自动公网隧道日志
   - `chrome-debug-profile/`：独立浏览器模式的 Chrome profile
 - `.playwright-cli/`：调试浏览器技能时生成的记录
 
@@ -87,11 +94,17 @@ scripts/
 
 ## 4. Channel Flow
 
-1. 外部渠道 webhook 打到 `app/api/channels/<channel>/webhook/route.ts`
-2. 各渠道 adapter 负责协议解析、challenge / secret 校验和回推接口调用
-3. `lib/channels/dispatcher.ts` 负责去重、远程 chat 和 OpenCrab conversation 的绑定
-4. `lib/conversations/run-conversation-turn.ts` 复用现有 Codex 对话能力，产出最终回复
-5. 渠道发送成功后，把最近事件、错误和绑定关系写入 `$OPENCRAB_HOME/channels.json`
+1. Telegram 通过 webhook 打到 `app/api/channels/telegram/webhook/route.ts`
+2. 飞书默认通过 `lib/channels/feishu-socket-service.ts` 建立长连接接收事件；`app/api/channels/feishu/webhook/route.ts` 只保留兼容入口
+3. 各渠道 adapter 负责协议解析、secret 校验和回推接口调用
+4. `lib/channels/dispatcher.ts` 负责去重、远程 chat 和 OpenCrab conversation 的绑定
+5. `lib/conversations/run-conversation-turn.ts` 复用现有 Codex 对话能力，产出最终回复
+6. 渠道发送成功后，把最近事件、错误和绑定关系写入 `$OPENCRAB_HOME/channels.json`
+
+补充：
+
+- Telegram 渠道会把图片和文件下载到 `uploads/`，再复用现有附件链路
+- 飞书当前仍以文本消息闭环为主
 
 设计边界：
 
@@ -102,14 +115,17 @@ scripts/
 ## State Boundaries
 
 - `resources`：负责持久化与读写
-- `channels`：负责 webhook 协议适配、去重、绑定关系和渠道状态
+- `channels`：负责渠道协议适配、去重、绑定关系和渠道状态
+- `skills`：负责技能目录发现、本地状态与自定义技能条目
+- `runtime`：负责公网地址、隧道和运行时配置
 - `provider`：负责前端应用状态与流式消息生命周期
 - `view-models`：负责把资源数据映射成左侧栏等 UI 结构
 - `ui`：只负责展示，不直接碰资源层
 
 ## Current Limitations
 
-- `Channels` 当前只支持 Telegram / 飞书的文本消息闭环，附件、主动群发、多租户尚未实现
-- `任务 / Skills` 目前还是稳定骨架页
+- `Channels` 当前只有 Telegram 具备附件链路；飞书仍以文本消息闭环为主
+- `任务` 目前还是稳定骨架页
+- `Skills` 当前管理的是 OpenCrab 自己的本地技能状态，不会直接安装或修改 Codex app 的技能目录
 - 当前持久化层仍是本地 JSON store，不是正式数据库
 - 当前没有多人协作、鉴权、云同步

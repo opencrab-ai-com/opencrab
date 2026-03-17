@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Composer } from "@/components/composer/composer";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
 import { ConversationThread } from "@/components/conversation/conversation-thread";
@@ -9,6 +9,7 @@ import {
   formatReasoningEffortLabel,
   formatSandboxModeLabel,
 } from "@/lib/opencrab/labels";
+import { usePersistedDraft } from "@/lib/opencrab/use-persisted-draft";
 import type { UploadedAttachment } from "@/lib/resources/opencrab-api-types";
 
 type ConversationDetailScreenProps = {
@@ -35,10 +36,12 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
     sendMessage,
     uploadAttachments,
   } = useOpenCrabApp();
-  const [draft, setDraft] = useState("");
   const activeConversation = useMemo(
     () => conversations.find((item) => item.id === conversationId),
     [conversationId, conversations],
+  );
+  const { draft, setDraft, clearDraft } = usePersistedDraft(
+    `opencrab:draft:conversation:${conversationId}`,
   );
   const isCurrentConversationSending = isConversationStreaming(conversationId);
   const hasConversationMessages = Boolean(conversationMessages[conversationId]);
@@ -77,7 +80,7 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
       return false;
     }
 
-    setDraft("");
+    clearDraft();
     return true;
   }
 

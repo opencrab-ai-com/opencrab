@@ -44,6 +44,8 @@ export function getFeishuSecrets(): FeishuSecrets {
     appSecret: process.env.OPENCRAB_FEISHU_APP_SECRET?.trim() || state.feishu?.appSecret,
     verificationToken:
       process.env.OPENCRAB_FEISHU_VERIFICATION_TOKEN?.trim() || state.feishu?.verificationToken,
+    encryptKey:
+      process.env.OPENCRAB_FEISHU_ENCRYPT_KEY?.trim() || state.feishu?.encryptKey,
   };
 }
 
@@ -77,15 +79,22 @@ export function syncChannelConfigFromSecrets(channelId: ChannelId) {
     const hasBotToken = Boolean(secrets.botToken);
     const isEnabled = secrets.enabled !== false;
     const current = getChannelDetail("telegram");
+    const isReady =
+      hasBotToken &&
+      isEnabled &&
+      current.configSummary.credentialsVerified === true &&
+      current.configSummary.webhookConfigured === true;
 
     updateChannelRecord("telegram", {
       status: !hasBotToken
         ? "not_configured"
         : !isEnabled
           ? "disconnected"
-          : current.status === "error"
-            ? "error"
-            : "ready",
+          : isReady
+            ? "ready"
+            : current.status === "error"
+              ? "error"
+              : "disconnected",
       lastError: hasBotToken ? current.lastError : null,
       configSummary: {
         hasBotToken,
@@ -109,15 +118,32 @@ export function syncChannelConfigFromSecrets(channelId: ChannelId) {
   const hasAppSecret = Boolean(secrets.appSecret);
   const isConfigured = hasAppId && hasAppSecret;
   const current = getChannelDetail("feishu");
+  const isReady =
+    isConfigured &&
+    current.configSummary.credentialsVerified === true &&
+    current.configSummary.socketConnected === true;
 
   updateChannelRecord("feishu", {
-    status: isConfigured ? (current.status === "error" ? "error" : "ready") : "not_configured",
+    status: !isConfigured
+      ? "not_configured"
+      : isReady
+        ? "ready"
+        : current.status === "error"
+          ? "error"
+          : "disconnected",
     lastError: isConfigured ? current.lastError : null,
     configSummary: {
       appId: secrets.appId || null,
+      connectionMode: "websocket",
+      socketStatus: isConfigured ? current.configSummary.socketStatus || "idle" : "idle",
+      socketConnected: isConfigured ? Boolean(current.configSummary.socketConnected) : false,
+      lastSocketConnectedAt: isConfigured
+        ? current.configSummary.lastSocketConnectedAt || null
+        : null,
       hasAppId,
       hasAppSecret,
       hasVerificationToken: Boolean(secrets.verificationToken),
+      hasEncryptKey: Boolean(secrets.encryptKey),
     },
   });
 
@@ -204,6 +230,9 @@ function pickNonEmptyFeishuSecrets(
       : {}),
     ...(typeof patch.verificationToken === "string" && patch.verificationToken.trim()
       ? { verificationToken: patch.verificationToken.trim() }
+      : {}),
+    ...(typeof patch.encryptKey === "string" && patch.encryptKey.trim()
+      ? { encryptKey: patch.encryptKey.trim() }
       : {}),
   };
 }
