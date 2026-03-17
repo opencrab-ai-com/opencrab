@@ -7,16 +7,16 @@
   <a href="./LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-green.svg"></a>
   <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs">
   <img alt="React 19" src="https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white">
-  <img alt="Codex SDK" src="https://img.shields.io/badge/OpenAI-Codex%20SDK-412991?logo=openai&logoColor=white">
+  <img alt="Local First" src="https://img.shields.io/badge/Local-First-111111">
 </p>
 
 <p align="center">
   <a href="./README.md">中文</a> ｜ English
 </p>
 
-OpenCrab is a local-first Codex workspace for everyday users.
+OpenCrab is a local-first workspace for everyday users.
 
-It keeps the product surface simple: chat is the main entry, Codex is the execution engine, and channels let Telegram or Feishu users talk to the same workspace without learning a developer toolchain first.
+It keeps the product surface simple: chat is the main entry, and channels let Telegram or Feishu users talk to the same workspace without learning a developer toolchain first.
 
 ## Screenshots
 
@@ -34,7 +34,7 @@ It keeps the product surface simple: chat is the main entry, Codex is the execut
 
 ## Highlights
 
-- Chat-first product flow with streaming Codex replies and persistent conversation history
+- Chat-first product flow with streaming replies and persistent conversation history
 - Folder-based conversation organization with a familiar ChatGPT-style layout
 - File and image uploads, plus text extraction for common document formats
 - Browser tool integration for current-browser and managed-browser workflows

@@ -7,7 +7,10 @@ import { ChannelSetupForm } from "@/components/channels/channel-setup-form";
 import { ChannelStatusBadge } from "@/components/channels/channel-status-badge";
 import { AppPage } from "@/components/ui/app-page";
 import { PageHeader } from "@/components/ui/page-header";
-import { ensureChannelStartupSync } from "@/lib/channels/channel-startup";
+import {
+  ensureChannelStartupSync,
+  ensureChannelWatchdog,
+} from "@/lib/channels/channel-startup";
 import { getChannelDetail, getPublicBaseUrl } from "@/lib/channels/channel-store";
 import {
   buildFeishuStatusSummary,
@@ -15,6 +18,7 @@ import {
   buildTelegramStatusSummary,
 } from "@/lib/channels/channel-detail-copy";
 import {
+  getFeishuCredentialPreview,
   getTelegramBotTokenPreview,
   syncAllChannelConfigsFromSecrets,
 } from "@/lib/channels/secret-store";
@@ -34,6 +38,7 @@ export default async function ChannelDetailPage({
   }
 
   syncAllChannelConfigsFromSecrets();
+  ensureChannelWatchdog();
   void ensureChannelStartupSync();
 
   const channel = getChannelDetail(channelId as ChannelId);
@@ -42,6 +47,7 @@ export default async function ChannelDetailPage({
   const telegramSetWebhookCommand = buildTelegramSetWebhookCommand(channel, webhookTarget);
   const isTelegram = channel.id === "telegram";
   const telegramTokenPreview = isTelegram ? getTelegramBotTokenPreview() : null;
+  const feishuCredentialPreview = isTelegram ? null : getFeishuCredentialPreview();
 
   return (
     <AppPage width="wide" contentClassName="space-y-8">
@@ -102,6 +108,7 @@ export default async function ChannelDetailPage({
           <ChannelSetupForm
             channel={channel}
             telegramTokenPreview={telegramTokenPreview}
+            feishuCredentialPreview={feishuCredentialPreview}
           />
         </div>
       ) : (
@@ -150,7 +157,10 @@ export default async function ChannelDetailPage({
             </div>
           </section>
 
-          <ChannelSetupForm channel={channel} />
+          <ChannelSetupForm
+            channel={channel}
+            feishuCredentialPreview={feishuCredentialPreview}
+          />
         </div>
       )}
 

@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { AppPage } from "@/components/ui/app-page";
 import { PageHeader } from "@/components/ui/page-header";
-import { ensureChannelStartupSync } from "@/lib/channels/channel-startup";
+import {
+  ensureChannelStartupSync,
+  ensureChannelWatchdog,
+} from "@/lib/channels/channel-startup";
 import {
   getChannelOverviewList,
   getChannelStatusLabel,
@@ -15,6 +18,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ChannelsPage() {
   syncAllChannelConfigsFromSecrets();
+  ensureChannelWatchdog();
   void ensureChannelStartupSync();
 
   const channels = getChannelOverviewList();
@@ -97,6 +101,8 @@ function StatusBadge({ channel }: { channel: ChannelOverview }) {
   const tone =
     channel.status === "ready"
       ? "border-[#cfe7d4] bg-[#eef8f0] text-[#23633a]"
+      : channel.status === "connecting"
+        ? "border-[#d9def8] bg-[#f4f6ff] text-[#3b4cca]"
       : channel.status === "error"
         ? "border-[#f3d0cb] bg-[#fff3f1] text-[#b42318]"
         : "border-line bg-surface-muted text-muted-strong";
@@ -128,13 +134,17 @@ function buildChannelDescription(channel: ChannelOverview) {
       return "填入 Bot Token 后，OpenCrab 会尽量帮你自动连上 Telegram。";
     }
 
-    if (channel.status === "disconnected") {
-      return "凭证已经保存，但当前没有连上。进入详情页后可以重新连接或断开。";
-    }
+  if (channel.status === "disconnected") {
+    return "凭证已经保存，但当前没有连上。进入详情页后可以重新连接或断开。";
+  }
 
-    if (channel.status === "ready") {
-      return "已经连上 Telegram，可以直接给 bot 发消息，OpenCrab 会自动创建或续接对话。";
-    }
+  if (channel.status === "connecting") {
+    return "OpenCrab 已经开始尝试连 Telegram，但还在等待平台确认当前连接状态。";
+  }
+
+  if (channel.status === "ready") {
+    return "已经连上 Telegram，可以直接给 bot 发消息，OpenCrab 会自动创建或续接对话。";
+  }
 
     return "正在等待连接完成，或者需要重新检查当前 webhook 状态。";
   }
@@ -145,6 +155,10 @@ function buildChannelDescription(channel: ChannelOverview) {
 
   if (channel.status === "disconnected") {
     return "凭证已经保存，但长连接当前未启动。进入详情页后可以重新连接或断开。";
+  }
+
+  if (channel.status === "connecting") {
+    return "凭证已通过，OpenCrab 正在建立飞书长连接。请保持应用运行，然后回到飞书开放平台点保存。";
   }
 
   if (channel.status === "ready") {

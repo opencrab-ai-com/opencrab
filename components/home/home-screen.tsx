@@ -82,7 +82,7 @@ export function HomeScreen({ title, description }: HomeScreenProps) {
           </div>
           {codexStatus?.ok === false ? (
             <p className="text-left text-[13px] text-[#a34942]">
-              Codex 尚未登录。请先在本机终端执行 <code>codex login</code>，再回来继续发送。
+              OpenCrab 当前还没有完成本机执行环境准备，请先完成初始登录后再回来继续发送。
             </p>
           ) : null}
           {errorMessage ? <p className="text-left text-[13px] text-[#a34942]">{errorMessage}</p> : null}

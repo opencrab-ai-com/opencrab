@@ -92,7 +92,7 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
       <div className="shrink-0 border-t border-line bg-background px-4 py-4 lg:px-6">
         <div className="w-full max-w-[1180px] space-y-3">
           {isCurrentConversationSending ? (
-            <p className="text-[13px] text-muted-strong">正在调用 Codex 生成回复...</p>
+            <p className="text-[13px] text-muted-strong">OpenCrab 正在整理回复...</p>
           ) : null}
           <div className="flex flex-wrap gap-2 text-[12px] text-muted-strong">
             <span className="rounded-full border border-line bg-surface-muted px-3 py-1.5">
@@ -110,7 +110,7 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
           </div>
           {codexStatus?.ok === false ? (
             <p className="text-[13px] text-[#a34942]">
-              Codex 尚未登录。请先在本机终端执行 <code>codex login</code>，再回来继续发送。
+              OpenCrab 当前还没有完成本机执行环境准备，请先完成初始登录后再回来继续发送。
             </p>
           ) : null}
           {errorMessage ? <p className="text-[13px] text-[#a34942]">{errorMessage}</p> : null}

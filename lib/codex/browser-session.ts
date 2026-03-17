@@ -32,6 +32,7 @@ const CHROME_CANDIDATES = [
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
   path.join(process.env.HOME || "", "Applications/Google Chrome.app/Contents/MacOS/Google Chrome"),
 ];
+const BROWSER_WARMUP_COOLDOWN_MS = 5 * 60_000;
 const WAIT_TIMEOUT_MS = 12_000;
 const POLL_INTERVAL_MS = 400;
 
@@ -64,6 +65,8 @@ declare global {
   var __opencrabBrowserBridgePromise: Promise<BrowserBridge> | undefined;
   var __opencrabManagedChromePath: string | null | undefined;
   var __opencrabManagedChromeWasLaunched: boolean | undefined;
+  var __opencrabBrowserWarmupPromise: Promise<void> | undefined;
+  var __opencrabBrowserWarmupLastRunAt: number | undefined;
 }
 
 export function buildChromeDevtoolsMcpConfig() {
@@ -149,6 +152,30 @@ export async function ensureBrowserSession(): Promise<CodexBrowserSessionStatus>
         ? "OpenCrab 已连接你当前正在使用的 Chrome，会在当前服务进程内持续复用这条连接。"
         : "OpenCrab 已连接独立浏览器，会在当前服务进程内持续复用这条连接。",
   });
+}
+
+export function ensureBrowserSessionWarmup(input: { force?: boolean } = {}) {
+  const lastRunAt = globalThis.__opencrabBrowserWarmupLastRunAt ?? 0;
+
+  if (globalThis.__opencrabBrowserWarmupPromise) {
+    return globalThis.__opencrabBrowserWarmupPromise;
+  }
+
+  if (!input.force && Date.now() - lastRunAt < BROWSER_WARMUP_COOLDOWN_MS) {
+    return Promise.resolve();
+  }
+
+  globalThis.__opencrabBrowserWarmupLastRunAt = Date.now();
+
+  const task = ensureBrowserSession()
+    .then(() => undefined)
+    .catch(() => undefined)
+    .finally(() => {
+      globalThis.__opencrabBrowserWarmupPromise = undefined;
+    });
+
+  globalThis.__opencrabBrowserWarmupPromise = task;
+  return task;
 }
 
 export async function handleBrowserMcpRequest(request: Request) {

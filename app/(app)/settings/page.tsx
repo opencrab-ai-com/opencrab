@@ -36,24 +36,23 @@ export default function SettingsPage() {
     <AppPage contentClassName="space-y-6">
         <PageHeader
           title="设置"
-          description="这里会同时展示两类信息：一类来自你本机 Codex 的共享状态，一类是 OpenCrab 自己保存的默认配置。"
+          description="这里会展示 OpenCrab 当前的本机运行状态，以及它自己的默认配置。"
         />
 
         <section className="rounded-[24px] border border-line bg-surface p-6 shadow-soft">
           <div className="grid gap-5 md:grid-cols-2">
             <div className="rounded-[18px] border border-line bg-surface-muted px-5 py-4">
-              <h2 className="text-[15px] font-semibold text-text">与 Codex 共享</h2>
+              <h2 className="text-[15px] font-semibold text-text">本机运行环境</h2>
               <p className="mt-3 text-[13px] leading-6 text-muted-strong">
-                OpenCrab 会复用本机 Codex 的登录状态、模型列表缓存和底层 session 能力。
-                也就是说，Codex app 登录失效或模型缓存变化时，这里也会一起受到影响。
+                OpenCrab 会复用本机已经准备好的运行环境、账户连接和浏览器能力。
+                如果这些本机依赖不可用，这里的状态也会一起受到影响。
               </p>
             </div>
 
             <div className="rounded-[18px] border border-line bg-surface-muted px-5 py-4">
               <h2 className="text-[15px] font-semibold text-text">OpenCrab 专属</h2>
               <p className="mt-3 text-[13px] leading-6 text-muted-strong">
-                默认模型、推理强度和权限模式由 OpenCrab 单独保存。你在这里修改，不会自动改掉 Codex app
-                里的界面设置；反过来也一样。
+                默认模型、推理强度和权限模式由 OpenCrab 单独保存。你在这里修改，只会影响 OpenCrab 自己后续的新对话和发送。
               </p>
             </div>
           </div>
@@ -61,9 +60,9 @@ export default function SettingsPage() {
           <div className="mt-5 rounded-[18px] border border-line bg-surface-muted px-5 py-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-[15px] font-semibold text-text">Codex 登录状态</h2>
+                <h2 className="text-[15px] font-semibold text-text">账户连接状态</h2>
                 <p className="mt-2 text-[13px] leading-6 text-muted-strong">
-                  OpenCrab 当前只支持复用本机 Codex 的 ChatGPT 登录态，不使用 API key。
+                  这里显示的是 OpenCrab 当前能否正常使用本机账户连接与浏览器能力。
                 </p>
               </div>
               <div
@@ -84,7 +83,7 @@ export default function SettingsPage() {
               />
               <StatusCard
                 label="当前状态"
-                value={codexStatus?.ok ? "Codex 可用" : "需要先登录"}
+                value={codexStatus?.ok ? "OpenCrab 可用" : "需要先完成准备"}
               />
               <StatusCard
                 label="浏览器连接"
@@ -106,15 +105,15 @@ export default function SettingsPage() {
               <p className="mt-2 text-[12px] text-muted">
                 {selectedBrowserConnectionMode === "current-browser"
                   ? "当前模式会连接你正在使用的 Chrome。每次重启 OpenCrab 服务后，第一次连接可能仍需要你在浏览器里允许一次。"
-                  : "当前模式会使用 OpenCrab 自己的远程调试 Chrome profile，不会覆盖你日常使用的 Codex app 界面设置。"}
+                  : "当前模式会使用 OpenCrab 自己的独立 Chrome 环境，不会覆盖你日常使用的浏览器数据。"}
               </p>
             </div>
 
             {!codexStatus?.ok ? (
               <div className="mt-4 rounded-[16px] border border-[#e8c8c3] bg-[#fff6f4] px-4 py-3 text-[13px] leading-6 text-[#8f4338]">
-                <p>还没有检测到可用的 Codex 登录状态。</p>
+                <p>还没有检测到可用的本机执行环境连接。</p>
                 <p className="mt-1">
-                  请先在本机终端执行 <code>codex login</code>，并确认已使用 ChatGPT 登录，然后刷新这个页面。
+                  请先完成 OpenCrab 的初始登录与本机准备，然后刷新这个页面。
                 </p>
               </div>
             ) : null}
@@ -126,7 +125,7 @@ export default function SettingsPage() {
             <div>
               <h2 className="text-[18px] font-semibold tracking-[-0.03em] text-text">OpenCrab 默认配置</h2>
               <p className="mt-3 text-[14px] leading-6 text-muted-strong">
-                这些设置只影响 OpenCrab 自己的新会话和后续发送，不会直接覆盖 Codex app 的产品配置。
+                这些设置只影响 OpenCrab 自己的新会话和后续发送。
               </p>
             </div>
             <div className="rounded-full border border-line bg-surface-muted px-4 py-2 text-[13px] text-muted-strong">

@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { ensureChannelStartupSync } from "@/lib/channels/channel-startup";
+import {
+  ensureChannelStartupSync,
+  ensureChannelWatchdog,
+} from "@/lib/channels/channel-startup";
 import { getChannelDetail } from "@/lib/channels/channel-store";
 import {
   resolveChannelId,
@@ -19,6 +22,7 @@ export async function GET(
   }
 
   syncAllChannelConfigsFromSecrets();
+  ensureChannelWatchdog();
   void ensureChannelStartupSync();
 
   return NextResponse.json({
@@ -30,6 +34,7 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ channelId: string }> },
 ) {
+  ensureChannelWatchdog();
   const channelId = await resolveChannelId(context.params);
 
   if (!channelId) {

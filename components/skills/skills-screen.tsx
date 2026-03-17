@@ -114,8 +114,8 @@ export function SkillsScreen() {
           <div>
             <h1 className="text-[40px] font-semibold tracking-[-0.05em] text-text">技能</h1>
             <p className="mt-3 text-[15px] leading-7 text-muted-strong">
-              赋予 Codex 更强大的能力。
-              <span className="ml-2 text-[#1a73e8]">详情页和说明文档来自 Codex skills，但这里的状态只作用于 OpenCrab。</span>
+              为 OpenCrab 增加更强的处理能力。
+              <span className="ml-2 text-[#1a73e8]">这里展示的是 OpenCrab 自己可用的技能与说明。</span>
             </p>
           </div>
 
@@ -151,7 +151,7 @@ export function SkillsScreen() {
         </header>
 
         <section className="rounded-[22px] border border-line bg-surface-muted px-5 py-4 text-[13px] leading-6 text-muted-strong">
-          OpenCrab 会从 <code>~/.codex/skills</code> 复制技能名称、简介和说明文档，但安装、禁用、卸载状态保存在 OpenCrab 自己的本地 store 里，不会去改 Codex app 的技能目录。
+          技能说明会从你本机的共享技能库中读取，但启用、禁用、卸载这些状态只保存在 OpenCrab 自己的本地空间里，不会影响别的工具。
         </section>
 
         <section className="grid gap-3 sm:grid-cols-3">
@@ -189,7 +189,7 @@ export function SkillsScreen() {
         <DialogShell onClose={() => setCreateDialog(null)}>
           <DialogHeader
             title="新技能"
-            description="这个技能只会写入 OpenCrab 本地 store，不会创建或修改 Codex app 的技能文件。"
+            description="这个技能只会写入 OpenCrab 本地空间，不会修改你电脑上其他工具的技能文件。"
           />
 
           <div className="mt-6 space-y-4">

@@ -7,16 +7,16 @@
   <a href="./LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-green.svg"></a>
   <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs">
   <img alt="React 19" src="https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white">
-  <img alt="Codex SDK" src="https://img.shields.io/badge/OpenAI-Codex%20SDK-412991?logo=openai&logoColor=white">
+  <img alt="Local First" src="https://img.shields.io/badge/Local-First-111111">
 </p>
 
 <p align="center">
   中文 README ｜ <a href="./README-en.md">English</a>
 </p>
 
-OpenCrab 是一个面向普通用户的、本地优先的 Codex 工作台。
+OpenCrab 是一个面向普通用户的、本地优先的小螃蟹工作台。
 
-它尽量把产品表面做简单：聊天是主入口，Codex 是执行引擎，Telegram 和飞书等渠道可以直接接入同一套工作空间，而不需要用户先学习一整套开发者工具链。
+它尽量把产品表面做简单：聊天是主入口，Telegram 和飞书等渠道可以直接接入同一套工作空间，而不需要用户先学习一整套开发者工具链。
 
 ## 产品截图
 
@@ -34,7 +34,7 @@ OpenCrab 是一个面向普通用户的、本地优先的 Codex 工作台。
 
 ## 主要能力
 
-- 以聊天为主入口，支持流式 Codex 回复和持久化历史对话
+- 以聊天为主入口，支持流式回复和持久化历史对话
 - 支持文件夹管理对话，整体交互接近大家熟悉的 ChatGPT 形态
 - 支持图片、文件上传，以及常见文档格式的文本提取
 - 支持浏览器工具接入，覆盖 current-browser 和 managed-browser 两种模式

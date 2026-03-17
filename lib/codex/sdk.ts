@@ -98,7 +98,7 @@ export async function generateCodexReply({
   const text = result.finalResponse?.trim();
 
   if (!text) {
-    throw new Error("Codex SDK 未返回可用内容。");
+    throw new Error("OpenCrab 当前没有生成可用回复。");
   }
 
   return {
@@ -128,7 +128,7 @@ export async function getCodexStatus() {
     sandboxMode: DEFAULT_SANDBOX_MODE,
     networkAccessEnabled: DEFAULT_NETWORK_ACCESS,
     approvalPolicy: DEFAULT_APPROVAL_POLICY,
-    reply: "Codex 已登录",
+    reply: "OpenCrab 已就绪",
     threadId: null,
     usage: null,
     loginStatus: "logged_in" as const,
@@ -233,7 +233,7 @@ export async function* streamCodexReply({
   const text = assistantText.trim();
 
   if (!text) {
-    throw new Error("Codex SDK 未返回可用内容。");
+    throw new Error("OpenCrab 当前没有生成可用回复。");
   }
 
   yield {
@@ -294,9 +294,12 @@ function buildPrompt(
   input: Pick<GenerateCodexReplyInput, "conversationTitle" | "content" | "textAttachments">,
 ) {
   return [
-    "你是 OpenCrab 的 Codex 助手。",
+    "你是 OpenCrab 自己的智能助手。",
     "默认使用简体中文回复，除非用户明确要求其他语言。",
     "面向普通用户，表达要清楚、直接、少术语。",
+    "涉及浏览器、网页、页面交互、表单填写、点击、抓取页面可见内容时，优先使用 chrome-devtools MCP。",
+    "只有在 chrome-devtools MCP 当前不可用、明确做不到，或者连续失败时，才降级到其他方式，例如命令行、Playwright 或直接请求网页。",
+    "如果浏览器操作发生了降级，最终回复里用一句短话说明你改用了其他办法。",
     input.conversationTitle ? `当前对话标题：${input.conversationTitle}` : null,
     input.content ? `用户消息：${input.content}` : "用户本轮没有输入文字，请优先分析随附文件。",
     ...(input.textAttachments || []).map((file) => {
@@ -397,12 +400,12 @@ async function getCodexLoginStatus() {
 
     return {
       ok: false as const,
-      error: output || "当前没有检测到 Codex 登录状态，请先执行 codex login。",
+      error: output || "当前没有检测到可用的本机执行环境登录状态。",
     };
   } catch (error) {
     return {
       ok: false as const,
-      error: error instanceof Error ? error.message : "当前没有检测到 Codex 登录状态，请先执行 codex login。",
+      error: error instanceof Error ? error.message : "当前没有检测到可用的本机执行环境登录状态。",
     };
   }
 }
@@ -411,6 +414,6 @@ async function ensureCodexLogin() {
   const login = await getCodexLoginStatus();
 
   if (!login.ok) {
-    throw new Error(`${login.error} 请先在本机终端执行 codex login，并确认已使用 ChatGPT 登录。`);
+    throw new Error(`${login.error} 请先完成 OpenCrab 的本机执行环境登录后再重试。`);
   }
 }

@@ -119,11 +119,11 @@ export async function POST(
               role: "assistant",
               content: latestText.trim() || "已停止当前回复。",
               thinking: latestThinking,
-              meta: `已停止 · ${body.model || prepared.conversation.lastAssistantModel || "Codex"}`,
+              meta: `已停止 · ${body.model || prepared.conversation.lastAssistantModel || "OpenCrab"}`,
               status: "stopped",
             });
           } else {
-            const message = error instanceof Error ? error.message : "Codex SDK 调用失败。";
+            const message = error instanceof Error ? error.message : "OpenCrab 回复生成失败。";
             emit({
               type: "error",
               error: message,
@@ -133,7 +133,7 @@ export async function POST(
           if (!didComplete && !request.signal.aborted && !latestText.trim()) {
             emit({
               type: "error",
-              error: "Codex 未返回可用内容，请稍后再试。",
+              error: "OpenCrab 当前没有返回可用内容，请稍后再试。",
             });
           }
 
@@ -154,7 +154,7 @@ export async function POST(
       return NextResponse.json({ error: error.message }, { status: error.statusCode });
     }
 
-    const message = error instanceof Error ? error.message : "Codex SDK 调用失败。";
+    const message = error instanceof Error ? error.message : "OpenCrab 回复生成失败。";
 
     return NextResponse.json({ error: message }, { status: 500 });
   }

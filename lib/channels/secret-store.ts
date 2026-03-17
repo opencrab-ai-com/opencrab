@@ -36,6 +36,21 @@ export function getTelegramBotTokenPreview() {
   };
 }
 
+export function getFeishuCredentialPreview() {
+  const { appId, appSecret } = getFeishuSecrets();
+
+  return {
+    appId: {
+      raw: appId || null,
+      masked: maskFeishuCredential(appId, 6, 4),
+    },
+    appSecret: {
+      raw: appSecret || null,
+      masked: maskFeishuCredential(appSecret, 4, 4),
+    },
+  };
+}
+
 export function getFeishuSecrets(): FeishuSecrets {
   const state = readState();
 
@@ -94,6 +109,8 @@ export function syncChannelConfigFromSecrets(channelId: ChannelId) {
             ? "ready"
             : current.status === "error"
               ? "error"
+              : current.configSummary.credentialsVerified === true
+                ? "connecting"
               : "disconnected",
       lastError: hasBotToken ? current.lastError : null,
       configSummary: {
@@ -130,6 +147,8 @@ export function syncChannelConfigFromSecrets(channelId: ChannelId) {
         ? "ready"
         : current.status === "error"
           ? "error"
+          : current.configSummary.credentialsVerified === true
+            ? "connecting"
           : "disconnected",
     lastError: isConfigured ? current.lastError : null,
     configSummary: {
@@ -218,6 +237,22 @@ function maskTelegramBotToken(value: string | undefined) {
   }
 
   return `${value.slice(0, 6)}...${value.slice(-4)}`;
+}
+
+function maskFeishuCredential(
+  value: string | undefined,
+  prefixLength: number,
+  suffixLength: number,
+) {
+  if (!value) {
+    return null;
+  }
+
+  if (value.length <= prefixLength + suffixLength + 3) {
+    return value;
+  }
+
+  return `${value.slice(0, prefixLength)}...${value.slice(-suffixLength)}`;
 }
 
 function pickNonEmptyFeishuSecrets(

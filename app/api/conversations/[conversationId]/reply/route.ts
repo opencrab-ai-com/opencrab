@@ -41,7 +41,7 @@ export async function POST(
       return NextResponse.json({ error: error.message }, { status: error.statusCode });
     }
 
-    const message = error instanceof Error ? error.message : "Codex SDK 调用失败。";
+    const message = error instanceof Error ? error.message : "OpenCrab 回复生成失败。";
 
     return NextResponse.json({ error: message }, { status: 500 });
   }

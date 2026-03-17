@@ -351,6 +351,10 @@ function sortByRecent(
 }
 
 export function getChannelStatusLabel(status: ChannelStatus) {
+  if (status === "connecting") {
+    return "连接中";
+  }
+
   if (status === "ready") {
     return "已就绪";
   }

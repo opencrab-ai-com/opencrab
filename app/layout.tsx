@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "OpenCrab",
-  description: "A simple Codex-powered assistant for everyday users.",
+  description: "A simple local-first assistant for everyday users.",
 };
 
 export default function RootLayout({

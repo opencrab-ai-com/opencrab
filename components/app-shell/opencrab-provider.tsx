@@ -280,7 +280,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
         if (active) {
           setCodexStatus({
             ok: false,
-            error: getUserFacingError(error, "当前无法读取 Codex 状态。"),
+            error: getUserFacingError(error, "当前无法读取 OpenCrab 的运行状态。"),
             loginStatus: "missing",
             loginMethod: "chatgpt",
           });

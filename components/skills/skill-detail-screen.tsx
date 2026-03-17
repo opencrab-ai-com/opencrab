@@ -145,7 +145,7 @@ export function SkillDetailScreen({ skillId }: { skillId: string }) {
                 <InfoCard label="来源" value={skill.originLabel} />
                 <InfoCard
                   label="影响范围"
-                  value="只影响 OpenCrab 的技能管理状态，不会修改 Codex app 的技能目录。"
+                  value="只影响 OpenCrab 的技能管理状态，不会修改你电脑上其他工具的技能目录。"
                 />
                 <InfoCard
                   label="最近变更"

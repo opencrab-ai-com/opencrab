@@ -6,7 +6,13 @@ import {
   recordReceivedInboundEvent,
   summarizeChannelInbound,
 } from "@/lib/channels/dispatcher";
-import { sendFeishuTextMessage, type FeishuInboundMessage } from "@/lib/channels/feishu";
+import {
+  acknowledgeFeishuInboundMessage,
+  downloadFeishuAttachments,
+  sendFeishuReply,
+  sendFeishuTextMessage,
+  type FeishuInboundMessage,
+} from "@/lib/channels/feishu";
 
 export function enqueueFeishuInboundMessage(inbound: FeishuInboundMessage) {
   if (findEventByDedupeKey("feishu", inbound.dedupeKey)) {
@@ -30,7 +36,7 @@ export function enqueueFeishuInboundMessage(inbound: FeishuInboundMessage) {
     dedupeKey: inbound.dedupeKey,
     remoteChatId: inbound.remoteChatId,
     remoteMessageId: inbound.remoteMessageId,
-    summary: summarizeChannelInbound(inbound.text, 0),
+    summary: summarizeChannelInbound(inbound.text, inbound.attachmentRefs.length),
   });
 
   void processFeishuInboundMessage(inbound);
@@ -44,17 +50,27 @@ export function enqueueFeishuInboundMessage(inbound: FeishuInboundMessage) {
 
 async function processFeishuInboundMessage(inbound: FeishuInboundMessage) {
   try {
+    void acknowledgeFeishuInboundMessage({
+      messageId: inbound.remoteMessageId,
+    });
+    const attachments = await downloadFeishuAttachments(inbound.attachmentRefs);
     const handled = await handleInboundChannelTextMessage({
       channelId: "feishu",
       ...inbound,
+      attachmentIds: attachments.map((attachment) => attachment.id),
     });
-    const delivery = await sendFeishuTextMessage(inbound.remoteChatId, handled.replyText);
+    const delivery = await sendFeishuReply({
+      chatId: inbound.remoteChatId,
+      text: handled.replyText,
+      attachments: handled.replyAttachments,
+    });
 
     recordOutboundDelivery({
       channelId: "feishu",
       binding: handled.binding,
       remoteMessageId: delivery.remoteMessageId,
       text: handled.replyText,
+      attachmentCount: handled.replyAttachments.length,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "飞书消息处理失败。";

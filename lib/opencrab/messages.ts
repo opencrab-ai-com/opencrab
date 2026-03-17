@@ -25,7 +25,7 @@ export function getUserFacingError(error: unknown, fallback: string) {
   const message = error instanceof Error ? error.message : typeof error === "string" ? error : fallback;
 
   if (/codex login/i.test(message) || /登录状态/i.test(message)) {
-    return "当前没有可用的 Codex 登录状态。请先在本机终端执行 codex login，然后回到 OpenCrab 重试。";
+    return "OpenCrab 当前还没有完成本机执行环境准备，请先完成初始登录后再回来重试。";
   }
 
   if (/缺少消息内容或附件/.test(message)) {

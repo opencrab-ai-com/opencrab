@@ -14,11 +14,22 @@ type ChannelSetupFormProps = {
     raw: string | null;
     masked: string | null;
   } | null;
+  feishuCredentialPreview?: {
+    appId: {
+      raw: string | null;
+      masked: string | null;
+    };
+    appSecret: {
+      raw: string | null;
+      masked: string | null;
+    };
+  } | null;
 };
 
 export function ChannelSetupForm({
   channel,
   telegramTokenPreview = null,
+  feishuCredentialPreview = null,
 }: ChannelSetupFormProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
@@ -37,6 +48,22 @@ export function ChannelSetupForm({
     try {
       await navigator.clipboard.writeText(telegramTokenPreview.raw);
       setCopyMessage("已复制原始 Token。");
+      window.setTimeout(() => {
+        setCopyMessage(null);
+      }, 2000);
+    } catch {
+      setCopyMessage("复制失败，请重试。");
+    }
+  }
+
+  async function handleCopyStoredValue(value: string | null, label: string) {
+    if (!value) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopyMessage(`已复制${label}。`);
       window.setTimeout(() => {
         setCopyMessage(null);
       }, 2000);
@@ -128,9 +155,11 @@ export function ChannelSetupForm({
 
       <div className={`mt-6 grid gap-4 ${channel.id === "telegram" ? "" : "md:grid-cols-2"}`}>
         {fieldGroups.primary.map((field) => (
-          <label key={field.name} className="block">
+          <label key={field.name} className="flex h-full flex-col">
             <span className="text-[12px] font-medium text-muted-strong">{field.label}</span>
-            <span className="mt-1 block text-[12px] leading-5 text-muted">{field.helper}</span>
+            <span className="mt-1 block min-h-[40px] text-[12px] leading-5 text-muted">
+              {field.helper}
+            </span>
             {channel.id === "telegram" && field.name === "botToken" && telegramTokenPreview?.masked ? (
               <div className="mt-2 flex flex-wrap items-center gap-2 rounded-[16px] border border-line bg-background px-4 py-3">
                 <span className="text-[12px] text-muted">当前已保存：</span>
@@ -142,7 +171,47 @@ export function ChannelSetupForm({
                 >
                   复制原始 Token
                 </button>
-                {copyMessage ? <span className="text-[12px] text-muted">{copyMessage}</span> : null}
+              </div>
+            ) : null}
+            {channel.id === "feishu" &&
+            field.name === "appId" &&
+            feishuCredentialPreview?.appId.masked ? (
+              <div className="mt-2 flex flex-wrap items-center gap-2 rounded-[16px] border border-line bg-background px-4 py-3">
+                <span className="text-[12px] text-muted">当前已保存：</span>
+                <span className="font-mono text-[13px] text-text">
+                  {feishuCredentialPreview.appId.masked}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleCopyStoredValue(feishuCredentialPreview.appId.raw, "原始 App ID")
+                  }
+                  className="rounded-full border border-line px-3 py-1 text-[12px] text-text transition hover:border-text/20"
+                >
+                  复制原始 App ID
+                </button>
+              </div>
+            ) : null}
+            {channel.id === "feishu" &&
+            field.name === "appSecret" &&
+            feishuCredentialPreview?.appSecret.masked ? (
+              <div className="mt-2 flex flex-wrap items-center gap-2 rounded-[16px] border border-line bg-background px-4 py-3">
+                <span className="text-[12px] text-muted">当前已保存：</span>
+                <span className="font-mono text-[13px] text-text">
+                  {feishuCredentialPreview.appSecret.masked}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleCopyStoredValue(
+                      feishuCredentialPreview.appSecret.raw,
+                      "原始 App Secret",
+                    )
+                  }
+                  className="rounded-full border border-line px-3 py-1 text-[12px] text-text transition hover:border-text/20"
+                >
+                  复制原始 App Secret
+                </button>
               </div>
             ) : null}
             <input
@@ -193,6 +262,11 @@ export function ChannelSetupForm({
           }`}
         >
           {message}
+        </p>
+      ) : null}
+      {copyMessage && !message ? (
+        <p className="mt-4 rounded-[16px] border border-line bg-background px-4 py-3 text-[13px] text-muted-strong">
+          {copyMessage}
         </p>
       ) : null}
     </form>

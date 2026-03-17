@@ -1,5 +1,6 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { formatChannelReplyText } from "@/lib/channels/message-format";
 import { getUploadById, saveUploadFromBuffer } from "@/lib/resources/upload-store";
 import { getTelegramSecrets } from "@/lib/channels/secret-store";
 import type { UploadedAttachment } from "@/lib/resources/opencrab-api-types";
@@ -243,9 +244,10 @@ export async function sendTelegramTextMessage(chatId: string, text: string) {
     throw new Error("Telegram bot token 未配置。");
   }
 
+  const renderedText = formatChannelReplyText(text);
   let lastMessageId: string | null = null;
 
-  for (const chunk of splitTelegramText(text)) {
+  for (const chunk of splitTelegramText(renderedText)) {
     const response = await callTelegramApi<TelegramSendMessageResult>(botToken, "sendMessage", {
       chat_id: chatId,
       text: chunk,
@@ -324,9 +326,10 @@ export async function sendTelegramReply(input: {
   text: string;
   attachments?: UploadedAttachment[];
 }) {
-  const shouldSendText = Boolean(input.text.trim());
+  const renderedText = formatChannelReplyText(input.text);
+  const shouldSendText = Boolean(renderedText.trim());
   const textResult = shouldSendText
-    ? await sendTelegramTextMessage(input.chatId, input.text)
+    ? await sendTelegramTextMessage(input.chatId, renderedText)
     : { remoteMessageId: null as string | null };
 
   if (!input.attachments?.length) {

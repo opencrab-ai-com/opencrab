@@ -48,16 +48,20 @@ export async function syncFeishuChannelState(input: { restartSocket?: boolean; d
     const now = new Date().toISOString();
 
     updateChannelRecord("feishu", {
-      status: socket.ok ? "ready" : "error",
+      status: socket.ok
+        ? socket.connected
+          ? "ready"
+          : "connecting"
+        : "error",
       lastError: socket.ok ? null : socket.message,
       configSummary: {
         appId: app.appId,
         credentialsVerified: true,
         lastVerifiedAt: now,
         connectionMode: "websocket",
-        socketStatus: socket.ok ? "connected" : "error",
-        socketConnected: socket.ok,
-        lastSocketConnectedAt: socket.ok ? now : null,
+        socketStatus: socket.ok ? (socket.connected ? "connected" : "connecting") : "error",
+        socketConnected: socket.connected,
+        lastSocketConnectedAt: socket.connected ? now : null,
       },
     });
 
@@ -65,7 +69,9 @@ export async function syncFeishuChannelState(input: { restartSocket?: boolean; d
       ok: socket.ok,
       detail: getChannelDetail("feishu"),
       message: socket.ok
-        ? "飞书配置已校验通过，长连接也已经启动。"
+        ? socket.connected
+          ? "飞书配置已校验通过，长连接也已经连上。"
+          : socket.message
         : socket.message,
     };
   } catch (error) {

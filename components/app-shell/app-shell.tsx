@@ -61,11 +61,13 @@ export function AppShell({ sidebar, children }: AppShellProps) {
           })}
         </nav>
 
-        <div className="mt-2 min-h-0 flex-1">{sidebar}</div>
+        <div className="mt-2 min-h-0 flex-1 overflow-y-auto pr-1">
+          {sidebar}
+        </div>
 
         <Link
           href="/settings"
-          className="mt-2 flex items-center gap-3 border-t border-line px-2 pt-2.5 text-text transition hover:opacity-80"
+          className="mt-2 shrink-0 flex items-center gap-3 border-t border-line px-2 pt-2.5 text-text transition hover:opacity-80"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#d8d9db] text-[12px] font-semibold text-[#5f6368]">
             {currentUser.initial}

@@ -1,6 +1,6 @@
 export type ChannelId = "telegram" | "feishu";
 
-export type ChannelStatus = "not_configured" | "ready" | "error" | "disconnected";
+export type ChannelStatus = "not_configured" | "connecting" | "ready" | "error" | "disconnected";
 
 export type ChannelDirection = "inbound" | "outbound" | "system";
 

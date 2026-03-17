@@ -7,7 +7,7 @@ export async function GET() {
 
     return NextResponse.json(status);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Codex SDK 状态检查失败。";
+    const message = error instanceof Error ? error.message : "OpenCrab 运行状态检查失败。";
 
     return NextResponse.json({
       ok: false,

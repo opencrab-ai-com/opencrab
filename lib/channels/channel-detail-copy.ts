@@ -2,6 +2,10 @@ import { getChannelStatusLabel } from "@/lib/channels/channel-store";
 import type { ChannelDetail } from "@/lib/channels/types";
 
 export function buildChannelStatusTone(status: ChannelDetail["status"]) {
+  if (status === "connecting") {
+    return "border-[#d9def8] bg-[#f4f6ff] text-[#3b4cca]";
+  }
+
   if (status === "ready") {
     return "border-[#cfe7d4] bg-[#eef8f0] text-[#23633a]";
   }
@@ -53,8 +57,12 @@ export function buildFeishuStatusSummary(channel: ChannelDetail) {
     return "已经连上了。飞书消息会通过长连接直接进入 OpenCrab，不需要再配置公网 Webhook。";
   }
 
+  if (channel.status === "connecting" || channel.configSummary.socketStatus === "connecting") {
+    return "应用凭证已经校验通过，OpenCrab 正在尝试建立飞书长连接。请保持 OpenCrab 运行，再回到飞书开放平台点一次保存。";
+  }
+
   if (channel.configSummary.credentialsVerified) {
-    return "应用凭证已经校验通过，OpenCrab 正在尝试建立飞书长连接。";
+    return "应用凭证已经校验通过，但飞书平台还没有确认长连接成功。请保持 OpenCrab 运行，然后点一次检查状态。";
   }
 
   return "凭证已保存，OpenCrab 正在校验飞书应用并准备启动长连接。";

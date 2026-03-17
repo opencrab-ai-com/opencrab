@@ -124,10 +124,10 @@ const RECOMMENDED_SKILLS: CatalogSeed[] = [
       "",
       "Build and review ASP.NET Core projects.",
       "",
-      "This entry is copied from the Codex skills recommendations list. Installing it here only enables it inside OpenCrab.",
+      "This entry comes from OpenCrab's recommended skills list. Enabling it here only affects OpenCrab itself.",
     ].join("\n"),
     defaultStatus: "available",
-    note: "来自 OpenCrab 的推荐技能清单；安装只影响 OpenCrab，不会修改 Codex app。",
+    note: "来自 OpenCrab 的推荐技能清单；安装只影响 OpenCrab，不会修改你电脑上的其他工具。",
     order: 100,
   },
   {
@@ -139,7 +139,7 @@ const RECOMMENDED_SKILLS: CatalogSeed[] = [
     sourcePath: null,
     detailsMarkdown: "# Chatgpt Apps\n\nBuild and scaffold ChatGPT apps.",
     defaultStatus: "available",
-    note: "来自 OpenCrab 的推荐技能清单；安装只影响 OpenCrab，不会修改 Codex app。",
+    note: "来自 OpenCrab 的推荐技能清单；安装只影响 OpenCrab，不会修改你电脑上的其他工具。",
     order: 101,
   },
   {
@@ -151,7 +151,7 @@ const RECOMMENDED_SKILLS: CatalogSeed[] = [
     sourcePath: null,
     detailsMarkdown: "# Cloudflare Deploy\n\nDeploy Workers, Pages, and platform services.",
     defaultStatus: "available",
-    note: "来自 OpenCrab 的推荐技能清单；安装只影响 OpenCrab，不会修改 Codex app。",
+    note: "来自 OpenCrab 的推荐技能清单；安装只影响 OpenCrab，不会修改你电脑上的其他工具。",
     order: 102,
   },
   {
@@ -163,7 +163,7 @@ const RECOMMENDED_SKILLS: CatalogSeed[] = [
     sourcePath: null,
     detailsMarkdown: "# Develop Web Game\n\nWeb game dev plus Playwright test loop.",
     defaultStatus: "available",
-    note: "来自 OpenCrab 的推荐技能清单；安装只影响 OpenCrab，不会修改 Codex app。",
+    note: "来自 OpenCrab 的推荐技能清单；安装只影响 OpenCrab，不会修改你电脑上的其他工具。",
     order: 103,
   },
   {
@@ -175,7 +175,7 @@ const RECOMMENDED_SKILLS: CatalogSeed[] = [
     sourcePath: null,
     detailsMarkdown: "# Doc\n\nEdit and review docx files.",
     defaultStatus: "available",
-    note: "来自 OpenCrab 的推荐技能清单；安装只影响 OpenCrab，不会修改 Codex app。",
+    note: "来自 OpenCrab 的推荐技能清单；安装只影响 OpenCrab，不会修改你电脑上的其他工具。",
     order: 104,
   },
   {
@@ -187,7 +187,7 @@ const RECOMMENDED_SKILLS: CatalogSeed[] = [
     sourcePath: null,
     detailsMarkdown: "# Figma\n\nUse Figma MCP for design-to-code work.",
     defaultStatus: "available",
-    note: "来自 OpenCrab 的推荐技能清单；安装只影响 OpenCrab，不会修改 Codex app。",
+    note: "来自 OpenCrab 的推荐技能清单；安装只影响 OpenCrab，不会修改你电脑上的其他工具。",
     order: 105,
   },
   {
@@ -199,7 +199,7 @@ const RECOMMENDED_SKILLS: CatalogSeed[] = [
     sourcePath: null,
     detailsMarkdown: "# Figma Implement Design\n\nTurn Figma designs into production-ready interfaces.",
     defaultStatus: "available",
-    note: "来自 OpenCrab 的推荐技能清单；安装只影响 OpenCrab，不会修改 Codex app。",
+    note: "来自 OpenCrab 的推荐技能清单；安装只影响 OpenCrab，不会修改你电脑上的其他工具。",
     order: 106,
   },
   {
@@ -211,7 +211,7 @@ const RECOMMENDED_SKILLS: CatalogSeed[] = [
     sourcePath: null,
     detailsMarkdown: "# GH Address Comments\n\nAddress comments in a GitHub PR review.",
     defaultStatus: "available",
-    note: "来自 OpenCrab 的推荐技能清单；安装只影响 OpenCrab，不会修改 Codex app。",
+    note: "来自 OpenCrab 的推荐技能清单；安装只影响 OpenCrab，不会修改你电脑上的其他工具。",
     order: 107,
   },
 ];
@@ -326,7 +326,7 @@ function buildCatalog() {
       sourcePath: null,
       detailsMarkdown: item.detailsMarkdown || null,
       defaultStatus: item.status,
-      note: "仅保存在 OpenCrab 本地 store 中，不会写入 Codex app 的技能目录。",
+      note: "仅保存在 OpenCrab 本地空间中，不会写入你电脑上其他工具的技能目录。",
       order: 10_000 + index,
     }));
 
@@ -351,13 +351,13 @@ function discoverCodexSkills(): CatalogSeed[] {
     return {
       id: slug,
       name: override?.name || parsed.name || humanizeSlug(slug),
-      summary: override?.summary || parsed.summary || "Imported from Codex app skills.",
+      summary: override?.summary || parsed.summary || "Imported from your local shared skills library.",
       origin: "codex" as const,
       icon: override?.icon || inferIcon(slug),
       sourcePath: filePath,
       detailsMarkdown: parsed.detailsMarkdown,
       defaultStatus: "installed" as const,
-      note: `详情内容复制自 ${filePath}。在 OpenCrab 里的安装、禁用、卸载只影响 OpenCrab，不会修改 Codex app。`,
+      note: `详情内容复制自 ${filePath}。在 OpenCrab 里的安装、禁用、卸载只影响 OpenCrab，不会修改你电脑上的其他工具。`,
       order: getCodexOrder(slug, index),
     };
   });
@@ -465,7 +465,7 @@ function getStatusLabel(status: SkillStatus) {
 
 function getOriginLabel(origin: SkillOrigin) {
   if (origin === "codex") {
-    return "复制自 Codex app";
+    return "来自本机技能库";
   }
 
   if (origin === "custom") {
