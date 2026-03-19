@@ -1,12 +1,5 @@
-import { NextResponse } from "next/server";
+import { noStoreJson } from "@/lib/server/api-route";
 
 export function GET() {
-  return NextResponse.json(
-    { ok: true },
-    {
-      headers: {
-        "Cache-Control": "no-store",
-      },
-    },
-  );
+  return noStoreJson({ ok: true });
 }

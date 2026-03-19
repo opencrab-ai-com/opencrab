@@ -23,12 +23,12 @@ OpenCrab 是一个面向普通用户的、本地优先的小螃蟹工作台。
 
 ## 产品截图
 
-| 首页 | 渠道 |
-| --- | --- |
+| 首页                                                                        | 渠道                                                                        |
+| --------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | <img src="./docs/screenshots/homepage.png" alt="OpenCrab 首页" width="480"> | <img src="./docs/screenshots/channels.png" alt="OpenCrab 渠道" width="480"> |
 
-| 定时任务 | 技能 |
-| --- | --- |
+| 定时任务                                                                     | 技能                                                                      |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | <img src="./docs/screenshots/tasks.png" alt="OpenCrab 定时任务" width="480"> | <img src="./docs/screenshots/skills.png" alt="OpenCrab 技能" width="480"> |
 
 ## 主要能力
@@ -51,15 +51,15 @@ OpenCrab 是一个面向普通用户的、本地优先的小螃蟹工作台。
 
 OpenCrab 当前通过 `@openai/codex-sdk` 接入 Codex，核心对话能力依赖本机 `codex login` 的登录状态。
 
-这意味着你需要先具备可用的 Codex 账号资格。根据 OpenAI 官方 Codex CLI 文档，目前包含 Codex 的 ChatGPT 计划包括：
+这意味着你需要先具备可用的 Codex 使用资格。
+由于 OpenAI 可能会调整可用计划、登录入口和权限边界，这里不再在 README 里硬编码套餐列表。
 
-- ChatGPT Plus
-- ChatGPT Pro
-- ChatGPT Business
-- ChatGPT Edu
-- ChatGPT Enterprise
+你只需要确认两件事：
 
-官方说明可参考：[Codex CLI](https://developers.openai.com/codex/cli)
+- 本机可以执行 `codex login`
+- `codex login status` 能返回已登录状态
+
+最新要求请直接参考 OpenAI 官方文档：[Codex CLI](https://developers.openai.com/codex/cli)
 
 如果你的账号本身没有 Codex 使用资格，那么即使项目能启动，OpenCrab 也无法正常完成核心回复流程。
 
@@ -235,7 +235,7 @@ npm run build
 ```bash
 OPENCRAB_CODEX_MODEL=gpt-5.4
 OPENCRAB_CODEX_REASONING_EFFORT=medium
-OPENCRAB_CODEX_SANDBOX_MODE=read-only
+OPENCRAB_CODEX_SANDBOX_MODE=workspace-write
 OPENCRAB_CODEX_NETWORK_ACCESS=false
 OPENCRAB_PUBLIC_BASE_URL=http://127.0.0.1:3000
 ```
@@ -247,6 +247,7 @@ OpenCrab 自己的常用配置可以直接在这些页面里处理：
 说明：
 
 - 如果你希望命令执行直接继承本机的 `OPENAI_API_KEY`，可以在 `/settings` 里手动打开对应开关；默认关闭
+- 如果你直接复制 `.env.example`，当前默认 sandbox 也是 `workspace-write`，与设置页推荐值保持一致
 
 如果你是高级用户，仍然可以按需通过环境变量扩展更多运行配置。
 

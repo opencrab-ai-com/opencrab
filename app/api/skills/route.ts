@@ -1,19 +1,19 @@
-import { NextResponse } from "next/server";
 import { createCustomSkill, listSkillsCatalog } from "@/lib/skills/skill-store";
+import { errorResponse, json, readJsonBody } from "@/lib/server/api-route";
 
 export function GET() {
-  return NextResponse.json({
+  return json({
     skills: listSkillsCatalog(),
   });
 }
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as {
+    const body = await readJsonBody<{
       name?: string;
       summary?: string;
       detailsMarkdown?: string;
-    };
+    }>(request, {});
 
     const skill = createCustomSkill({
       name: body.name || "",
@@ -21,11 +21,10 @@ export async function POST(request: Request) {
       detailsMarkdown: body.detailsMarkdown,
     });
 
-    return NextResponse.json({
+    return json({
       skill,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "创建技能失败。";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return errorResponse(error, "创建技能失败。", 400);
   }
 }

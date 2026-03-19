@@ -27,12 +27,16 @@ components/
   ui/                    # 纯展示型基础组件
 lib/
   channels/              # 渠道协议适配、事件分发、store 与 secret store
+  chatgpt/               # ChatGPT 连接状态与登录流程
   codex/                 # Codex SDK、浏览器连接、模型选项
   conversations/         # 会话时间与标题工具
   opencrab/              # 通用标签、错误、消息工具
   resources/             # 本地资源层：local store、uploads、API types
   runtime/               # 运行时配置，如公网地址与隧道状态
+  server/                # API route 公共响应、参数和错误处理工具
   skills/                # 技能目录与状态存储
+  tasks/                 # 定时任务 store、runner 与类型
+  tunnel/                # 公网地址与隧道维护
   view-models/           # 左侧栏等视图模型映射
 scripts/
   browser_mcp_stdio_proxy.mjs
@@ -145,8 +149,10 @@ scripts/
 
 - `resources`：负责持久化与读写
 - `channels`：负责渠道协议适配、去重、绑定关系和渠道状态
+- `server`：负责 API route 的输入输出约定，统一 JSON 响应和错误语义
 - `skills`：负责技能目录发现、本地状态与自定义技能条目
 - `runtime`：负责公网地址、隧道和运行时配置
+- `tasks`：负责定时任务持久化、调度与运行记录
 - `provider`：负责前端应用状态与流式消息生命周期
 - `view-models`：负责把资源数据映射成左侧栏等 UI 结构
 - `ui`：只负责展示，不直接碰资源层

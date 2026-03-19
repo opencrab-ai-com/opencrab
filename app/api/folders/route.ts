@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
 import { createFolder } from "@/lib/resources/local-store";
+import { json, readJsonBody } from "@/lib/server/api-route";
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as { name?: string };
+  const body = await readJsonBody<{ name?: string }>(request, {});
   const snapshot = createFolder(body.name ?? "");
 
-  return NextResponse.json({ snapshot });
+  return json({ snapshot });
 }

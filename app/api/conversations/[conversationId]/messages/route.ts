@@ -1,14 +1,19 @@
-import { NextResponse } from "next/server";
 import { addMessage } from "@/lib/resources/local-store";
+import {
+  json,
+  readJsonBody,
+  readRouteParams,
+  type RouteContext,
+} from "@/lib/server/api-route";
 import type { ConversationMessage } from "@/lib/seed-data";
 
 export async function POST(
   request: Request,
-  context: { params: Promise<{ conversationId: string }> },
+  context: RouteContext<{ conversationId: string }>,
 ) {
-  const { conversationId } = await context.params;
-  const body = (await request.json()) as Omit<ConversationMessage, "id">;
+  const { conversationId } = await readRouteParams(context);
+  const body = await readJsonBody<Omit<ConversationMessage, "id">>(request);
   const result = addMessage(conversationId, body);
 
-  return NextResponse.json(result);
+  return json(result);
 }

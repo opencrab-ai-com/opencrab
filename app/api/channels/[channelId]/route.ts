@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import {
   ensureChannelStartupSync,
   ensureChannelWatchdog,
@@ -10,41 +9,47 @@ import {
   type ChannelPatchPayload,
 } from "@/lib/channels/channel-management";
 import { syncAllChannelConfigsFromSecrets } from "@/lib/channels/secret-store";
+import {
+  json,
+  notFoundJson,
+  readJsonBody,
+  type RouteContext,
+} from "@/lib/server/api-route";
 
 export async function GET(
   _request: Request,
-  context: { params: Promise<{ channelId: string }> },
+  context: RouteContext<{ channelId: string }>,
 ) {
   const channelId = await resolveChannelId(context.params);
 
   if (!channelId) {
-    return NextResponse.json({ error: "不支持的 channel。" }, { status: 404 });
+    return notFoundJson("不支持的 channel。");
   }
 
   syncAllChannelConfigsFromSecrets();
   ensureChannelWatchdog();
   void ensureChannelStartupSync();
 
-  return NextResponse.json({
+  return json({
     detail: getChannelDetail(channelId),
   });
 }
 
 export async function PATCH(
   request: Request,
-  context: { params: Promise<{ channelId: string }> },
+  context: RouteContext<{ channelId: string }>,
 ) {
   ensureChannelWatchdog();
   const channelId = await resolveChannelId(context.params);
 
   if (!channelId) {
-    return NextResponse.json({ error: "不支持的 channel。" }, { status: 404 });
+    return notFoundJson("不支持的 channel。");
   }
 
-  const body = (await request.json()) as ChannelPatchPayload;
+  const body = await readJsonBody<ChannelPatchPayload>(request, {});
   const result = await saveChannelConfiguration(channelId, body);
 
-  return NextResponse.json({
+  return json({
     detail: result.detail,
     verification: result.verification,
   });

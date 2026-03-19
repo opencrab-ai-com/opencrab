@@ -1,34 +1,41 @@
-import { NextResponse } from "next/server";
 import type { SkillAction } from "@/lib/resources/opencrab-api-types";
 import { getSkillDetail, mutateSkill } from "@/lib/skills/skill-store";
+import {
+  badRequestJson,
+  errorResponse,
+  json,
+  notFoundJson,
+  readJsonBody,
+  readRouteParams,
+  type RouteContext,
+} from "@/lib/server/api-route";
 
 export function GET(
   _request: Request,
-  context: { params: Promise<{ skillId: string }> },
+  context: RouteContext<{ skillId: string }>,
 ) {
   return resolveSkill(context.params);
 }
 
 export async function PATCH(
   request: Request,
-  context: { params: Promise<{ skillId: string }> },
+  context: RouteContext<{ skillId: string }>,
 ) {
-  const { skillId } = await context.params;
-  const body = (await request.json()) as { action?: SkillAction };
+  const { skillId } = await readRouteParams(context);
+  const body = await readJsonBody<{ action?: SkillAction }>(request, {});
 
   if (!body.action) {
-    return NextResponse.json({ error: "缺少技能动作。" }, { status: 400 });
+    return badRequestJson("缺少技能动作。");
   }
 
   try {
     const skill = await mutateSkill(skillId, body.action);
 
-    return NextResponse.json({
+    return json({
       skill: skill ? await getSkillDetail(skillId) : null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "技能操作失败。";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return errorResponse(error, "技能操作失败。", 400);
   }
 }
 
@@ -37,10 +44,10 @@ async function resolveSkill(paramsPromise: Promise<{ skillId: string }>) {
   const skill = await getSkillDetail(skillId);
 
   if (!skill) {
-    return NextResponse.json({ error: "技能不存在。" }, { status: 404 });
+    return notFoundJson("技能不存在。");
   }
 
-  return NextResponse.json({
+  return json({
     skill,
   });
 }

@@ -102,11 +102,11 @@ export function ConversationThread({ conversationId }: ConversationThreadProps) 
                   ? "OpenCrab"
                   : message.source === "telegram"
                     ? "Telegram 用户"
-                    : message.source === "feishu"
+                  : message.source === "feishu"
                       ? "飞书用户"
                       : message.source === "task"
                         ? "定时任务"
-                      : "你"}
+                      : "我"}
               </div>
               {message.role === "assistant" && message.thinking?.length ? (
                 <ThinkingPanel

@@ -1,30 +1,38 @@
-import { NextResponse } from "next/server";
-import { deleteConversation, updateConversation } from "@/lib/resources/local-store";
+import {
+  deleteConversation,
+  updateConversation,
+} from "@/lib/resources/local-store";
+import {
+  json,
+  readJsonBody,
+  readRouteParams,
+  type RouteContext,
+} from "@/lib/server/api-route";
 
 export async function PATCH(
   request: Request,
-  context: { params: Promise<{ conversationId: string }> },
+  context: RouteContext<{ conversationId: string }>,
 ) {
-  const { conversationId } = await context.params;
-  const body = (await request.json()) as {
+  const { conversationId } = await readRouteParams(context);
+  const body = await readJsonBody<{
     title?: string;
     preview?: string;
     timeLabel?: string;
     folderId?: string | null;
     codexThreadId?: string | null;
     lastAssistantModel?: string | null;
-  };
+  }>(request, {});
   const snapshot = updateConversation(conversationId, body);
 
-  return NextResponse.json({ snapshot });
+  return json({ snapshot });
 }
 
 export async function DELETE(
   _request: Request,
-  context: { params: Promise<{ conversationId: string }> },
+  context: RouteContext<{ conversationId: string }>,
 ) {
-  const { conversationId } = await context.params;
+  const { conversationId } = await readRouteParams(context);
   const snapshot = deleteConversation(conversationId);
 
-  return NextResponse.json({ snapshot });
+  return json({ snapshot });
 }

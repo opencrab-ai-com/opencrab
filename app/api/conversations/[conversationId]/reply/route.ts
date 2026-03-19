@@ -1,23 +1,31 @@
-import { NextResponse } from "next/server";
 import {
-  ConversationTurnError,
   runConversationTurn,
 } from "@/lib/conversations/run-conversation-turn";
-import type { CodexReasoningEffort, CodexSandboxMode } from "@/lib/resources/opencrab-api-types";
+import type {
+  CodexReasoningEffort,
+  CodexSandboxMode,
+} from "@/lib/resources/opencrab-api-types";
+import {
+  errorResponse,
+  json,
+  readJsonBody,
+  readRouteParams,
+  type RouteContext,
+} from "@/lib/server/api-route";
 
 export async function POST(
   request: Request,
-  context: { params: Promise<{ conversationId: string }> },
+  context: RouteContext<{ conversationId: string }>,
 ) {
   try {
-    const { conversationId } = await context.params;
-    const body = (await request.json()) as {
+    const { conversationId } = await readRouteParams(context);
+    const body = await readJsonBody<{
       content?: string;
       model?: string;
       reasoningEffort?: CodexReasoningEffort;
       sandboxMode?: CodexSandboxMode;
       attachmentIds?: string[];
-    };
+    }>(request, {});
     const result = await runConversationTurn({
       conversationId,
       content: body.content,
@@ -27,7 +35,7 @@ export async function POST(
       attachmentIds: body.attachmentIds,
     });
 
-    return NextResponse.json({
+    return json({
       snapshot: result.snapshot,
       assistant: {
         text: result.assistant.text,
@@ -37,12 +45,6 @@ export async function POST(
       },
     });
   } catch (error) {
-    if (error instanceof ConversationTurnError) {
-      return NextResponse.json({ error: error.message }, { status: error.statusCode });
-    }
-
-    const message = error instanceof Error ? error.message : "OpenCrab 回复生成失败。";
-
-    return NextResponse.json({ error: message }, { status: 500 });
+    return errorResponse(error, "OpenCrab 回复生成失败。");
   }
 }

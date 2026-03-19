@@ -1,5 +1,7 @@
-import { NextResponse } from "next/server";
-import { findEventByDedupeKey, markChannelError } from "@/lib/channels/channel-store";
+import {
+  findEventByDedupeKey,
+  markChannelError,
+} from "@/lib/channels/channel-store";
 import {
   handleInboundChannelTextMessage,
   recordReceivedInboundEvent,
@@ -14,16 +16,17 @@ import {
   parseTelegramInboundMessage,
   sendTelegramReply,
 } from "@/lib/channels/telegram";
+import { errorResponse, json, readJsonBody } from "@/lib/server/api-route";
 
 export async function POST(request: Request) {
   try {
     assertTelegramWebhookAuth(request);
 
-    const body = (await request.json()) as Record<string, unknown>;
+    const body = await readJsonBody<Record<string, unknown>>(request, {});
     const inbound = parseTelegramInboundMessage(body);
 
     if (!inbound) {
-      return NextResponse.json({ ok: true, ignored: true });
+      return json({ ok: true, ignored: true });
     }
 
     if (findEventByDedupeKey("telegram", inbound.dedupeKey)) {
@@ -35,7 +38,7 @@ export async function POST(request: Request) {
         summary: "重复 Telegram webhook，已忽略。",
       });
 
-      return NextResponse.json({ ok: true, duplicate: true });
+      return json({ ok: true, duplicate: true });
     }
 
     recordReceivedInboundEvent({
@@ -43,7 +46,10 @@ export async function POST(request: Request) {
       dedupeKey: inbound.dedupeKey,
       remoteChatId: inbound.remoteChatId,
       remoteMessageId: inbound.remoteMessageId,
-      summary: summarizeChannelInbound(inbound.text, inbound.attachmentRefs.length),
+      summary: summarizeChannelInbound(
+        inbound.text,
+        inbound.attachmentRefs.length,
+      ),
     });
 
     await acknowledgeTelegramInboundMessage({
@@ -53,12 +59,13 @@ export async function POST(request: Request) {
 
     void processTelegramInbound(inbound);
 
-    return NextResponse.json({ ok: true });
+    return json({ ok: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Telegram webhook 处理失败。";
+    const message =
+      error instanceof Error ? error.message : "Telegram webhook 处理失败。";
     markChannelError("telegram", message);
 
-    return NextResponse.json({ error: message }, { status: 500 });
+    return errorResponse(error, "Telegram webhook 处理失败。");
   }
 }
 
@@ -69,9 +76,9 @@ async function processTelegramInbound(
     const handled = await handleInboundChannelTextMessage({
       channelId: "telegram",
       ...inbound,
-      attachmentIds: (await downloadTelegramAttachments(inbound.attachmentRefs)).map(
-        (attachment) => attachment.id,
-      ),
+      attachmentIds: (
+        await downloadTelegramAttachments(inbound.attachmentRefs)
+      ).map((attachment) => attachment.id),
     });
     const delivery = await sendTelegramReply({
       chatId: inbound.remoteChatId,
@@ -87,7 +94,8 @@ async function processTelegramInbound(
       attachmentCount: handled.replyAttachments.length,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Telegram 消息处理失败。";
+    const message =
+      error instanceof Error ? error.message : "Telegram 消息处理失败。";
     markChannelError("telegram", message);
 
     try {

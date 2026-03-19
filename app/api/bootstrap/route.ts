@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import {
   ensureChannelStartupSync,
   ensureChannelWatchdog,
@@ -6,6 +5,7 @@ import {
 import { ensureBrowserSessionWarmup } from "@/lib/codex/browser-session";
 import { syncBoundConversationMetadata } from "@/lib/channels/conversation-sync";
 import { getSnapshot } from "@/lib/resources/local-store";
+import { json } from "@/lib/server/api-route";
 import { ensureBundledSkillsReady } from "@/lib/skills/skill-store";
 import { ensureTaskRunner } from "@/lib/tasks/task-runner";
 
@@ -22,5 +22,5 @@ export async function GET() {
     syncBoundConversationMetadata();
   });
 
-  return NextResponse.json(snapshot);
+  return json(snapshot);
 }

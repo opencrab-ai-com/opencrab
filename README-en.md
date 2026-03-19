@@ -20,12 +20,12 @@ It keeps the product surface simple: chat is the main entry, and channels let Te
 
 ## Screenshots
 
-| Home | Channels |
-| --- | --- |
+| Home                                                                        | Channels                                                                        |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | <img src="./docs/screenshots/homepage.png" alt="OpenCrab home" width="480"> | <img src="./docs/screenshots/channels.png" alt="OpenCrab channels" width="480"> |
 
-| Scheduled Tasks | Skills |
-| --- | --- |
+| Scheduled Tasks                                                                     | Skills                                                                      |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | <img src="./docs/screenshots/tasks.png" alt="OpenCrab scheduled tasks" width="480"> | <img src="./docs/screenshots/skills.png" alt="OpenCrab skills" width="480"> |
 
 ## Highlights
@@ -73,7 +73,7 @@ Most users can start from the UI, then add secrets only when they need channels.
 ```bash
 OPENCRAB_CODEX_MODEL=gpt-5.4
 OPENCRAB_CODEX_REASONING_EFFORT=medium
-OPENCRAB_CODEX_SANDBOX_MODE=read-only
+OPENCRAB_CODEX_SANDBOX_MODE=workspace-write
 OPENCRAB_CODEX_NETWORK_ACCESS=false
 OPENCRAB_PUBLIC_BASE_URL=http://127.0.0.1:3000
 
@@ -96,6 +96,7 @@ Notes:
 - Telegram needs a public URL for webhooks, and OpenCrab will try to automate that step
 - Feishu uses persistent socket connections by default and does not need a public callback URL; webhook compatibility mode needs both `OPENCRAB_FEISHU_VERIFICATION_TOKEN` and `OPENCRAB_FEISHU_ENCRYPT_KEY`
 - If you want command execution to inherit the local `OPENAI_API_KEY`, you can explicitly enable it in `/settings`; it stays off by default
+- `.env.example` uses the same default sandbox as the app: `workspace-write`
 
 ## Runtime Data
 

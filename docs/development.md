@@ -11,6 +11,8 @@
 
 ```bash
 npm install
+cp .env.example .env.local
+codex login
 npm run dev
 ```
 
@@ -25,6 +27,12 @@ npm run lint
 npm run typecheck
 npm run build
 ```
+
+当前 `.env.example` 默认配置与设置页保持一致：
+
+- `OPENCRAB_CODEX_MODEL=gpt-5.4`
+- `OPENCRAB_CODEX_REASONING_EFFORT=medium`
+- `OPENCRAB_CODEX_SANDBOX_MODE=workspace-write`
 
 ## Local Runtime Directories
 
@@ -112,6 +120,14 @@ OpenCrab 当前在重启后会自动做这些事：
 更完整说明见：
 
 - [Startup Behavior](./startup-behavior.md)
+
+## API Conventions
+
+`app/api/*` 路由当前统一复用：
+
+- `lib/server/api-route.ts`
+
+这里集中处理 JSON 响应、动态路由参数读取、请求体解析和常见错误响应，避免每个 route 重复拼装同一套模板逻辑。
 
 ## Debugging Codex
 

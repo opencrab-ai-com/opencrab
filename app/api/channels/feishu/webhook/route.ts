@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { markChannelError } from "@/lib/channels/channel-store";
 import {
   assertFeishuWebhookAuth,
@@ -6,10 +5,11 @@ import {
   parseFeishuWebhook,
 } from "@/lib/channels/feishu";
 import { enqueueFeishuInboundMessage } from "@/lib/channels/feishu-inbound";
+import { errorResponse, json, readJsonBody } from "@/lib/server/api-route";
 
 export async function POST(request: Request) {
   try {
-    const rawBody = (await request.json()) as Record<string, unknown>;
+    const rawBody = await readJsonBody<Record<string, unknown>>(request, {});
     const body = normalizeFeishuWebhookBody(rawBody, request.headers);
 
     assertFeishuWebhookAuth(body);
@@ -17,20 +17,21 @@ export async function POST(request: Request) {
     const parsed = parseFeishuWebhook(body);
 
     if (parsed.kind === "challenge") {
-      return NextResponse.json({
+      return json({
         challenge: parsed.challenge,
       });
     }
 
     if (parsed.kind === "unsupported") {
-      return NextResponse.json({ ok: true, ignored: true });
+      return json({ ok: true, ignored: true });
     }
 
-    return NextResponse.json(enqueueFeishuInboundMessage(parsed));
+    return json(enqueueFeishuInboundMessage(parsed));
   } catch (error) {
-    const message = error instanceof Error ? error.message : "飞书 webhook 处理失败。";
+    const message =
+      error instanceof Error ? error.message : "飞书 webhook 处理失败。";
     markChannelError("feishu", message);
 
-    return NextResponse.json({ error: message }, { status: 500 });
+    return errorResponse(error, "飞书 webhook 处理失败。");
   }
 }

@@ -19,7 +19,7 @@ import type {
   TaskStatus,
   UploadedAttachment,
 } from "@/lib/resources/opencrab-api-types";
-import type { ConversationMessage } from "@/lib/seed-data";
+import type { AppLanguage, ConversationMessage } from "@/lib/seed-data";
 
 export async function getAppSnapshot() {
   return request<AppSnapshot>("/api/bootstrap", {
@@ -34,44 +34,54 @@ export async function getCodexOptions() {
 }
 
 export async function getCodexStatus() {
-  const response = await fetch("/api/codex/status", {
-    method: "GET",
-  });
-
-  try {
-    return (await response.json()) as CodexStatusResponse;
-  } catch {
-    return {
+  return requestWithFallback<CodexStatusResponse>(
+    "/api/codex/status",
+    {
+      method: "GET",
+    },
+    {
       ok: false,
       error: "当前无法读取 OpenCrab 的运行状态，请稍后重试。",
       loginStatus: "missing",
       loginMethod: "chatgpt",
-    } satisfies CodexStatusResponse;
-  }
+    } satisfies CodexStatusResponse,
+  );
 }
 
 export async function getChatGptConnectionStatus() {
-  return request<ChatGptConnectionStatusResponse>("/api/chatgpt/connect/status", {
-    method: "GET",
-  });
+  return request<ChatGptConnectionStatusResponse>(
+    "/api/chatgpt/connect/status",
+    {
+      method: "GET",
+    },
+  );
 }
 
 export async function startChatGptConnection() {
-  return request<ChatGptConnectionStatusResponse>("/api/chatgpt/connect/start", {
-    method: "POST",
-  });
+  return request<ChatGptConnectionStatusResponse>(
+    "/api/chatgpt/connect/start",
+    {
+      method: "POST",
+    },
+  );
 }
 
 export async function cancelChatGptConnection() {
-  return request<ChatGptConnectionStatusResponse>("/api/chatgpt/connect/cancel", {
-    method: "POST",
-  });
+  return request<ChatGptConnectionStatusResponse>(
+    "/api/chatgpt/connect/cancel",
+    {
+      method: "POST",
+    },
+  );
 }
 
 export async function disconnectChatGptConnection() {
-  return request<ChatGptConnectionStatusResponse>("/api/chatgpt/connect/disconnect", {
-    method: "POST",
-  });
+  return request<ChatGptConnectionStatusResponse>(
+    "/api/chatgpt/connect/disconnect",
+    {
+      method: "POST",
+    },
+  );
 }
 
 export async function getCodexBrowserSessionStatus() {
@@ -175,6 +185,7 @@ export async function updateSettings(
     defaultReasoningEffort: CodexReasoningEffort;
     defaultSandboxMode: CodexSandboxMode;
     browserConnectionMode: BrowserConnectionMode;
+    defaultLanguage: AppLanguage;
     allowOpenAiApiKeyForCommands: boolean;
   }>,
 ) {
@@ -204,7 +215,10 @@ export async function updateFolder(folderId: string, name: string) {
   });
 }
 
-export async function createConversation(input?: { title?: string; folderId?: string | null }) {
+export async function createConversation(input?: {
+  title?: string;
+  folderId?: string | null;
+}) {
   return request<CreateConversationResult>("/api/conversations", {
     method: "POST",
     body: JSON.stringify(input ?? {}),
@@ -222,16 +236,22 @@ export async function updateConversation(
     lastAssistantModel: string | null;
   }>,
 ) {
-  return request<SnapshotMutationResult>(`/api/conversations/${conversationId}`, {
-    method: "PATCH",
-    body: JSON.stringify(patch),
-  });
+  return request<SnapshotMutationResult>(
+    `/api/conversations/${conversationId}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    },
+  );
 }
 
 export async function deleteConversation(conversationId: string) {
-  return request<SnapshotMutationResult>(`/api/conversations/${conversationId}`, {
-    method: "DELETE",
-  });
+  return request<SnapshotMutationResult>(
+    `/api/conversations/${conversationId}`,
+    {
+      method: "DELETE",
+    },
+  );
 }
 
 export async function addConversationMessage(
@@ -306,30 +326,96 @@ export async function streamReplyToConversation(
     onEvent: (event: ReplyStreamEvent) => void;
   },
 ) {
-  const response = await fetch(`/api/conversations/${conversationId}/reply/stream`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `/api/conversations/${conversationId}/reply/stream`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+      signal: options.signal,
     },
-    body: JSON.stringify(input),
-    signal: options.signal,
-  });
+  );
 
-  if (!response.ok) {
-    try {
-      const error = (await response.json()) as { error?: string };
-      throw new Error(error.error || `API request failed: ${response.status}`);
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-
-      throw new Error(`API request failed: ${response.status}`);
-    }
-  }
+  await assertOk(response);
 
   if (!response.body) {
     throw new Error("流式响应不可用，请稍后再试。");
+  }
+
+  for await (const event of readNdjsonStream<ReplyStreamEvent>(response)) {
+    options.onEvent(event);
+  }
+}
+
+async function request<T>(input: string, init: RequestInit) {
+  const response = await fetch(input, buildRequestInit(init));
+  await assertOk(response);
+  return readJsonResponse<T>(response);
+}
+
+async function requestWithFallback<T>(
+  input: string,
+  init: RequestInit,
+  fallback: T,
+) {
+  const response = await fetch(input, buildRequestInit(init));
+  await assertOk(response);
+  return readJsonResponse(response, fallback);
+}
+
+function buildRequestInit(init: RequestInit) {
+  const isFormData =
+    typeof FormData !== "undefined" && init.body instanceof FormData;
+
+  return {
+    ...init,
+    headers: isFormData
+      ? { ...(init.headers ?? {}) }
+      : {
+          "Content-Type": "application/json",
+          ...(init.headers ?? {}),
+        },
+  };
+}
+
+async function assertOk(response: Response) {
+  if (response.ok) {
+    return;
+  }
+
+  throw await buildApiError(response);
+}
+
+async function buildApiError(response: Response) {
+  const errorBody = await readJsonResponse<{ error?: string } | null>(
+    response,
+    null,
+  );
+  return new Error(
+    errorBody?.error || `API request failed: ${response.status}`,
+  );
+}
+
+async function readJsonResponse<T>(
+  response: Response,
+  fallback?: T,
+): Promise<T> {
+  try {
+    return (await response.json()) as T;
+  } catch (error) {
+    if (fallback !== undefined) {
+      return fallback;
+    }
+
+    throw error;
+  }
+}
+
+async function* readNdjsonStream<T>(response: Response) {
+  if (!response.body) {
+    return;
   }
 
   const reader = response.body.getReader();
@@ -350,47 +436,15 @@ export async function streamReplyToConversation(
     for (const line of lines) {
       const trimmedLine = line.trim();
 
-      if (!trimmedLine) {
-        continue;
+      if (trimmedLine) {
+        yield JSON.parse(trimmedLine) as T;
       }
-
-      options.onEvent(JSON.parse(trimmedLine) as ReplyStreamEvent);
     }
   }
 
   const lastLine = buffer.trim();
 
   if (lastLine) {
-    options.onEvent(JSON.parse(lastLine) as ReplyStreamEvent);
+    yield JSON.parse(lastLine) as T;
   }
-}
-
-async function request<T>(input: string, init: RequestInit) {
-  const isFormData = typeof FormData !== "undefined" && init.body instanceof FormData;
-  const headers = isFormData
-    ? { ...(init.headers ?? {}) }
-    : {
-        "Content-Type": "application/json",
-        ...(init.headers ?? {}),
-      };
-
-  const response = await fetch(input, {
-    ...init,
-    headers,
-  });
-
-  if (!response.ok) {
-    try {
-      const error = (await response.json()) as { error?: string };
-      throw new Error(error.error || `API request failed: ${response.status}`);
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-
-      throw new Error(`API request failed: ${response.status}`);
-    }
-  }
-
-  return (await response.json()) as T;
 }

@@ -1,53 +1,59 @@
-import { NextResponse } from "next/server";
 import { deleteTask, getTask, updateTask } from "@/lib/tasks/task-store";
+import {
+  errorResponse,
+  json,
+  notFoundJson,
+  readJsonBody,
+  readRouteParams,
+  type RouteContext,
+} from "@/lib/server/api-route";
 import type { TaskUpdateInput } from "@/lib/tasks/types";
 
 export async function GET(
   _request: Request,
-  context: { params: Promise<{ taskId: string }> },
+  context: RouteContext<{ taskId: string }>,
 ) {
-  const { taskId } = await context.params;
+  const { taskId } = await readRouteParams(context);
   const task = getTask(taskId);
 
   if (!task) {
-    return NextResponse.json({ error: "定时任务不存在。" }, { status: 404 });
+    return notFoundJson("定时任务不存在。");
   }
 
-  return NextResponse.json({ task });
+  return json({ task });
 }
 
 export async function PATCH(
   request: Request,
-  context: { params: Promise<{ taskId: string }> },
+  context: RouteContext<{ taskId: string }>,
 ) {
-  const { taskId } = await context.params;
+  const { taskId } = await readRouteParams(context);
 
   try {
-    const body = (await request.json()) as TaskUpdateInput;
+    const body = await readJsonBody<TaskUpdateInput>(request, {});
     const task = updateTask(taskId, body);
 
     if (!task) {
-      return NextResponse.json({ error: "定时任务不存在。" }, { status: 404 });
+      return notFoundJson("定时任务不存在。");
     }
 
-    return NextResponse.json({ task: getTask(taskId) });
+    return json({ task: getTask(taskId) });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "更新定时任务失败。";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return errorResponse(error, "更新定时任务失败。", 400);
   }
 }
 
 export async function DELETE(
   _request: Request,
-  context: { params: Promise<{ taskId: string }> },
+  context: RouteContext<{ taskId: string }>,
 ) {
-  const { taskId } = await context.params;
+  const { taskId } = await readRouteParams(context);
 
   if (!getTask(taskId)) {
-    return NextResponse.json({ error: "定时任务不存在。" }, { status: 404 });
+    return notFoundJson("定时任务不存在。");
   }
 
   deleteTask(taskId);
 
-  return NextResponse.json({ ok: true });
+  return json({ ok: true });
 }

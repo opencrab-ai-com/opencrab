@@ -10,7 +10,13 @@ import {
   useState,
 } from "react";
 import { flushSync } from "react-dom";
-import type { ConversationItem, ConversationMessage, FolderItem } from "@/lib/seed-data";
+import type {
+  AppLanguage,
+  AppSettings,
+  ConversationItem,
+  ConversationMessage,
+  FolderItem,
+} from "@/lib/seed-data";
 import { buildConversationTitle } from "@/lib/conversations/utils";
 import {
   cancelChatGptConnection as cancelChatGptConnectionResource,
@@ -67,6 +73,7 @@ type OpenCrabContextValue = {
   selectedModel: string;
   selectedReasoningEffort: CodexReasoningEffort;
   selectedSandboxMode: CodexSandboxMode;
+  selectedLanguage: AppLanguage;
   allowOpenAiApiKeyForCommands: boolean;
   expandedFolders: Record<string, boolean>;
   isHydrated: boolean;
@@ -82,7 +89,10 @@ type OpenCrabContextValue = {
   setSelectedModel: (model: string) => Promise<void>;
   setSelectedReasoningEffort: (effort: CodexReasoningEffort) => Promise<void>;
   setSelectedSandboxMode: (mode: CodexSandboxMode) => Promise<void>;
-  setSelectedBrowserConnectionMode: (mode: BrowserConnectionMode) => Promise<void>;
+  setSelectedLanguage: (language: AppLanguage) => Promise<void>;
+  setSelectedBrowserConnectionMode: (
+    mode: BrowserConnectionMode,
+  ) => Promise<void>;
   setAllowOpenAiApiKeyForCommands: (enabled: boolean) => Promise<void>;
   refreshChatGptConnectionStatus: () => Promise<ChatGptConnectionStatusResponse | null>;
   startChatGptConnection: () => Promise<ChatGptConnectionStatusResponse | null>;
@@ -94,8 +104,14 @@ type OpenCrabContextValue = {
   deleteFolder: (folderId: string) => Promise<void>;
   renameConversation: (conversationId: string, title: string) => Promise<void>;
   deleteConversation: (conversationId: string) => Promise<void>;
-  moveConversation: (conversationId: string, folderId: string | null) => Promise<void>;
-  createConversation: (input?: { title?: string; folderId?: string | null }) => Promise<string>;
+  moveConversation: (
+    conversationId: string,
+    folderId: string | null,
+  ) => Promise<void>;
+  createConversation: (input?: {
+    title?: string;
+    folderId?: string | null;
+  }) => Promise<string>;
   uploadAttachments: (files: File[]) => Promise<UploadedAttachment[]>;
   sendMessage: (input: SendMessageInput) => Promise<string | null>;
   stopMessage: (conversationId?: string | null) => void;
@@ -115,6 +131,18 @@ type ActiveStreamState = {
   model: string;
 };
 
+type PersistedSettingsPatch = Partial<
+  Pick<
+    AppSettings,
+    | "defaultModel"
+    | "defaultReasoningEffort"
+    | "defaultSandboxMode"
+    | "browserConnectionMode"
+    | "defaultLanguage"
+    | "allowOpenAiApiKeyForCommands"
+  >
+>;
+
 export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
   const [folders, setFolders] = useState<FolderItem[]>([]);
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
@@ -122,7 +150,9 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     Record<string, ConversationMessage[]>
   >({});
   const [codexModels, setCodexModels] = useState<CodexModelOption[]>([]);
-  const [codexStatus, setCodexStatus] = useState<CodexStatusResponse | null>(null);
+  const [codexStatus, setCodexStatus] = useState<CodexStatusResponse | null>(
+    null,
+  );
   const [chatGptConnectionStatus, setChatGptConnectionStatus] =
     useState<ChatGptConnectionStatusResponse | null>(null);
   const [browserSessionStatus, setBrowserSessionStatus] =
@@ -134,17 +164,23 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     useState<CodexReasoningEffort>("medium");
   const [selectedSandboxMode, setSelectedSandboxModeState] =
     useState<CodexSandboxMode>("workspace-write");
-  const [allowOpenAiApiKeyForCommands, setAllowOpenAiApiKeyForCommandsState] = useState(false);
-  const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
+  const [selectedLanguage, setSelectedLanguageState] =
+    useState<AppLanguage>("zh-Hans");
+  const [allowOpenAiApiKeyForCommands, setAllowOpenAiApiKeyForCommandsState] =
+    useState(false);
+  const [expandedFolders, setExpandedFolders] = useState<
+    Record<string, boolean>
+  >({});
   const [isHydrated, setIsHydrated] = useState(false);
   const [isMutating, setIsMutating] = useState(false);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [isUploadingAttachments, setIsUploadingAttachments] = useState(false);
-  const [isChatGptConnectionPending, setIsChatGptConnectionPending] = useState(false);
-  const [activeStreamingConversationId, setActiveStreamingConversationId] = useState<string | null>(
-    null,
-  );
-  const [activeStreamingConversationIds, setActiveStreamingConversationIds] = useState<string[]>([]);
+  const [isChatGptConnectionPending, setIsChatGptConnectionPending] =
+    useState(false);
+  const [activeStreamingConversationId, setActiveStreamingConversationId] =
+    useState<string | null>(null);
+  const [activeStreamingConversationIds, setActiveStreamingConversationIds] =
+    useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const activeStreamsRef = useRef<Map<string, ActiveStreamState>>(new Map());
 
@@ -182,24 +218,32 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
 
         const updated = { ...target, ...patch };
 
-        return [updated, ...current.filter((item) => item.id !== conversationId)];
+        return [
+          updated,
+          ...current.filter((item) => item.id !== conversationId),
+        ];
       });
     },
     [],
   );
 
-  const appendMessages = useCallback((conversationId: string, nextMessages: ConversationMessage[]) => {
-    setConversationMessages((current) => ({
-      ...current,
-      [conversationId]: [...(current[conversationId] ?? []), ...nextMessages],
-    }));
-  }, []);
+  const appendMessages = useCallback(
+    (conversationId: string, nextMessages: ConversationMessage[]) => {
+      setConversationMessages((current) => ({
+        ...current,
+        [conversationId]: [...(current[conversationId] ?? []), ...nextMessages],
+      }));
+    },
+    [],
+  );
 
   const patchMessage = useCallback(
     (
       conversationId: string,
       messageId: string,
-      updater: Partial<ConversationMessage> | ((message: ConversationMessage) => ConversationMessage),
+      updater:
+        | Partial<ConversationMessage>
+        | ((message: ConversationMessage) => ConversationMessage),
     ) => {
       setConversationMessages((current) => {
         const messages = current[conversationId] ?? [];
@@ -236,13 +280,24 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
 
         applySnapshot(snapshot);
         setSelectedModelState(snapshot.settings.defaultModel || "");
-        setSelectedReasoningEffortState(snapshot.settings.defaultReasoningEffort || "medium");
-        setSelectedSandboxModeState(snapshot.settings.defaultSandboxMode || "workspace-write");
-        setSelectedBrowserConnectionModeState(snapshot.settings.browserConnectionMode || "current-browser");
-        setAllowOpenAiApiKeyForCommandsState(Boolean(snapshot.settings.allowOpenAiApiKeyForCommands));
+        setSelectedReasoningEffortState(
+          snapshot.settings.defaultReasoningEffort || "medium",
+        );
+        setSelectedSandboxModeState(
+          snapshot.settings.defaultSandboxMode || "workspace-write",
+        );
+        setSelectedBrowserConnectionModeState(
+          snapshot.settings.browserConnectionMode || "current-browser",
+        );
+        setSelectedLanguageState(snapshot.settings.defaultLanguage || "zh-Hans");
+        setAllowOpenAiApiKeyForCommandsState(
+          Boolean(snapshot.settings.allowOpenAiApiKeyForCommands),
+        );
       } catch (error) {
         if (active) {
-          setErrorMessage(getUserFacingError(error, "初始化失败，请刷新后重试。"));
+          setErrorMessage(
+            getUserFacingError(error, "初始化失败，请刷新后重试。"),
+          );
         }
       } finally {
         if (active) {
@@ -253,12 +308,13 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
 
     async function hydrateCodexMeta() {
       try {
-        const [codexOptions, status, browserStatus, chatGptConnection] = await Promise.all([
-          getCodexOptionsResource(),
-          getCodexStatusResource(),
-          getCodexBrowserSessionStatusResource(),
-          getChatGptConnectionStatusResource(),
-        ]);
+        const [codexOptions, status, browserStatus, chatGptConnection] =
+          await Promise.all([
+            getCodexOptionsResource(),
+            getCodexStatusResource(),
+            getCodexBrowserSessionStatusResource(),
+            getChatGptConnectionStatusResource(),
+          ]);
 
         if (!active) {
           return;
@@ -271,7 +327,9 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
         setSelectedModelState((current) => {
           const preferredModelId = current || codexOptions.defaultModel;
           const resolvedModel =
-            codexOptions.models.find((item) => item.id === preferredModelId) || codexOptions.models[0] || null;
+            codexOptions.models.find((item) => item.id === preferredModelId) ||
+            codexOptions.models[0] ||
+            null;
           const resolvedModelId = resolvedModel?.id || "";
 
           setSelectedReasoningEffortState((effort) => {
@@ -279,7 +337,9 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
               return effort;
             }
 
-            return resolvedModel.reasoningOptions.some((item) => item.effort === effort)
+            return resolvedModel.reasoningOptions.some(
+              (item) => item.effort === effort,
+            )
               ? effort
               : resolvedModel.defaultReasoningEffort;
           });
@@ -300,7 +360,10 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
         if (active) {
           setCodexStatus({
             ok: false,
-            error: getUserFacingError(error, "当前无法读取 OpenCrab 的运行状态。"),
+            error: getUserFacingError(
+              error,
+              "当前无法读取 OpenCrab 的运行状态。",
+            ),
             loginStatus: "missing",
             loginMethod: "chatgpt",
           });
@@ -343,7 +406,10 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
         return;
       }
 
-      void Promise.all([getChatGptConnectionStatusResource(), getCodexStatusResource()])
+      void Promise.all([
+        getChatGptConnectionStatusResource(),
+        getCodexStatusResource(),
+      ])
         .then(([chatGptConnection, status]) => {
           if (!active) {
             return;
@@ -371,7 +437,11 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     let active = true;
 
     async function syncExternalSnapshot() {
-      if (!active || document.visibilityState !== "visible" || activeStreamsRef.current.size > 0) {
+      if (
+        !active ||
+        document.visibilityState !== "visible" ||
+        activeStreamsRef.current.size > 0
+      ) {
         return;
       }
 
@@ -408,7 +478,10 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
   }, [applySnapshot, isHydrated]);
 
   const toggleFolder = useCallback((folderId: string) => {
-    setExpandedFolders((current) => ({ ...current, [folderId]: !current[folderId] }));
+    setExpandedFolders((current) => ({
+      ...current,
+      [folderId]: !current[folderId],
+    }));
   }, []);
 
   const clearError = useCallback(() => {
@@ -435,6 +508,50 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     [syncStreamingState],
   );
 
+  const persistedSettings = useMemo<PersistedSettingsPatch>(
+    () => ({
+      defaultModel: selectedModel,
+      defaultReasoningEffort: selectedReasoningEffort,
+      defaultSandboxMode: selectedSandboxMode,
+      browserConnectionMode: selectedBrowserConnectionMode,
+      defaultLanguage: selectedLanguage,
+      allowOpenAiApiKeyForCommands,
+    }),
+    [
+      allowOpenAiApiKeyForCommands,
+      selectedBrowserConnectionMode,
+      selectedLanguage,
+      selectedModel,
+      selectedReasoningEffort,
+      selectedSandboxMode,
+    ],
+  );
+
+  const handleSettingsSaveError = useCallback((error: unknown) => {
+    setErrorMessage(getUserFacingError(error, "保存设置失败，请稍后再试。"));
+  }, []);
+
+  const persistSettings = useCallback(
+    async (
+      patch: PersistedSettingsPatch,
+      options?: {
+        warmBrowserSession?: boolean;
+      },
+    ) => {
+      const result = await updateSettingsResource({
+        ...persistedSettings,
+        ...patch,
+      });
+      applySnapshot(result.snapshot);
+
+      if (options?.warmBrowserSession) {
+        const nextStatus = await warmCodexBrowserSessionResource();
+        setBrowserSessionStatus(nextStatus);
+      }
+    },
+    [applySnapshot, persistedSettings],
+  );
+
   const setSelectedModel = useCallback(
     async (model: string) => {
       setSelectedModelState(model);
@@ -453,16 +570,20 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       setSelectedReasoningEffortState(nextReasoningEffort);
 
       try {
-        const result = await updateSettingsResource({
+        await persistSettings({
           defaultModel: model,
           defaultReasoningEffort: nextReasoningEffort,
         });
-        applySnapshot(result.snapshot);
       } catch (error) {
-        setErrorMessage(getUserFacingError(error, "保存设置失败，请稍后再试。"));
+        handleSettingsSaveError(error);
       }
     },
-    [applySnapshot, codexModels, selectedReasoningEffort],
+    [
+      codexModels,
+      handleSettingsSaveError,
+      persistSettings,
+      selectedReasoningEffort,
+    ],
   );
 
   const setSelectedReasoningEffort = useCallback(
@@ -470,16 +591,14 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       setSelectedReasoningEffortState(effort);
 
       try {
-        const result = await updateSettingsResource({
-          defaultModel: selectedModel,
+        await persistSettings({
           defaultReasoningEffort: effort,
         });
-        applySnapshot(result.snapshot);
       } catch (error) {
-        setErrorMessage(getUserFacingError(error, "保存设置失败，请稍后再试。"));
+        handleSettingsSaveError(error);
       }
     },
-    [applySnapshot, selectedModel],
+    [handleSettingsSaveError, persistSettings],
   );
 
   const setSelectedSandboxMode = useCallback(
@@ -487,17 +606,29 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       setSelectedSandboxModeState(mode);
 
       try {
-        const result = await updateSettingsResource({
-          defaultModel: selectedModel,
-          defaultReasoningEffort: selectedReasoningEffort,
+        await persistSettings({
           defaultSandboxMode: mode,
         });
-        applySnapshot(result.snapshot);
       } catch (error) {
-        setErrorMessage(getUserFacingError(error, "保存设置失败，请稍后再试。"));
+        handleSettingsSaveError(error);
       }
     },
-    [applySnapshot, selectedModel, selectedReasoningEffort],
+    [handleSettingsSaveError, persistSettings],
+  );
+
+  const setSelectedLanguage = useCallback(
+    async (language: AppLanguage) => {
+      setSelectedLanguageState(language);
+
+      try {
+        await persistSettings({
+          defaultLanguage: language,
+        });
+      } catch (error) {
+        handleSettingsSaveError(error);
+      }
+    },
+    [handleSettingsSaveError, persistSettings],
   );
 
   const setSelectedBrowserConnectionMode = useCallback(
@@ -505,20 +636,17 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       setSelectedBrowserConnectionModeState(mode);
 
       try {
-        const result = await updateSettingsResource({
-          defaultModel: selectedModel,
-          defaultReasoningEffort: selectedReasoningEffort,
-          defaultSandboxMode: selectedSandboxMode,
-          browserConnectionMode: mode,
-        });
-        applySnapshot(result.snapshot);
-        const nextStatus = await warmCodexBrowserSessionResource();
-        setBrowserSessionStatus(nextStatus);
+        await persistSettings(
+          {
+            browserConnectionMode: mode,
+          },
+          { warmBrowserSession: true },
+        );
       } catch (error) {
-        setErrorMessage(getUserFacingError(error, "保存设置失败，请稍后再试。"));
+        handleSettingsSaveError(error);
       }
     },
-    [applySnapshot, selectedModel, selectedReasoningEffort, selectedSandboxMode],
+    [handleSettingsSaveError, persistSettings],
   );
 
   const setAllowOpenAiApiKeyForCommands = useCallback(
@@ -526,19 +654,14 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       setAllowOpenAiApiKeyForCommandsState(enabled);
 
       try {
-        const result = await updateSettingsResource({
-          defaultModel: selectedModel,
-          defaultReasoningEffort: selectedReasoningEffort,
-          defaultSandboxMode: selectedSandboxMode,
-          browserConnectionMode: selectedBrowserConnectionMode,
+        await persistSettings({
           allowOpenAiApiKeyForCommands: enabled,
         });
-        applySnapshot(result.snapshot);
       } catch (error) {
-        setErrorMessage(getUserFacingError(error, "保存设置失败，请稍后再试。"));
+        handleSettingsSaveError(error);
       }
     },
-    [applySnapshot, selectedBrowserConnectionMode, selectedModel, selectedReasoningEffort, selectedSandboxMode],
+    [handleSettingsSaveError, persistSettings],
   );
 
   const refreshChatGptConnectionStatus = useCallback(async () => {
@@ -553,70 +676,59 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       setCodexStatus(status);
       return chatGptConnection;
     } catch (error) {
-      setErrorMessage(getUserFacingError(error, "刷新 ChatGPT 连接状态失败，请稍后再试。"));
+      setErrorMessage(
+        getUserFacingError(error, "刷新 ChatGPT 连接状态失败，请稍后再试。"),
+      );
       return null;
     }
   }, []);
+
+  const runChatGptConnectionAction = useCallback(
+    async (
+      action: () => Promise<ChatGptConnectionStatusResponse>,
+      errorMessage: string,
+    ) => {
+      setIsChatGptConnectionPending(true);
+      setErrorMessage(null);
+
+      try {
+        const [chatGptConnection, status] = await Promise.all([
+          action(),
+          getCodexStatusResource(),
+        ]);
+        setChatGptConnectionStatus(chatGptConnection);
+        setCodexStatus(status);
+        return chatGptConnection;
+      } catch (error) {
+        setErrorMessage(getUserFacingError(error, errorMessage));
+        return null;
+      } finally {
+        setIsChatGptConnectionPending(false);
+      }
+    },
+    [],
+  );
 
   const startChatGptConnection = useCallback(async () => {
-    setIsChatGptConnectionPending(true);
-    setErrorMessage(null);
-
-    try {
-      const [chatGptConnection, status] = await Promise.all([
-        startChatGptConnectionResource(),
-        getCodexStatusResource(),
-      ]);
-      setChatGptConnectionStatus(chatGptConnection);
-      setCodexStatus(status);
-      return chatGptConnection;
-    } catch (error) {
-      setErrorMessage(getUserFacingError(error, "发起 ChatGPT 连接失败，请稍后再试。"));
-      return null;
-    } finally {
-      setIsChatGptConnectionPending(false);
-    }
-  }, []);
+    return runChatGptConnectionAction(
+      startChatGptConnectionResource,
+      "发起 ChatGPT 连接失败，请稍后再试。",
+    );
+  }, [runChatGptConnectionAction]);
 
   const cancelChatGptConnection = useCallback(async () => {
-    setIsChatGptConnectionPending(true);
-    setErrorMessage(null);
-
-    try {
-      const [chatGptConnection, status] = await Promise.all([
-        cancelChatGptConnectionResource(),
-        getCodexStatusResource(),
-      ]);
-      setChatGptConnectionStatus(chatGptConnection);
-      setCodexStatus(status);
-      return chatGptConnection;
-    } catch (error) {
-      setErrorMessage(getUserFacingError(error, "取消 ChatGPT 连接失败，请稍后再试。"));
-      return null;
-    } finally {
-      setIsChatGptConnectionPending(false);
-    }
-  }, []);
+    return runChatGptConnectionAction(
+      cancelChatGptConnectionResource,
+      "取消 ChatGPT 连接失败，请稍后再试。",
+    );
+  }, [runChatGptConnectionAction]);
 
   const disconnectChatGptConnection = useCallback(async () => {
-    setIsChatGptConnectionPending(true);
-    setErrorMessage(null);
-
-    try {
-      const [chatGptConnection, status] = await Promise.all([
-        disconnectChatGptConnectionResource(),
-        getCodexStatusResource(),
-      ]);
-      setChatGptConnectionStatus(chatGptConnection);
-      setCodexStatus(status);
-      return chatGptConnection;
-    } catch (error) {
-      setErrorMessage(getUserFacingError(error, "断开 ChatGPT 连接失败，请稍后再试。"));
-      return null;
-    } finally {
-      setIsChatGptConnectionPending(false);
-    }
-  }, []);
+    return runChatGptConnectionAction(
+      disconnectChatGptConnectionResource,
+      "断开 ChatGPT 连接失败，请稍后再试。",
+    );
+  }, [runChatGptConnectionAction]);
 
   const runMutation = useCallback(async <T,>(action: () => Promise<T>) => {
     setIsMutating(true);
@@ -693,7 +805,9 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       }
 
       await runMutation(async () => {
-        const result = await updateConversation(conversationId, { title: trimmedTitle });
+        const result = await updateConversation(conversationId, {
+          title: trimmedTitle,
+        });
         applySnapshot(result.snapshot);
       });
     },
@@ -749,7 +863,9 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
   const stopMessage = useCallback(
     (conversationId?: string | null) => {
       const activeStream = conversationId
-        ? Array.from(activeStreamsRef.current.values()).find((item) => item.conversationId === conversationId)
+        ? Array.from(activeStreamsRef.current.values()).find(
+            (item) => item.conversationId === conversationId,
+          )
         : Array.from(activeStreamsRef.current.values())[0];
 
       if (!activeStream) {
@@ -757,24 +873,33 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       }
 
       activeStream.controller.abort();
-      patchMessage(activeStream.conversationId, activeStream.assistantMessageId, (message) => ({
-        ...message,
-        content: message.content.trim() || "已停止当前回复。",
-        meta: `已停止 · ${activeStream.model}`,
-        status: "stopped",
-      }));
+      patchMessage(
+        activeStream.conversationId,
+        activeStream.assistantMessageId,
+        (message) => ({
+          ...message,
+          content: message.content.trim() || "已停止当前回复。",
+          meta: `已停止 · ${activeStream.model}`,
+          status: "stopped",
+        }),
+      );
       clearStreamState(activeStream.key);
     },
     [clearStreamState, patchMessage],
   );
 
-  const isConversationStreaming = useCallback((conversationId?: string | null) => {
-    if (!conversationId) {
-      return false;
-    }
+  const isConversationStreaming = useCallback(
+    (conversationId?: string | null) => {
+      if (!conversationId) {
+        return false;
+      }
 
-    return Array.from(activeStreamsRef.current.values()).some((item) => item.conversationId === conversationId);
-  }, []);
+      return Array.from(activeStreamsRef.current.values()).some(
+        (item) => item.conversationId === conversationId,
+      );
+    },
+    [],
+  );
 
   const sendMessage = useCallback(
     async (input: SendMessageInput) => {
@@ -791,9 +916,15 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
         let conversationId = input.conversationId;
         let createdConversation = false;
 
-        if (!conversationId || !conversations.some((item) => item.id === conversationId)) {
-          const titleSource = content || attachments[0]?.name || "带附件的新对话";
-          conversationId = await createConversation({ title: buildConversationTitle(titleSource) });
+        if (
+          !conversationId ||
+          !conversations.some((item) => item.id === conversationId)
+        ) {
+          const titleSource =
+            content || attachments[0]?.name || "带附件的新对话";
+          conversationId = await createConversation({
+            title: buildConversationTitle(titleSource),
+          });
           createdConversation = true;
         }
 
@@ -810,7 +941,10 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
         });
         syncStreamingState();
 
-        const preview = buildUserMessagePreview(content, attachments.map((attachment) => attachment.name));
+        const preview = buildUserMessagePreview(
+          content,
+          attachments.map((attachment) => attachment.name),
+        );
         const applyOptimisticMessageState = () => {
           patchConversation(conversationId, {
             preview,
@@ -901,7 +1035,9 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
                 meta: `回复失败 · ${selectedModel}`,
                 status: "stopped",
               }));
-              setErrorMessage(getUserFacingError(event.error, "消息发送失败，请稍后再试。"));
+              setErrorMessage(
+                getUserFacingError(event.error, "消息发送失败，请稍后再试。"),
+              );
               clearStreamState(streamKey);
             },
           },
@@ -916,13 +1052,17 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
             meta: `回复失败 · ${selectedModel}`,
             status: "stopped",
           }));
-          setErrorMessage(getUserFacingError(error, "消息发送失败，请稍后再试。"));
+          setErrorMessage(
+            getUserFacingError(error, "消息发送失败，请稍后再试。"),
+          );
           clearStreamState(streamKey);
         });
 
         return conversationId;
       } catch (error) {
-        setErrorMessage(getUserFacingError(error, "消息发送失败，请稍后再试。"));
+        setErrorMessage(
+          getUserFacingError(error, "消息发送失败，请稍后再试。"),
+        );
         setIsSendingMessage(false);
         setActiveStreamingConversationId(null);
         activeStreamsRef.current.clear();
@@ -958,6 +1098,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       selectedModel,
       selectedReasoningEffort,
       selectedSandboxMode,
+      selectedLanguage,
       allowOpenAiApiKeyForCommands,
       expandedFolders,
       isHydrated,
@@ -973,6 +1114,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       setSelectedModel,
       setSelectedReasoningEffort,
       setSelectedSandboxMode,
+      setSelectedLanguage,
       setSelectedBrowserConnectionMode,
       setAllowOpenAiApiKeyForCommands,
       refreshChatGptConnectionStatus,
@@ -1003,6 +1145,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       selectedModel,
       selectedReasoningEffort,
       selectedSandboxMode,
+      selectedLanguage,
       allowOpenAiApiKeyForCommands,
       expandedFolders,
       isHydrated,
@@ -1018,6 +1161,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       setSelectedModel,
       setSelectedReasoningEffort,
       setSelectedSandboxMode,
+      setSelectedLanguage,
       setSelectedBrowserConnectionMode,
       setAllowOpenAiApiKeyForCommands,
       refreshChatGptConnectionStatus,
@@ -1038,7 +1182,11 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     ],
   );
 
-  return <OpenCrabContext.Provider value={value}>{children}</OpenCrabContext.Provider>;
+  return (
+    <OpenCrabContext.Provider value={value}>
+      {children}
+    </OpenCrabContext.Provider>
+  );
 }
 
 export function useOpenCrabApp() {

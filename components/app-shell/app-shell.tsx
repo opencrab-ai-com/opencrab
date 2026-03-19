@@ -2,8 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { OpenCrabMark, OpenCrabWordmark } from "@/components/branding/opencrab-brand";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
+import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
+import {
+  OpenCrabMark,
+  OpenCrabWordmark,
+} from "@/components/branding/opencrab-brand";
 import type { NavKey } from "@/lib/seed-data";
 
 type AppShellProps = {
@@ -11,31 +15,40 @@ type AppShellProps = {
   children: React.ReactNode;
 };
 
-const navItems: Array<{ key: NavKey; label: string; href: string; icon: React.ReactNode }> = [
-  { key: "conversations", label: "对话", href: "/conversations", icon: <ConversationIcon /> },
+const navItems: Array<{
+  key: NavKey;
+  label: string;
+  href: string;
+  icon: React.ReactNode;
+}> = [
+  {
+    key: "conversations",
+    label: "对话",
+    href: "/conversations",
+    icon: <ConversationIcon />,
+  },
   { key: "channels", label: "渠道", href: "/channels", icon: <GridIcon /> },
   { key: "tasks", label: "定时任务", href: "/tasks", icon: <TaskIcon /> },
   { key: "skills", label: "技能", href: "/skills", icon: <StarIcon /> },
 ];
 
 const LAST_CONVERSATION_PATH_KEY = "opencrab:last-conversation-path";
+const LAST_CONVERSATION_PATH_EVENT = "opencrab:last-conversation-path-change";
+const DEFAULT_CONVERSATION_HREF = "/conversations";
 
 export function AppShell({ sidebar, children }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [lastConversationHref, setLastConversationHref] = useState("/conversations");
+  const { chatGptConnectionStatus, codexStatus } = useOpenCrabApp();
+  const lastConversationHref = useSyncExternalStore(
+    subscribeToLastConversationPath,
+    getLastConversationHref,
+    () => DEFAULT_CONVERSATION_HREF,
+  );
 
   useEffect(() => {
-    if (pathname.startsWith("/conversations/")) {
-      window.localStorage.setItem(LAST_CONVERSATION_PATH_KEY, pathname);
-      setLastConversationHref(pathname);
-      return;
-    }
-
-    const stored = window.localStorage.getItem(LAST_CONVERSATION_PATH_KEY);
-
-    if (stored?.startsWith("/conversations/")) {
-      setLastConversationHref(stored);
+    if (isConversationPath(pathname)) {
+      saveLastConversationHref(pathname);
     }
   }, [pathname]);
 
@@ -45,7 +58,9 @@ export function AppShell({ sidebar, children }: AppShellProps) {
         item.key === "conversations"
           ? {
               ...item,
-              href: pathname.startsWith("/conversations/") ? pathname : lastConversationHref,
+              href: pathname.startsWith("/conversations/")
+                ? pathname
+                : lastConversationHref,
             }
           : item,
       ),
@@ -85,7 +100,8 @@ export function AppShell({ sidebar, children }: AppShellProps) {
         <nav className="mt-2 flex flex-col gap-0.5" aria-label="主导航">
           {resolvedNavItems.map((item) => {
             const isActive =
-              (item.key === "conversations" && (pathname === "/" || pathname.startsWith("/conversations"))) ||
+              (item.key === "conversations" &&
+                (pathname === "/" || pathname.startsWith("/conversations"))) ||
               pathname === item.href ||
               pathname.startsWith(`${item.href}/`);
 
@@ -94,13 +110,14 @@ export function AppShell({ sidebar, children }: AppShellProps) {
                 key={item.key}
                 href={item.href}
                 onClick={() => {
-                  if (pathname.startsWith("/conversations/")) {
-                    window.localStorage.setItem(LAST_CONVERSATION_PATH_KEY, pathname);
-                    setLastConversationHref(pathname);
+                  if (isConversationPath(pathname)) {
+                    saveLastConversationHref(pathname);
                   }
                 }}
                 className={`flex min-h-9 items-center gap-3 rounded-xl px-3 text-[14px] transition ${
-                  isActive ? "bg-surface font-medium text-text" : "text-text hover:bg-surface-muted"
+                  isActive
+                    ? "bg-surface font-medium text-text"
+                    : "text-text hover:bg-surface-muted"
                 }`}
               >
                 <span className="text-muted-strong">{item.icon}</span>
@@ -116,16 +133,30 @@ export function AppShell({ sidebar, children }: AppShellProps) {
 
         <Link
           href="/settings"
-          className="mt-2 shrink-0 flex items-center gap-3 border-t border-line px-3 pt-2.5 text-[14px] text-text transition hover:opacity-80"
+          className="group relative mt-2 shrink-0 flex items-center justify-between gap-3 border-t border-line px-3 pt-2.5 text-[14px] text-text transition hover:opacity-80"
         >
-          <span className="text-muted-strong">
-            <SettingsIcon />
+          <span className="flex items-center gap-3">
+            <span className="text-muted-strong">
+              <SettingsIcon />
+            </span>
+            <span>设置</span>
           </span>
-          <span>设置</span>
+          <ChatGptStatusBadge
+            stage={chatGptConnectionStatus?.stage}
+            isConnected={chatGptConnectionStatus?.isConnected === true}
+            isAvailable={codexStatus?.ok === true}
+          />
+          <ChatGptStatusTooltip
+            stage={chatGptConnectionStatus?.stage}
+            isConnected={chatGptConnectionStatus?.isConnected === true}
+            isAvailable={codexStatus?.ok === true}
+          />
         </Link>
       </aside>
 
-      <main className="min-h-screen lg:h-screen lg:min-h-0 lg:overflow-hidden">{children}</main>
+      <main className="min-h-screen lg:h-screen lg:min-h-0 lg:overflow-hidden">
+        {children}
+      </main>
     </div>
   );
 }
@@ -151,15 +182,68 @@ function SidebarAction({ href, children }: SidebarActionProps) {
 
 function PlusIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] stroke-current" strokeWidth="1.8">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-[18px] w-[18px] stroke-current"
+      strokeWidth="1.8"
+    >
       <path d="M12 5v14M5 12h14" strokeLinecap="round" />
     </svg>
   );
 }
 
+function subscribeToLastConversationPath(onStoreChange: () => void) {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  const handleChange = () => {
+    onStoreChange();
+  };
+
+  window.addEventListener("storage", handleChange);
+  window.addEventListener(LAST_CONVERSATION_PATH_EVENT, handleChange);
+
+  return () => {
+    window.removeEventListener("storage", handleChange);
+    window.removeEventListener(LAST_CONVERSATION_PATH_EVENT, handleChange);
+  };
+}
+
+function getLastConversationHref() {
+  if (typeof window === "undefined") {
+    return DEFAULT_CONVERSATION_HREF;
+  }
+
+  const storedPath = window.localStorage.getItem(LAST_CONVERSATION_PATH_KEY);
+
+  return isConversationPath(storedPath)
+    ? storedPath
+    : DEFAULT_CONVERSATION_HREF;
+}
+
+function saveLastConversationHref(pathname: string) {
+  if (typeof window === "undefined" || !isConversationPath(pathname)) {
+    return;
+  }
+
+  window.localStorage.setItem(LAST_CONVERSATION_PATH_KEY, pathname);
+  window.dispatchEvent(new Event(LAST_CONVERSATION_PATH_EVENT));
+}
+
+function isConversationPath(
+  pathname: string | null | undefined,
+): pathname is string {
+  return typeof pathname === "string" && pathname.startsWith("/conversations/");
+}
+
 function ConversationIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] stroke-current" strokeWidth="1.8">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-[18px] w-[18px] stroke-current"
+      strokeWidth="1.8"
+    >
       <path d="M6 7.5h12M6 12h8M6 16.5h10" strokeLinecap="round" />
     </svg>
   );
@@ -167,15 +251,26 @@ function ConversationIcon() {
 
 function GridIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] stroke-current" strokeWidth="1.8">
-      <path d="M4.5 8.5h15M4.5 15.5h15M7 5.5v13M17 5.5v13" strokeLinecap="round" />
+    <svg
+      viewBox="0 0 24 24"
+      className="h-[18px] w-[18px] stroke-current"
+      strokeWidth="1.8"
+    >
+      <path
+        d="M4.5 8.5h15M4.5 15.5h15M7 5.5v13M17 5.5v13"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
 
 function TaskIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] stroke-current" strokeWidth="1.8">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-[18px] w-[18px] stroke-current"
+      strokeWidth="1.8"
+    >
       <rect x="5.5" y="6" width="13" height="12" rx="2.5" />
       <path d="M8.5 4.5v3M15.5 4.5v3M8.5 11.5h7" strokeLinecap="round" />
     </svg>
@@ -184,7 +279,11 @@ function TaskIcon() {
 
 function StarIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] stroke-current" strokeWidth="1.8">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-[18px] w-[18px] stroke-current"
+      strokeWidth="1.8"
+    >
       <path d="M12 4.5 9.6 9.4 4.2 10.2l3.9 3.8-.9 5.4 4.8-2.5 4.8 2.5-.9-5.4 3.9-3.8-5.4-.8z" />
     </svg>
   );
@@ -192,7 +291,11 @@ function StarIcon() {
 
 function SettingsIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] stroke-current" strokeWidth="1.8">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-[18px] w-[18px] stroke-current"
+      strokeWidth="1.8"
+    >
       <path
         d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"
         strokeLinecap="round"
@@ -205,4 +308,107 @@ function SettingsIcon() {
       />
     </svg>
   );
+}
+
+function ChatGptStatusBadge({
+  stage,
+  isConnected,
+  isAvailable,
+}: {
+  stage?: string | null;
+  isConnected: boolean;
+  isAvailable: boolean;
+}) {
+  const status = getChatGptStatusPresentation({
+    stage,
+    isConnected,
+    isAvailable,
+  });
+
+  return (
+    <span
+      className={`inline-flex min-w-[60px] items-center justify-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition group-hover:-translate-y-[1px] ${status.badgeClassName}`}
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${status.dotClassName}`} />
+      <span>{status.label}</span>
+    </span>
+  );
+}
+
+function ChatGptStatusTooltip({
+  stage,
+  isConnected,
+  isAvailable,
+}: {
+  stage?: string | null;
+  isConnected: boolean;
+  isAvailable: boolean;
+}) {
+  const status = getChatGptStatusPresentation({
+    stage,
+    isConnected,
+    isAvailable,
+  });
+
+  return (
+    <span className="pointer-events-none absolute bottom-[calc(100%+10px)] right-0 hidden w-[220px] translate-y-1 rounded-2xl border border-line bg-background/95 px-3.5 py-3 text-left shadow-[0_12px_36px_rgba(15,23,42,0.12)] opacity-0 backdrop-blur-sm transition duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 lg:block">
+      <span className="flex items-center gap-2 text-[12px] font-semibold text-text">
+        <span className={`h-2 w-2 rounded-full ${status.dotClassName}`} />
+        <span>ChatGPT {status.label}</span>
+      </span>
+      <span className="mt-1 block text-[12px] leading-5 text-muted">
+        {status.description}
+      </span>
+      <span className="mt-2 block text-[11px] text-muted">
+        点击可进入设置，查看或调整连接状态。
+      </span>
+    </span>
+  );
+}
+
+function getChatGptStatusPresentation({
+  stage,
+  isConnected,
+  isAvailable,
+}: {
+  stage?: string | null;
+  isConnected: boolean;
+  isAvailable: boolean;
+}) {
+  if (isAvailable && isConnected) {
+    return {
+      label: "可用",
+      description: "当前连接正常，OpenCrab 可以直接复用你本机的 ChatGPT 能力。",
+      badgeClassName: "border-[#cfe7d4] bg-[#eef8f0] text-[#23633a]",
+      dotClassName: "bg-[#33a05c]",
+    };
+  }
+
+  if (stage === "connecting" || stage === "waiting_browser_auth") {
+    return {
+      label: stage === "waiting_browser_auth" ? "待授权" : "连接中",
+      description:
+        stage === "waiting_browser_auth"
+          ? "正在等待浏览器授权。完成后，状态会自动更新。"
+          : "正在检查和建立连接，通常只需要几秒钟。",
+      badgeClassName: "border-[#d9def8] bg-[#f4f6ff] text-[#3b4cca]",
+      dotClassName: "bg-[#5b6df7]",
+    };
+  }
+
+  if (stage) {
+    return {
+      label: "未连接",
+      description: "当前还不能使用 ChatGPT。点击设置后可以重新连接或刷新状态。",
+      badgeClassName: "border-line bg-surface text-muted-strong",
+      dotClassName: "bg-[#a3acb9]",
+    };
+  }
+
+  return {
+    label: "检查中",
+    description: "正在读取本机连接状态，稍后会自动显示最新结果。",
+    badgeClassName: "border-line bg-surface text-muted-strong",
+    dotClassName: "bg-[#a3acb9]",
+  };
 }

@@ -1,25 +1,11 @@
-import { NextResponse } from "next/server";
+import { chatGptConnectionErrorResponse } from "@/lib/chatgpt/connection-response";
 import { startChatGptConnection } from "@/lib/chatgpt/connection";
+import { json } from "@/lib/server/api-route";
 
 export async function POST() {
   try {
-    return NextResponse.json(await startChatGptConnection());
+    return json(await startChatGptConnection());
   } catch (error) {
-    return NextResponse.json(
-      {
-        provider: "chatgpt",
-        authMode: null,
-        stage: "error",
-        isConnected: false,
-        authUrl: null,
-        deviceCode: null,
-        codeExpiresAt: null,
-        startedAt: null,
-        connectedAt: null,
-        error: error instanceof Error ? error.message : "发起 ChatGPT 连接失败。",
-        message: "发起 ChatGPT 连接失败，请稍后重试。",
-      },
-      { status: 500 },
-    );
+    return chatGptConnectionErrorResponse(error, "发起 ChatGPT 连接失败");
   }
 }

@@ -1,15 +1,15 @@
-import { NextResponse } from "next/server";
 import { getCodexStatus } from "@/lib/codex/sdk";
+import { getErrorMessage, json } from "@/lib/server/api-route";
 
 export async function GET() {
   try {
     const status = await getCodexStatus();
 
-    return NextResponse.json(status);
+    return json(status);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "OpenCrab 运行状态检查失败。";
+    const message = getErrorMessage(error, "OpenCrab 运行状态检查失败。");
 
-    return NextResponse.json({
+    return json({
       ok: false,
       error: message,
       loginStatus: "missing",

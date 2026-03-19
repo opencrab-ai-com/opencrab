@@ -1,23 +1,28 @@
-import { NextResponse } from "next/server";
 import { runTaskNow } from "@/lib/tasks/task-runner";
 import { getTask } from "@/lib/tasks/task-store";
+import {
+  errorResponse,
+  json,
+  notFoundJson,
+  readRouteParams,
+  type RouteContext,
+} from "@/lib/server/api-route";
 
 export async function POST(
   _request: Request,
-  context: { params: Promise<{ taskId: string }> },
+  context: RouteContext<{ taskId: string }>,
 ) {
-  const { taskId } = await context.params;
+  const { taskId } = await readRouteParams(context);
 
   if (!getTask(taskId)) {
-    return NextResponse.json({ error: "定时任务不存在。" }, { status: 404 });
+    return notFoundJson("定时任务不存在。");
   }
 
   try {
     const task = runTaskNow(taskId);
 
-    return NextResponse.json({ task });
+    return json({ task });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "执行定时任务失败。";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return errorResponse(error, "执行定时任务失败。");
   }
 }

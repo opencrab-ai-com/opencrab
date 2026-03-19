@@ -1,21 +1,28 @@
-import { NextResponse } from "next/server";
 import { streamCodexReply } from "@/lib/codex/sdk";
 import {
-  ConversationTurnError,
   finalizeConversationTurn,
   prepareConversationTurn,
 } from "@/lib/conversations/run-conversation-turn";
 import { addMessage, updateConversation } from "@/lib/resources/local-store";
 import type { ReplyStreamEvent } from "@/lib/resources/opencrab-api-types";
-import type { CodexReasoningEffort, CodexSandboxMode } from "@/lib/resources/opencrab-api-types";
+import type {
+  CodexReasoningEffort,
+  CodexSandboxMode,
+} from "@/lib/resources/opencrab-api-types";
+import {
+  errorResponse,
+  readJsonBody,
+  readRouteParams,
+  type RouteContext,
+} from "@/lib/server/api-route";
 
 export async function POST(
   request: Request,
-  context: { params: Promise<{ conversationId: string }> },
+  context: RouteContext<{ conversationId: string }>,
 ) {
   try {
-    const { conversationId } = await context.params;
-    const body = (await request.json()) as {
+    const { conversationId } = await readRouteParams(context);
+    const body = await readJsonBody<{
       content?: string;
       model?: string;
       reasoningEffort?: CodexReasoningEffort;
@@ -23,7 +30,7 @@ export async function POST(
       attachmentIds?: string[];
       userMessageId?: string;
       assistantMessageId?: string;
-    };
+    }>(request, {});
     const prepared = prepareConversationTurn({
       conversationId,
       content: body.content,
@@ -40,7 +47,8 @@ export async function POST(
       async start(controller) {
         let latestText = "";
         let latestThinking: string[] = [];
-        let latestThreadId: string | null = prepared.conversation.codexThreadId ?? null;
+        let latestThreadId: string | null =
+          prepared.conversation.codexThreadId ?? null;
         let didComplete = false;
 
         function emit(event: ReplyStreamEvent) {
@@ -63,7 +71,10 @@ export async function POST(
               latestThreadId = event.threadId;
               updateConversation(conversationId, {
                 codexThreadId: event.threadId,
-                lastAssistantModel: body.model || prepared.conversation.lastAssistantModel || null,
+                lastAssistantModel:
+                  body.model ||
+                  prepared.conversation.lastAssistantModel ||
+                  null,
               });
               emit(event);
               continue;
@@ -110,7 +121,10 @@ export async function POST(
             if (latestThreadId) {
               updateConversation(conversationId, {
                 codexThreadId: latestThreadId,
-                lastAssistantModel: body.model || prepared.conversation.lastAssistantModel || null,
+                lastAssistantModel:
+                  body.model ||
+                  prepared.conversation.lastAssistantModel ||
+                  null,
               });
             }
 
@@ -123,7 +137,10 @@ export async function POST(
               status: "stopped",
             });
           } else {
-            const message = error instanceof Error ? error.message : "OpenCrab 回复生成失败。";
+            const message =
+              error instanceof Error
+                ? error.message
+                : "OpenCrab 回复生成失败。";
             emit({
               type: "error",
               error: message,
@@ -150,12 +167,6 @@ export async function POST(
       },
     });
   } catch (error) {
-    if (error instanceof ConversationTurnError) {
-      return NextResponse.json({ error: error.message }, { status: error.statusCode });
-    }
-
-    const message = error instanceof Error ? error.message : "OpenCrab 回复生成失败。";
-
-    return NextResponse.json({ error: message }, { status: 500 });
+    return errorResponse(error, "OpenCrab 回复生成失败。");
   }
 }

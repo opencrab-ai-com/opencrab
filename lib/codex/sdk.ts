@@ -8,6 +8,7 @@ import {
   resolvePreferredModelOption,
   resolvePreferredReasoningEffort,
 } from "@/lib/codex/options";
+import { getAppLanguagePromptInstruction } from "@/lib/opencrab/languages";
 import { listSkills } from "@/lib/skills/skill-store";
 import { getSnapshot } from "@/lib/resources/local-store";
 import type { CodexReasoningEffort, CodexSandboxMode } from "@/lib/resources/opencrab-api-types";
@@ -348,6 +349,7 @@ function resolveModelConfig(input?: {
 function buildPrompt(
   input: Pick<GenerateCodexReplyInput, "conversationTitle" | "content" | "textAttachments">,
 ) {
+  const settings = getSnapshot().settings;
   const skills = listSkills();
   const enabledSkills = skills.filter(
     (skill) => skill.status === "installed" && Boolean(skill.sourcePath),
@@ -358,7 +360,7 @@ function buildPrompt(
 
   return [
     "你是 OpenCrab 自己的智能助手。",
-    "默认使用简体中文回复，除非用户明确要求其他语言。",
+    getAppLanguagePromptInstruction(settings.defaultLanguage),
     "面向普通用户，表达要清楚、直接、少术语。",
     "涉及浏览器、网页、页面交互、表单填写、点击、抓取页面可见内容时，优先使用 chrome-devtools MCP。",
     "只有在 chrome-devtools MCP 当前不可用、明确做不到，或者连续失败时，才降级到其他方式，例如命令行、Playwright 或直接请求网页。",

@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import {
   ensureChannelStartupSync,
   ensureChannelWatchdog,
@@ -8,24 +7,30 @@ import {
   runChannelSyncAction,
   type ChannelSyncMode,
 } from "@/lib/channels/channel-management";
+import {
+  json,
+  notFoundJson,
+  readJsonBody,
+  type RouteContext,
+} from "@/lib/server/api-route";
 
 export async function POST(
   request: Request,
-  context: { params: Promise<{ channelId: string }> },
+  context: RouteContext<{ channelId: string }>,
 ) {
   ensureChannelWatchdog();
   const channelId = await resolveChannelId(context.params);
 
   if (!channelId) {
-    return NextResponse.json({ error: "不支持的 channel。" }, { status: 404 });
+    return notFoundJson("不支持的 channel。");
   }
 
   void ensureChannelStartupSync({ force: true });
 
-  const body = (await request.json().catch(() => ({}))) as {
+  const body = await readJsonBody<{
     mode?: ChannelSyncMode;
-  };
+  }>(request, {});
   const result = await runChannelSyncAction(channelId, body.mode || "refresh");
 
-  return NextResponse.json(result);
+  return json(result);
 }

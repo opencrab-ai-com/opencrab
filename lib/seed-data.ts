@@ -1,4 +1,5 @@
 export type NavKey = "conversations" | "channels" | "tasks" | "skills" | "settings";
+export type AppLanguage = "zh-Hans" | "en";
 
 export type FolderItem = {
   id: string;
@@ -70,6 +71,7 @@ export type AppSettings = {
   defaultReasoningEffort: "minimal" | "low" | "medium" | "high" | "xhigh";
   defaultSandboxMode: "read-only" | "workspace-write" | "danger-full-access";
   browserConnectionMode: "current-browser" | "managed-browser";
+  defaultLanguage: AppLanguage;
   allowOpenAiApiKeyForCommands: boolean;
 };
 
@@ -178,8 +180,8 @@ export const skills: SkillItem[] = [
 ];
 
 export const currentUser = {
-  name: "sky tong",
-  initial: "S",
+  name: "OpenCrab User",
+  initial: "O",
 };
 
 export const appSettings: AppSettings = {
@@ -187,5 +189,6 @@ export const appSettings: AppSettings = {
   defaultReasoningEffort: "medium",
   defaultSandboxMode: "workspace-write",
   browserConnectionMode: "current-browser",
+  defaultLanguage: "zh-Hans",
   allowOpenAiApiKeyForCommands: false,
 };
