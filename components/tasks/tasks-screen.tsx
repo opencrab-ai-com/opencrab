@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { TaskForm } from "@/components/tasks/task-form";
 import { Button, buttonClassName } from "@/components/ui/button";
 import {
@@ -63,10 +62,10 @@ const TASK_TEMPLATES: TaskTemplate[] = [
 ];
 
 export function TasksScreen() {
-  const router = useRouter();
   const [tasks, setTasks] = useState<TaskRecord[]>([]);
   const [createFormKey, setCreateFormKey] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [pendingTaskAction, setPendingTaskAction] = useState<string | null>(null);
   const [createMessage, setCreateMessage] = useState<string | null>(null);
@@ -80,19 +79,31 @@ export function TasksScreen() {
   const selectedTemplate =
     TASK_TEMPLATES.find((template) => template.id === selectedTemplateId) || null;
 
-  const loadTasks = useCallback(async () => {
-    setIsLoading(true);
-    setErrorMessage(null);
+  const loadTasks = useCallback(
+    async ({ silent = false }: { silent?: boolean } = {}) => {
+      if (silent) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+      setErrorMessage(null);
 
-    try {
-      const response = await getTasks();
-      setTasks(sortTasks(response.tasks));
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "加载定时任务失败。");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      try {
+        const response = await getTasks();
+        setTasks(sortTasks(response.tasks));
+      } catch (error) {
+        setErrorMessage(error instanceof Error ? error.message : "加载定时任务失败。");
+      } finally {
+        if (silent) {
+          setIsRefreshing(false);
+          return;
+        }
+
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     void loadTasks();
@@ -100,7 +111,11 @@ export function TasksScreen() {
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
-      void loadTasks();
+      if (document.hidden) {
+        return;
+      }
+
+      void loadTasks({ silent: true });
     }, 15000);
 
     return () => {
@@ -175,7 +190,6 @@ export function TasksScreen() {
       setTasks((current) => reconcileTask(current, updatedTask));
       setCreateMessageTone("success");
       setCreateMessage("定时任务已经开始执行，结果会自动回流到对应对话。");
-      router.refresh();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "执行定时任务失败。");
     } finally {
@@ -287,10 +301,11 @@ export function TasksScreen() {
             </p>
           </div>
           <Button
-            onClick={() => void loadTasks()}
+            onClick={() => void loadTasks({ silent: true })}
             variant="secondary"
+            disabled={isRefreshing}
           >
-            刷新
+            {isRefreshing ? "刷新中..." : "刷新"}
           </Button>
         </div>
 

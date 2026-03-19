@@ -108,10 +108,6 @@ export function SidebarContent() {
     };
   }, []);
 
-  if (!isConversationArea) {
-    return <div className="h-full" />;
-  }
-
   function handleOpenCreateFolderDialog() {
     setCreateFolderDialog({
       name: "",
@@ -274,7 +270,7 @@ export function SidebarContent() {
   }
 
   return (
-    <>
+    <div className={isConversationArea ? "h-full" : "hidden h-full"} aria-hidden={!isConversationArea}>
       {errorMessage ? (
         <SidebarStatusBanner tone="error" actionLabel="关闭" onAction={clearError}>
           {errorMessage}
@@ -434,7 +430,7 @@ export function SidebarContent() {
           onConfirm={handleConfirmRename}
         />
       ) : null}
-    </>
+    </div>
   );
 }
 

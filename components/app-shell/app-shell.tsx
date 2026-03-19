@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { OpenCrabMark, OpenCrabWordmark } from "@/components/branding/opencrab-brand";
-import { currentUser } from "@/lib/seed-data";
 import type { NavKey } from "@/lib/seed-data";
 
 type AppShellProps = {
@@ -23,14 +22,22 @@ const LAST_CONVERSATION_PATH_KEY = "opencrab:last-conversation-path";
 
 export function AppShell({ sidebar, children }: AppShellProps) {
   const pathname = usePathname();
-  const [lastConversationHref, setLastConversationHref] = useState(() => {
-    if (typeof window === "undefined") {
-      return "/conversations";
+  const router = useRouter();
+  const [lastConversationHref, setLastConversationHref] = useState("/conversations");
+
+  useEffect(() => {
+    if (pathname.startsWith("/conversations/")) {
+      window.localStorage.setItem(LAST_CONVERSATION_PATH_KEY, pathname);
+      setLastConversationHref(pathname);
+      return;
     }
 
     const stored = window.localStorage.getItem(LAST_CONVERSATION_PATH_KEY);
-    return stored?.startsWith("/conversations/") ? stored : "/conversations";
-  });
+
+    if (stored?.startsWith("/conversations/")) {
+      setLastConversationHref(stored);
+    }
+  }, [pathname]);
 
   const resolvedNavItems = useMemo(
     () =>
@@ -44,6 +51,18 @@ export function AppShell({ sidebar, children }: AppShellProps) {
       ),
     [lastConversationHref, pathname],
   );
+
+  useEffect(() => {
+    const hrefs = new Set<string>(["/", "/settings"]);
+
+    resolvedNavItems.forEach((item) => {
+      hrefs.add(item.href);
+    });
+
+    hrefs.forEach((href) => {
+      router.prefetch(href);
+    });
+  }, [resolvedNavItems, router]);
 
   return (
     <div className="grid min-h-screen grid-cols-1 bg-background lg:grid-cols-[304px_1fr]">
@@ -97,15 +116,12 @@ export function AppShell({ sidebar, children }: AppShellProps) {
 
         <Link
           href="/settings"
-          className="mt-2 shrink-0 flex items-center gap-3 border-t border-line px-2 pt-2.5 text-text transition hover:opacity-80"
+          className="mt-2 shrink-0 flex items-center gap-3 border-t border-line px-3 pt-2.5 text-[14px] text-text transition hover:opacity-80"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#d8d9db] text-[12px] font-semibold text-[#5f6368]">
-            {currentUser.initial}
+          <span className="text-muted-strong">
+            <SettingsIcon />
           </span>
-          <span className="flex flex-col">
-            <span className="text-[13px] font-medium">{currentUser.name}</span>
-            <span className="text-[12px] text-muted">设置</span>
-          </span>
+          <span>设置</span>
         </Link>
       </aside>
 
@@ -170,6 +186,23 @@ function StarIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] stroke-current" strokeWidth="1.8">
       <path d="M12 4.5 9.6 9.4 4.2 10.2l3.9 3.8-.9 5.4 4.8-2.5 4.8 2.5-.9-5.4 3.9-3.8-5.4-.8z" />
+    </svg>
+  );
+}
+
+function SettingsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] stroke-current" strokeWidth="1.8">
+      <path
+        d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="m19 12-.9-.5a6.9 6.9 0 0 0-.2-1.1l.7-.8a1 1 0 0 0-.1-1.3l-1.2-1.2a1 1 0 0 0-1.3-.1l-.8.7a6.9 6.9 0 0 0-1.1-.2L14 5a1 1 0 0 0-1-.8h-2a1 1 0 0 0-1 .8l-.3 1a6.9 6.9 0 0 0-1.1.2l-.8-.7a1 1 0 0 0-1.3.1L5.3 6.8a1 1 0 0 0-.1 1.3l.7.8c-.1.4-.2.7-.2 1.1L5 12l.5.9c0 .4.1.8.2 1.1l-.7.8a1 1 0 0 0 .1 1.3l1.2 1.2a1 1 0 0 0 1.3.1l.8-.7c.4.1.7.2 1.1.2l.5.9a1 1 0 0 0 1 .8h2a1 1 0 0 0 1-.8l.5-.9c.4 0 .8-.1 1.1-.2l.8.7a1 1 0 0 0 1.3-.1l1.2-1.2a1 1 0 0 0 .1-1.3l-.7-.8c.1-.4.2-.7.2-1.1L19 12Z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

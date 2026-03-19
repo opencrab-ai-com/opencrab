@@ -31,12 +31,15 @@ type CreateSkillDialogState = {
 };
 
 const RECOMMENDATION_EXCLUDED_IDS = new Set(["transcribe", "claude-api", "figma"]);
+let cachedSkillsCatalog: SkillRecord[] | null = null;
+let skillsCatalogPromise: Promise<SkillRecord[]> | null = null;
 
 export function SkillsScreen() {
-  const [skills, setSkills] = useState<SkillRecord[]>([]);
+  const [skills, setSkills] = useState<SkillRecord[]>(() => cachedSkillsCatalog ?? []);
   const [query, setQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => cachedSkillsCatalog === null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [pendingActionKey, setPendingActionKey] = useState<string | null>(null);
   const [createDialog, setCreateDialog] = useState<CreateSkillDialogState | null>(null);
   const [selectedRecommendedCategory, setSelectedRecommendedCategory] = useState<
@@ -75,22 +78,41 @@ export function SkillsScreen() {
     selectedRecommendedCategory === "all" ? item.count > 0 : item.category === selectedRecommendedCategory,
   );
 
-  const loadSkills = useCallback(async () => {
-    setIsLoading(true);
+  const loadSkills = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
+    if (silent) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
     setErrorMessage(null);
 
     try {
-      const response = await getSkillsCatalog();
-      setSkills(response.skills);
+      if (!skillsCatalogPromise) {
+        skillsCatalogPromise = getSkillsCatalog()
+          .then((response) => {
+            cachedSkillsCatalog = response.skills;
+            return response.skills;
+          })
+          .finally(() => {
+            skillsCatalogPromise = null;
+          });
+      }
+
+      const nextSkills = await skillsCatalogPromise;
+      setSkills(nextSkills);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "加载技能列表失败。");
     } finally {
-      setIsLoading(false);
+      if (silent) {
+        setIsRefreshing(false);
+      } else {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    void loadSkills();
+    void loadSkills({ silent: cachedSkillsCatalog !== null });
   }, [loadSkills]);
 
   async function handleAction(skillId: string, action: SkillAction) {
@@ -99,7 +121,11 @@ export function SkillsScreen() {
 
     try {
       const response = await mutateSkill(skillId, action);
-      setSkills((current) => reconcileSkills(current, skillId, response.skill));
+      setSkills((current) => {
+        const next = reconcileSkills(current, skillId, response.skill);
+        cachedSkillsCatalog = next;
+        return next;
+      });
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "技能操作失败。");
     } finally {
@@ -121,7 +147,11 @@ export function SkillsScreen() {
         summary: createDialog.summary,
         detailsMarkdown: createDialog.detailsMarkdown || undefined,
       });
-      setSkills((current) => reconcileSkills(current, null, response.skill, { prepend: true }));
+      setSkills((current) => {
+        const next = reconcileSkills(current, null, response.skill, { prepend: true });
+        cachedSkillsCatalog = next;
+        return next;
+      });
       setCreateDialog(null);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "创建技能失败。");
@@ -141,12 +171,13 @@ export function SkillsScreen() {
             <div className="flex w-full flex-wrap items-center justify-end gap-3 lg:w-[700px] lg:flex-nowrap">
               <Button
                 type="button"
-                onClick={() => void loadSkills()}
+                onClick={() => void loadSkills({ silent: true })}
                 variant="ghost"
                 className="gap-2"
+                disabled={isRefreshing}
               >
                 <RefreshIcon />
-                <span>刷新</span>
+                <span>{isRefreshing ? "刷新中..." : "刷新"}</span>
               </Button>
 
               <label className="flex h-10 min-w-[260px] flex-1 items-center gap-2 rounded-full border border-line bg-surface px-4 text-[13px] text-muted-strong">
