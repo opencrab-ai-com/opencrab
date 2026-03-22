@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { StatusPill as UnifiedStatusPill } from "@/components/ui/pill";
 import type { ChannelDetail } from "@/lib/channels/types";
 
 export function ChannelActivityPanel({ channel }: { channel: ChannelDetail }) {
@@ -89,10 +90,10 @@ export function ChannelActivityPanel({ channel }: { channel: ChannelDetail }) {
 function EventStatusBadge({ status }: { status: string }) {
   const tone =
     status === "sent" || status === "processed"
-      ? "border-[#cfe7d4] bg-[#eef8f0] text-[#23633a]"
+      ? "success"
       : status === "error"
-        ? "border-[#f3d0cb] bg-[#fff3f1] text-[#b42318]"
-        : "border-line bg-surface-muted text-muted-strong";
+        ? "danger"
+        : "neutral";
 
-  return <span className={`rounded-full border px-2.5 py-1 text-[11px] ${tone}`}>{status}</span>;
+  return <UnifiedStatusPill tone={tone} size="sm">{status}</UnifiedStatusPill>;
 }

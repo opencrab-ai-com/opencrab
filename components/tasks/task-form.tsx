@@ -27,7 +27,7 @@ const PRESET_OPTIONS = [
   { value: "daily", label: "每天" },
   { value: "weekdays", label: "工作日" },
   { value: "weekly", label: "每周" },
-  { value: "interval", label: "每隔几小时" },
+  { value: "interval", label: "每隔几分钟" },
 ] as const;
 
 export function TaskForm({
@@ -49,7 +49,11 @@ export function TaskForm({
   );
   const [time, setTime] = useState(seed?.schedule?.time || "09:00");
   const [weekday, setWeekday] = useState(seed?.schedule?.weekday ?? 1);
-  const [intervalHours, setIntervalHours] = useState(seed?.schedule?.intervalHours ?? 6);
+  const [intervalMinutes, setIntervalMinutes] = useState(
+    seed?.schedule?.intervalMinutes ?? ((seed?.schedule?.intervalHours ?? 0) > 0
+      ? (seed?.schedule?.intervalHours as number) * 60
+      : 5),
+  );
 
   async function handleSubmit() {
     await onSubmit({
@@ -60,7 +64,7 @@ export function TaskForm({
         preset === "interval"
           ? {
               preset,
-              intervalHours,
+              intervalMinutes,
             }
           : preset === "weekly"
             ? {
@@ -143,14 +147,14 @@ export function TaskForm({
               <span className="text-[12px] font-medium text-muted-strong">执行间隔</span>
               <div className="mt-2 flex items-center gap-3 rounded-[16px] border border-line bg-background px-4">
                 <input
-                  value={intervalHours}
-                  onChange={(event) => setIntervalHours(Number(event.target.value) || 1)}
+                  value={intervalMinutes}
+                  onChange={(event) => setIntervalMinutes(Number(event.target.value) || 1)}
                   type="number"
                   min={1}
-                  max={24}
+                  max={1440}
                   className="h-12 w-full bg-transparent text-[14px] text-text outline-none"
                 />
-                <span className="text-[13px] text-muted">小时</span>
+                <span className="text-[13px] text-muted">分钟</span>
               </div>
             </label>
           ) : (

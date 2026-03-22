@@ -143,6 +143,12 @@ export function findBinding(channelId: ChannelId, remoteChatId: string) {
   );
 }
 
+export function findBindingByConversationId(conversationId: string) {
+  const state = readState();
+
+  return state.bindings.find((binding) => binding.conversationId === conversationId) ?? null;
+}
+
 export function getAllBindings() {
   return structuredClone(readState().bindings);
 }

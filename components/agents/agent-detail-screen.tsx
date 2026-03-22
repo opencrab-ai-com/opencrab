@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import type { ChangeEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AgentAvatar } from "@/components/agents/agent-avatar";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
 import { AppPage } from "@/components/ui/app-page";
 import { Button, buttonClassName } from "@/components/ui/button";
+import { buildAgentAvatarOptions } from "@/lib/agents/avatar-library";
 import { getAgentDetail } from "@/lib/resources/opencrab-api";
 import type { AgentProfileDetail } from "@/lib/agents/types";
 
@@ -47,6 +50,8 @@ export function AgentDetailScreen({ agentId }: { agentId: string }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [avatarSeed, setAvatarSeed] = useState(() => crypto.randomUUID());
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
 
   const loadAgent = useCallback(async () => {
     setIsLoading(true);
@@ -73,6 +78,16 @@ export function AgentDetailScreen({ agentId }: { agentId: string }) {
     ],
     [codexModels],
   );
+  const avatarOptions = useMemo(
+    () =>
+      agent
+        ? buildAgentAvatarOptions({
+            name: agent.name,
+            seed: `${agent.id}:${avatarSeed}`,
+          })
+        : [],
+    [agent, avatarSeed],
+  );
 
   async function handleSave() {
     if (!agent) {
@@ -87,6 +102,7 @@ export function AgentDetailScreen({ agentId }: { agentId: string }) {
       const next = await updateAgent(agent.id, {
         name: agent.name,
         summary: agent.summary,
+        avatarDataUrl: agent.avatarDataUrl,
         roleLabel: agent.roleLabel,
         description: agent.description,
         availability: agent.availability,
@@ -155,6 +171,29 @@ export function AgentDetailScreen({ agentId }: { agentId: string }) {
     }
   }
 
+  async function handleAvatarUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setErrorMessage("头像上传只支持图片文件。");
+      return;
+    }
+
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      setAgent((current) => (current ? { ...current, avatarDataUrl: dataUrl } : current));
+      setSuccessMessage("已更新头像，记得点击“保存配置”。");
+      setErrorMessage(null);
+    } catch {
+      setErrorMessage("读取头像文件失败，请重试。");
+    }
+  }
+
   return (
     <AppPage width="wide" contentClassName="space-y-8">
       <div className="flex items-center justify-between gap-4">
@@ -176,10 +215,13 @@ export function AgentDetailScreen({ agentId }: { agentId: string }) {
           <section className="rounded-[28px] border border-line bg-surface p-6 shadow-soft">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-[760px]">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h1 className="text-[32px] font-semibold tracking-[-0.05em] text-text">{agent.name}</h1>
-                  <Pill>{agent.roleLabel}</Pill>
-                  <Pill>{agent.source === "system" ? "系统内置" : "自定义"}</Pill>
+                <div className="flex flex-wrap items-center gap-4">
+                  <AgentAvatar src={agent.avatarDataUrl} name={agent.name} size={72} className="rounded-[24px]" />
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h1 className="text-[32px] font-semibold tracking-[-0.05em] text-text">{agent.name}</h1>
+                    <Pill>{agent.roleLabel}</Pill>
+                    <Pill>{agent.source === "system" ? "系统内置" : "自定义"}</Pill>
+                  </div>
                 </div>
                 <p className="mt-3 text-[15px] leading-7 text-muted-strong">{agent.summary}</p>
                 <div className="mt-4 flex flex-wrap gap-2 text-[12px] text-muted-strong">
@@ -219,6 +261,70 @@ export function AgentDetailScreen({ agentId }: { agentId: string }) {
               新建智能体时会自动生成 `soul.md`、`responsibility.md`、`tools.md`、`user.md`、
               `knowledge.md` 五份文档，并统一采用固定模板结构。下面这版就是可直接编辑的初稿。
             </div>
+            <Field label="头像" helper="每个智能体都支持独立头像。你可以从自动生成的候选里选，也可以重新生成，或直接上传自己的图片。">
+              <div className="rounded-[22px] border border-line bg-background px-4 py-4">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="flex items-center gap-4">
+                    <AgentAvatar src={agent.avatarDataUrl} name={agent.name} size={72} className="rounded-[24px]" />
+                    <div>
+                      <div className="text-[14px] font-medium text-text">当前头像</div>
+                      <div className="mt-1 text-[12px] leading-6 text-muted-strong">
+                        保存后，这个头像会在智能体列表和对应对话记录里一起展示。
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="button" variant="secondary" onClick={() => setAvatarSeed(crypto.randomUUID())}>
+                      重新生成
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => avatarInputRef.current?.click()}
+                    >
+                      上传头像
+                    </Button>
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => void handleAvatarUpload(event)}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
+                  {avatarOptions.map((option) => {
+                    const isSelected = agent.avatarDataUrl === option.dataUrl;
+
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() =>
+                          setAgent((current) =>
+                            current ? { ...current, avatarDataUrl: option.dataUrl } : current,
+                          )
+                        }
+                        className={`rounded-[20px] border px-3 py-3 transition ${
+                          isSelected
+                            ? "border-[#1f4fd1] bg-[#eef4ff] shadow-[0_0_0_1px_rgba(31,79,209,0.08)]"
+                            : "border-line bg-surface hover:bg-surface-muted"
+                        }`}
+                      >
+                        <div className="flex flex-col items-center gap-2">
+                          <AgentAvatar src={option.dataUrl} name={agent.name} size={56} className="rounded-[20px]" />
+                          <span className="text-[11px] font-medium text-text">{option.label}</span>
+                          <span className="text-[11px] text-muted-strong">{isSelected ? "当前使用" : "点击选用"}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </Field>
             <div className="grid gap-5 lg:grid-cols-2">
               <Field label="名称">
                 <input
@@ -472,4 +578,20 @@ function formatTeamRole(value: "lead" | "research" | "writer" | "specialist") {
     default:
       return "Specialist";
   }
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("read_failed"));
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+        return;
+      }
+
+      reject(new Error("invalid_result"));
+    };
+    reader.readAsDataURL(file);
+  });
 }

@@ -11,6 +11,7 @@ export type TaskSchedule = {
   preset: TaskSchedulePreset;
   time?: string | null;
   weekday?: number | null;
+  intervalMinutes?: number | null;
   intervalHours?: number | null;
 };
 

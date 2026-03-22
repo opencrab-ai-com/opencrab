@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
 import {
   DialogActions,
@@ -13,6 +13,12 @@ import {
 } from "@/components/ui/dialog";
 import type { ConversationItem } from "@/lib/seed-data";
 import { buildSidebarViewModel } from "@/lib/view-models/conversations";
+
+type ConversationListMode = "direct" | "agent" | "team" | "channel";
+
+const CONVERSATION_MODE_STORAGE_KEY = "opencrab:conversation-list-mode";
+const CONVERSATION_MODE_EVENT = "opencrab:conversation-list-mode-change";
+const DEFAULT_CONVERSATION_MODE: ConversationListMode = "direct";
 
 type DeleteTarget =
   | {
@@ -77,19 +83,28 @@ export function SidebarContent() {
     kind: "folder" | "conversation";
     id: string;
   }>(null);
+  const selectedMode = useSyncExternalStore(
+    subscribeToConversationMode,
+    getSelectedConversationMode,
+    () => DEFAULT_CONVERSATION_MODE,
+  );
 
-  const isConversationArea = pathname === "/" || pathname.startsWith("/conversations");
   const activeConversationId = pathname.startsWith("/conversations/") ? pathname.split("/")[2] : null;
+
+  const modeFilteredConversations = useMemo(
+    () => conversations.filter((conversation) => resolveConversationListMode(conversation) === selectedMode),
+    [conversations, selectedMode],
+  );
 
   const sidebarViewModel = useMemo(
     () =>
       buildSidebarViewModel({
         folders,
-        conversations,
+        conversations: modeFilteredConversations,
         conversationMessages,
         expandedFolders,
       }),
-    [conversationMessages, conversations, expandedFolders, folders],
+    [conversationMessages, expandedFolders, folders, modeFilteredConversations],
   );
 
   useEffect(() => {
@@ -270,7 +285,7 @@ export function SidebarContent() {
   }
 
   return (
-    <div className={isConversationArea ? "h-full" : "hidden h-full"} aria-hidden={!isConversationArea}>
+    <div className="h-full">
       {errorMessage ? (
         <SidebarStatusBanner tone="error" actionLabel="关闭" onAction={clearError}>
           {errorMessage}
@@ -384,11 +399,7 @@ export function SidebarContent() {
               onDragEnd={() => setDraggingConversationId(null)}
             />
           ))
-        ) : (
-          <div className="px-3 py-2 text-[11px] text-muted">
-            {isHydrated ? "拖动文件夹里的对话回到这里" : "正在加载对话..."}
-          </div>
-        )}
+        ) : <div className="px-3 py-2 text-[11px] text-muted">{isHydrated ? getEmptyModeMessage(selectedMode) : "正在加载对话..."}</div>}
       </SidebarSection>
 
       {deleteTarget ? (
@@ -560,6 +571,66 @@ function getConversationSourceBadge(source: ConversationItem["source"]) {
   }
 
   return "";
+}
+
+function resolveConversationListMode(conversation: ConversationItem): ConversationListMode {
+  if (conversation.projectId) {
+    return "team";
+  }
+
+  if (conversation.agentProfileId) {
+    return "agent";
+  }
+
+  if (conversation.source && conversation.source !== "local") {
+    return "channel";
+  }
+
+  return "direct";
+}
+
+function isConversationListMode(value: string | null): value is ConversationListMode {
+  return value === "direct" || value === "agent" || value === "team" || value === "channel";
+}
+
+function subscribeToConversationMode(onStoreChange: () => void) {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  const handleChange = () => {
+    onStoreChange();
+  };
+
+  window.addEventListener("storage", handleChange);
+  window.addEventListener(CONVERSATION_MODE_EVENT, handleChange);
+
+  return () => {
+    window.removeEventListener("storage", handleChange);
+    window.removeEventListener(CONVERSATION_MODE_EVENT, handleChange);
+  };
+}
+
+function getSelectedConversationMode(): ConversationListMode {
+  if (typeof window === "undefined") {
+    return DEFAULT_CONVERSATION_MODE;
+  }
+
+  const stored = window.localStorage.getItem(CONVERSATION_MODE_STORAGE_KEY);
+  return isConversationListMode(stored) ? stored : DEFAULT_CONVERSATION_MODE;
+}
+
+function getEmptyModeMessage(mode: ConversationListMode) {
+  switch (mode) {
+    case "agent":
+      return "这个模式下还没有智能体对话";
+    case "team":
+      return "这个模式下还没有团队模式对话";
+    case "channel":
+      return "这个模式下还没有渠道对话";
+    default:
+      return "这个模式下还没有直接对话";
+  }
 }
 
 type FolderRowProps = {

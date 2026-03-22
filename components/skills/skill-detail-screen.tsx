@@ -9,6 +9,7 @@ import remarkGfm from "remark-gfm";
 import { SkillIcon } from "@/components/skills/skill-icon";
 import { AppPage } from "@/components/ui/app-page";
 import { Button, buttonClassName } from "@/components/ui/button";
+import { MetaPill as UnifiedMetaPill, StatusPill as UnifiedStatusPill } from "@/components/ui/pill";
 import { getSkillDetail, mutateSkill } from "@/lib/resources/opencrab-api";
 import type { SkillAction, SkillRecord } from "@/lib/resources/opencrab-api-types";
 
@@ -219,25 +220,20 @@ function StatusPill({
   status: SkillRecord["status"];
   children: ReactNode;
 }) {
-  return (
-    <span
-      className={`rounded-full px-3 py-1.5 text-[12px] font-medium ${
-        status === "installed"
-          ? "bg-[#eef8f0] text-[#23633a]"
-          : status === "disabled"
-            ? "bg-[#f3f4f6] text-[#5f6368]"
-            : "bg-[#f7f4ef] text-[#8a6b3d]"
-      }`}
-    >
-      {children}
-    </span>
-  );
+  return <UnifiedStatusPill tone={mapSkillStatusTone(status)}>{children}</UnifiedStatusPill>;
 }
 
 function MetaPill({ children }: { children: ReactNode }) {
-  return (
-    <span className="rounded-full border border-line bg-surface-muted px-3 py-1.5">
-      {children}
-    </span>
-  );
+  return <UnifiedMetaPill>{children}</UnifiedMetaPill>;
+}
+
+function mapSkillStatusTone(status: SkillRecord["status"]) {
+  switch (status) {
+    case "installed":
+      return "success";
+    case "disabled":
+      return "neutral";
+    default:
+      return "warning";
+  }
 }

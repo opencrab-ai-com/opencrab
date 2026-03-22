@@ -1,9 +1,14 @@
+import { findBindingByConversationId } from "@/lib/channels/channel-store";
+import { recordOutboundDelivery } from "@/lib/channels/dispatcher";
+import { sendFeishuReply } from "@/lib/channels/feishu";
+import { sendTelegramReply } from "@/lib/channels/telegram";
 import {
   createConversation,
   ensureFolder,
   updateConversation,
 } from "@/lib/resources/local-store";
 import { getSnapshot } from "@/lib/resources/local-store";
+import type { UploadedAttachment } from "@/lib/resources/opencrab-api-types";
 import { runConversationTurn } from "@/lib/conversations/run-conversation-turn";
 import { getProjectDetail, runProject } from "@/lib/projects/project-store";
 import {
@@ -218,6 +223,15 @@ async function runTaskAgainstConversation(input: {
     userMessageSource: "task",
   });
 
+  if (targetConversation?.source === "feishu" || targetConversation?.source === "telegram") {
+    await deliverTaskReplyToChannel({
+      channelId: targetConversation.source,
+      conversationId,
+      text: reply.assistant.text,
+      attachments: reply.assistant.attachments,
+    });
+  }
+
   return {
     conversationId,
     projectId: null,
@@ -297,4 +311,38 @@ function summarizeProjectProgress(detail: NonNullable<ReturnType<typeof getProje
     default:
       return "团队房间已准备好下一轮自动推进。";
   }
+}
+
+async function deliverTaskReplyToChannel(input: {
+  channelId: "telegram" | "feishu";
+  conversationId: string;
+  text: string;
+  attachments: UploadedAttachment[];
+}) {
+  const binding = findBindingByConversationId(input.conversationId);
+
+  if (!binding) {
+    throw new Error("定时任务执行成功，但没有找到对应的渠道绑定，无法把结果发回原聊天。");
+  }
+
+  const delivery =
+    input.channelId === "telegram"
+      ? await sendTelegramReply({
+          chatId: binding.remoteChatId,
+          text: input.text,
+          attachments: input.attachments,
+        })
+      : await sendFeishuReply({
+          chatId: binding.remoteChatId,
+          text: input.text,
+          attachments: input.attachments,
+        });
+
+  recordOutboundDelivery({
+    channelId: input.channelId,
+    binding,
+    remoteMessageId: delivery.remoteMessageId,
+    text: input.text,
+    attachmentCount: input.attachments.length,
+  });
 }

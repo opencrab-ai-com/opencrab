@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { TaskForm } from "@/components/tasks/task-form";
 import { Button, buttonClassName } from "@/components/ui/button";
+import { StatusPill as UnifiedStatusPill } from "@/components/ui/pill";
 import {
   createTask,
   deleteTask,
@@ -216,17 +217,11 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
           </Link>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <h1 className="text-[28px] font-semibold tracking-[-0.04em] text-text">{task.name}</h1>
-            <span
-              className={`rounded-full px-3 py-1 text-[12px] font-medium ${
-                task.isRunning
-                  ? "bg-[#eef3ff] text-[#285cc7]"
-                  : task.status === "active"
-                    ? "bg-[#eef8f0] text-[#23633a]"
-                    : "bg-[#f3f4f6] text-[#5f6368]"
-              }`}
+            <UnifiedStatusPill
+              tone={task.isRunning ? "info" : task.status === "active" ? "success" : "neutral"}
             >
               {task.isRunning ? "执行中" : task.status === "active" ? "运行中" : "已暂停"}
-            </span>
+            </UnifiedStatusPill>
           </div>
           <p className="mt-3 max-w-[72ch] text-[14px] leading-7 text-muted-strong">{task.prompt}</p>
         </div>
@@ -328,21 +323,22 @@ export function TaskDetailScreen({ taskId }: { taskId: string }) {
                     className="rounded-[18px] border border-line bg-background px-4 py-4"
                   >
                     <div className="flex flex-wrap items-center gap-3">
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-[11px] ${
+                      <UnifiedStatusPill
+                        tone={
                           run.status === "success"
-                            ? "bg-[#eef8f0] text-[#23633a]"
+                            ? "success"
                             : run.status === "error"
-                              ? "bg-[#fff3f1] text-[#b42318]"
-                              : "bg-[#eef3ff] text-[#285cc7]"
-                        }`}
+                              ? "danger"
+                              : "info"
+                        }
+                        size="sm"
                       >
                         {run.status === "success"
                           ? "成功"
                           : run.status === "error"
                             ? "失败"
                             : "进行中"}
-                      </span>
+                      </UnifiedStatusPill>
                       <span className="text-[13px] text-muted">
                         {new Intl.DateTimeFormat("zh-CN", {
                           month: "numeric",

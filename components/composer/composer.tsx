@@ -39,6 +39,7 @@ type ComposerProps = {
   onModelChange: (model: string) => Promise<void>;
   onReasoningEffortChange: (effort: CodexReasoningEffort) => Promise<void>;
   mentionOptions?: ComposerMentionOption[];
+  compact?: boolean;
 };
 
 export function Composer({
@@ -62,6 +63,7 @@ export function Composer({
   onModelChange,
   onReasoningEffortChange,
   mentionOptions = [],
+  compact = false,
 }: ComposerProps) {
   const [internalValue, setInternalValue] = useState(value ?? "");
   const [attachments, setAttachments] = useState<UploadedAttachment[]>([]);
@@ -239,7 +241,9 @@ export function Composer({
   return (
     <div
       ref={containerRef}
-      className="w-full max-w-[1040px] overflow-visible rounded-[28px] border border-line-strong bg-surface px-4 pt-4 pb-3 shadow-soft"
+      className={`w-full max-w-[1040px] overflow-visible border border-line-strong bg-surface shadow-soft ${
+        compact ? "rounded-[20px] px-2.5 pt-2 pb-2" : "rounded-[28px] px-4 pt-4 pb-3"
+      }`}
     >
       {attachments.length > 0 ? (
         <div className="mb-3 flex flex-wrap gap-2">
@@ -259,10 +263,10 @@ export function Composer({
       ) : null}
 
       {mentionOptions.length > 0 ? (
-        <div className="mb-3 flex flex-wrap items-center gap-2 text-[12px] text-muted-strong">
-          <span className="rounded-full border border-[#d7e4ff] bg-[#eef4ff] px-3 py-1.5 text-[#2d56a3]">
-            输入 @ 唤起成员
-          </span>
+        <div className={`flex flex-wrap items-center gap-1.5 text-muted-strong ${compact ? "mb-1 text-[10px]" : "mb-3 text-[12px]"}`}>
+            <span className={`rounded-full border border-[#d7e4ff] bg-[#eef4ff] text-[#2d56a3] ${compact ? "px-2.5 py-[3px]" : "px-3 py-1.5"}`}>
+              输入 @ 唤起成员
+            </span>
           {mentionOptions.slice(0, 4).map((option) => (
             <button
               key={option.id}
@@ -278,7 +282,9 @@ export function Composer({
                   textareaRef.current?.setSelectionRange(nextCaret, nextCaret);
                 });
               }}
-              className="rounded-full border border-line bg-surface px-3 py-1.5 transition hover:bg-surface-muted"
+              className={`rounded-full border border-line bg-surface transition hover:bg-surface-muted ${
+                compact ? "px-2.5 py-[3px] text-[11px]" : "px-3 py-1.5 text-[12px]"
+              }`}
             >
               @{option.label}
             </button>
@@ -291,7 +297,9 @@ export function Composer({
           ref={textareaRef}
           id="opencrab-composer"
           name="opencrab_composer"
-          className="min-h-[88px] w-full resize-none border-0 bg-transparent text-[16px] leading-6 text-text outline-none placeholder:text-[#a0a097] disabled:cursor-not-allowed"
+          className={`w-full resize-none border-0 bg-transparent text-text outline-none placeholder:text-[#a0a097] disabled:cursor-not-allowed ${
+            compact ? "min-h-[48px] text-[14px] leading-6" : "min-h-[88px] text-[16px] leading-6"
+          }`}
           placeholder={placeholder}
           value={currentValue}
           disabled={disabled || isStreaming}
@@ -381,8 +389,8 @@ export function Composer({
         ) : null}
       </div>
 
-      <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className={`mt-1 flex flex-col sm:flex-row sm:items-center sm:justify-between ${compact ? "gap-1" : "gap-3"}`}>
+        <div className="flex flex-wrap items-center gap-1.5">
           <div className="relative">
             <button
               type="button"
@@ -390,7 +398,11 @@ export function Composer({
                 setIsUploadMenuOpen((current) => !current);
                 setActiveMenu(null);
               }}
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-[#0b66da] text-[#0b66da] transition hover:bg-[#eef5ff] disabled:opacity-50"
+              className={`flex items-center justify-center rounded-full border text-[#0b66da] transition hover:bg-[#eef5ff] disabled:opacity-50 ${
+                compact ? "border-[#8db6ff]" : "border-[#0b66da]"
+              } ${
+                compact ? "h-7 w-7" : "h-11 w-11"
+              }`}
               disabled={disableUploads || isUploading || isStreaming}
               aria-label="添加文件"
             >
@@ -446,6 +458,7 @@ export function Composer({
             label={selectedModelOption?.label || "模型"}
             valueLabel={selectedModelOption ? undefined : "模型"}
             isOpen={activeMenu === "model"}
+            compact={compact}
             onToggle={() => {
               setActiveMenu((current) => (current === "model" ? null : "model"));
               setIsUploadMenuOpen(false);
@@ -471,6 +484,7 @@ export function Composer({
             label={selectedReasoningOption?.label || "推理强度"}
             valueLabel={selectedReasoningOption ? undefined : "推理强度"}
             isOpen={activeMenu === "reasoning"}
+            compact={compact}
             onToggle={() => {
               setActiveMenu((current) => (current === "reasoning" ? null : "reasoning"));
               setIsUploadMenuOpen(false);
@@ -495,7 +509,7 @@ export function Composer({
           {isUploading ? <p className="text-[12px] text-muted-strong">正在上传附件...</p> : null}
         </div>
 
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-1.5">
           <button
             type="button"
             onClick={() => {
@@ -512,11 +526,11 @@ export function Composer({
                 : (!currentValue.trim() && attachments.length === 0) || disabled || !canSubmit
             }
             aria-label={submitLabel}
-            className={`flex h-11 w-11 items-center justify-center rounded-full text-white transition ${
+            className={`flex items-center justify-center rounded-full text-white transition ${
               isStreaming
                 ? "bg-[#d45745] hover:bg-[#bf4635]"
                 : "bg-[#111111] hover:bg-[#262626] disabled:cursor-not-allowed disabled:bg-[#c9c9c5]"
-            }`}
+            } ${compact ? "h-7 w-7" : "h-11 w-11"}`}
           >
             {isStreaming ? <StopIcon /> : <SendIcon />}
           </button>
@@ -532,6 +546,7 @@ type DropdownChipProps = {
   isOpen: boolean;
   onToggle: () => void;
   disabled?: boolean;
+  compact?: boolean;
   children: React.ReactNode;
 };
 
@@ -541,6 +556,7 @@ function DropdownChip({
   isOpen,
   onToggle,
   disabled = false,
+  compact = false,
   children,
 }: DropdownChipProps) {
   return (
@@ -549,7 +565,11 @@ function DropdownChip({
         type="button"
         onClick={onToggle}
         disabled={disabled}
-        className="flex min-h-10 items-center gap-2 rounded-full border border-line bg-surface-muted px-4 py-2 text-[14px] text-[#247cff] transition hover:bg-[#f0f4ff] disabled:opacity-50"
+        className={`flex items-center gap-1.5 rounded-full border bg-surface text-muted-strong transition hover:bg-[#eef5ff] hover:text-[#315f9b] disabled:opacity-50 ${
+          compact
+            ? "min-h-7 border-[#8db6ff] px-2.5 py-1 text-[9px]"
+            : "min-h-9 border-line px-3 py-1.5 text-[13px]"
+        }`}
       >
         <span>{valueLabel || label}</span>
         <ChevronDownIcon />
@@ -591,7 +611,7 @@ function MenuItem({ title, description, isActive, compact = false, onClick }: Me
 
 function PlusIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] stroke-current" strokeWidth="1.8">
+    <svg viewBox="0 0 24 24" className="h-4 w-4 stroke-current" strokeWidth="1.8">
       <path d="M12 5v14M5 12h14" strokeLinecap="round" />
     </svg>
   );
@@ -599,7 +619,7 @@ function PlusIcon() {
 
 function SendIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] stroke-current" strokeWidth="1.8">
+    <svg viewBox="0 0 24 24" className="h-4 w-4 stroke-current" strokeWidth="1.8">
       <path d="m5 12 13-6-3 6 3 6z" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
@@ -607,7 +627,7 @@ function SendIcon() {
 
 function StopIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-[16px] w-[16px] fill-current">
+    <svg viewBox="0 0 24 24" className="h-[14px] w-[14px] fill-current">
       <rect x="7" y="7" width="10" height="10" rx="2.5" />
     </svg>
   );
@@ -615,7 +635,7 @@ function StopIcon() {
 
 function ChevronDownIcon() {
   return (
-    <svg viewBox="0 0 20 20" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.8">
+    <svg viewBox="0 0 20 20" className="h-[13px] w-[13px] fill-none stroke-current" strokeWidth="1.8">
       <path d="m5.5 7.5 4.5 5 4.5-5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );

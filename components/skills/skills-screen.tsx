@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button, buttonClassName } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
+import { StatusPill as UnifiedStatusPill } from "@/components/ui/pill";
 import {
   createSkill,
   getSkillsCatalog,
@@ -620,26 +621,24 @@ function SkillStatusBadge({
   const tone =
     status === "installed"
       ? {
-          className: "border-[#d8eadc] bg-[#eef8f0] text-[#23633a]",
+          tone: "success" as const,
           dotClassName: "bg-[#38a169]",
         }
       : status === "disabled"
         ? {
-            className: "border-[#e5e7eb] bg-[#f7f8fa] text-[#6b7280]",
+            tone: "neutral" as const,
             dotClassName: "bg-[#9ca3af]",
           }
         : {
-            className: "border-[#eadfca] bg-[#faf5ec] text-[#8a6b3d]",
+            tone: "warning" as const,
             dotClassName: "bg-[#c08a37]",
           };
 
   return (
-    <span
-      className={`inline-flex h-6 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 text-[11px] font-medium tracking-[0.01em] ${tone.className}`}
-    >
+    <UnifiedStatusPill tone={tone.tone} size="sm" className="gap-1.5 px-2.5 tracking-[0.01em]">
       <span className={`h-1.5 w-1.5 rounded-full ${tone.dotClassName}`} />
       <span>{label}</span>
-    </span>
+    </UnifiedStatusPill>
   );
 }
 

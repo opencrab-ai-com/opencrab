@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
 import { Button, buttonClassName } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
+import { MetaPill as UnifiedMetaPill, StatusPill as UnifiedStatusPill } from "@/components/ui/pill";
 import { createProject as createProjectResource } from "@/lib/resources/opencrab-api";
 import type { ProjectRoomRecord } from "@/lib/projects/types";
 
@@ -84,11 +85,11 @@ export function ProjectsOverviewScreen({ projects }: ProjectsOverviewScreenProps
     <>
       <div className="space-y-8">
         <PageHeader
-          title="Team Mode"
-          description="这里不再承担复杂介绍，只负责两件事：查看当前已有团队，以及创建一个新的团队。"
+          title="团队模式"
+          description="不是简单的多 Agent 群聊，而是一个训练有素的数字人团队。"
           className="mb-6"
           actions={
-            <Button type="button" onClick={() => setIsCreateOpen(true)}>
+            <Button type="button" variant="primary" onClick={() => setIsCreateOpen(true)}>
               新建团队
             </Button>
           }
@@ -102,9 +103,7 @@ export function ProjectsOverviewScreen({ projects }: ProjectsOverviewScreenProps
                 这里保留已经创建的 Team Room。你可以直接进入继续推进，或者回看已有结果。
               </p>
             </div>
-            <span className="rounded-full border border-line bg-surface-muted px-3 py-1.5 text-[12px] text-muted-strong">
-              {projects.length} 个团队
-            </span>
+            <UnifiedMetaPill>{projects.length} 个团队</UnifiedMetaPill>
           </div>
 
           {projects.length === 0 ? (
@@ -117,12 +116,16 @@ export function ProjectsOverviewScreen({ projects }: ProjectsOverviewScreenProps
           ) : (
             <div className="mt-6 grid gap-4 xl:grid-cols-2">
               {projects.map((project) => (
-                <article key={project.id} className="rounded-[24px] border border-line bg-background p-5">
+                <article
+                  key={project.id}
+                  className="flex min-h-[360px] flex-col rounded-[24px] border border-line bg-background p-5"
+                >
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <StatusPill status={project.runStatus}>{formatProjectStatus(project.runStatus)}</StatusPill>
                         <MetaPill>{project.memberCount} 位成员</MetaPill>
+                        {project.currentStageLabel ? <MetaPill>{project.currentStageLabel}</MetaPill> : null}
                       </div>
                       <h3 className="mt-4 text-[22px] font-semibold tracking-[-0.04em] text-text">
                         {project.title}
@@ -134,15 +137,20 @@ export function ProjectsOverviewScreen({ projects }: ProjectsOverviewScreenProps
                     </div>
                   </div>
 
-                  <p className="mt-4 text-[14px] leading-7 text-muted-strong">{project.summary}</p>
-
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    <MetaPill>{project.teamName}</MetaPill>
-                    {project.workspaceDir ? <MetaPill>{project.workspaceDir}</MetaPill> : null}
-                    <MetaPill>{project.artifactCount} 个结果</MetaPill>
+                  <div className="mt-4 rounded-[18px] border border-line bg-surface-muted/70 px-4 py-4">
+                    <div className="text-[11px] uppercase tracking-[0.14em] text-muted">阶段摘要</div>
+                    <p className="mt-2 line-clamp-6 min-h-[9.5rem] text-[14px] leading-7 text-muted-strong">
+                      {buildProjectSummaryPreview(project.summary)}
+                    </p>
                   </div>
 
-                  <div className="mt-5">
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {project.workspaceDir ? <MetaPill>产出目录 · {formatWorkspaceLabel(project.workspaceDir)}</MetaPill> : null}
+                    <MetaPill>{project.artifactCount} 个结果</MetaPill>
+                    <MetaPill>{formatUpdatedAt(project.updatedAt)}</MetaPill>
+                  </div>
+
+                  <div className="mt-auto pt-5">
                     <Link href={`/projects/${project.id}`} className={buttonClassName({ variant: "primary" })}>
                       打开团队
                     </Link>
@@ -221,9 +229,7 @@ export function ProjectsOverviewScreen({ projects }: ProjectsOverviewScreenProps
                       只展示可用于 Team 的智能体。系统项目经理会默认加入并承担团队牵引，下面这些是你额外希望拉进来的成员。
                     </p>
                   </div>
-                  <span className="rounded-full border border-line bg-surface-muted px-3 py-1.5 text-[12px] text-muted-strong">
-                    已选 {selectedAgentIds.length} 个
-                  </span>
+                  <UnifiedMetaPill>已选 {selectedAgentIds.length} 个</UnifiedMetaPill>
                 </div>
 
                 {teamAgents.length === 0 ? (
@@ -298,11 +304,7 @@ export function ProjectsOverviewScreen({ projects }: ProjectsOverviewScreenProps
 }
 
 function MetaPill({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="rounded-full border border-line bg-surface-muted px-3 py-1.5 text-[12px] text-muted-strong">
-      {children}
-    </span>
-  );
+  return <UnifiedMetaPill>{children}</UnifiedMetaPill>;
 }
 
 function StatusPill({
@@ -312,11 +314,7 @@ function StatusPill({
   status: ProjectRoomRecord["runStatus"];
   children: React.ReactNode;
 }) {
-  return (
-    <span className={`rounded-full px-3 py-1.5 text-[12px] font-medium ${getStatusTone(status)}`}>
-      {children}
-    </span>
-  );
+  return <UnifiedStatusPill tone={getStatusTone(status)}>{children}</UnifiedStatusPill>;
 }
 
 function formatProjectStatus(status: ProjectRoomRecord["runStatus"]) {
@@ -350,14 +348,40 @@ function formatTeamRole(value: "lead" | "research" | "writer" | "specialist") {
 function getStatusTone(status: ProjectRoomRecord["runStatus"]) {
   switch (status) {
     case "running":
-      return "bg-[#edf3ff] text-[#2f5dc3]";
+      return "info";
     case "waiting_approval":
-      return "bg-[#fff6e6] text-[#a9660f]";
+      return "warning";
     case "waiting_user":
-      return "bg-[#fff0ec] text-[#c14b31]";
+      return "accent";
     case "completed":
-      return "bg-[#edf8ef] text-[#25623e]";
+      return "success";
     default:
-      return "bg-[#f3f4f6] text-[#5f6368]";
+      return "neutral";
   }
+}
+
+function buildProjectSummaryPreview(summary: string) {
+  const normalized = summary.replace(/\s+/g, " ").trim();
+  return normalized.length > 260 ? `${normalized.slice(0, 257)}...` : normalized;
+}
+
+function formatWorkspaceLabel(workspaceDir: string) {
+  const segments = workspaceDir.split("/").filter(Boolean);
+  return segments.at(-1) || workspaceDir;
+}
+
+function formatUpdatedAt(updatedAt: string) {
+  const parsed = new Date(updatedAt);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return "最近更新";
+  }
+
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(parsed);
 }

@@ -1,5 +1,5 @@
 import { getAgentProfile } from "@/lib/agents/agent-store";
-import { generateCodexReply } from "@/lib/codex/sdk";
+import { generateCodexReply, streamCodexReply } from "@/lib/codex/sdk";
 import { formatMessageTime } from "@/lib/conversations/utils";
 import { buildUserMessagePreview } from "@/lib/opencrab/messages";
 import {
@@ -38,6 +38,9 @@ type ConversationTurnInput = {
   assistantMessageId?: string;
   userMessageSource?: ConversationSource | null;
   remoteUserMessageId?: string | null;
+  onThreadReady?: (threadId: string | null) => void;
+  onThinking?: (entries: string[]) => void;
+  onAssistantText?: (text: string) => void;
 };
 
 type PreparedConversationTurn = {
@@ -151,6 +154,85 @@ export function finalizeConversationTurn(
 }
 
 export async function runConversationTurn(input: ConversationTurnInput) {
+  const shouldStreamInternally =
+    typeof input.onThreadReady === "function" ||
+    typeof input.onThinking === "function" ||
+    typeof input.onAssistantText === "function";
+
+  if (shouldStreamInternally) {
+    const prepared = prepareConversationTurn(input);
+    let latestText = "";
+    let latestThinking: string[] = [];
+    let latestThreadId = prepared.conversation.codexThreadId ?? null;
+    let latestModel = input.model ?? prepared.conversation.lastAssistantModel ?? "OpenCrab";
+    let latestUsage: {
+      input_tokens: number;
+      cached_input_tokens: number;
+      output_tokens: number;
+    } | null = null;
+
+    for await (const event of streamCodexReply({
+      conversationTitle: prepared.conversation.title,
+      threadId: prepared.conversation.codexThreadId,
+      content: prepared.content,
+      agentProfile: prepared.conversation.agentProfileId
+        ? getAgentProfile(prepared.conversation.agentProfileId)
+        : null,
+      model: input.model,
+      reasoningEffort: input.reasoningEffort,
+      sandboxMode: input.sandboxMode,
+      imagePaths: prepared.imagePaths,
+      textAttachments: prepared.textAttachments,
+    })) {
+      if (event.type === "thread") {
+        latestThreadId = event.threadId;
+        updateConversation(prepared.conversationId, {
+          codexThreadId: event.threadId,
+        });
+        input.onThreadReady?.(event.threadId);
+        continue;
+      }
+
+      if (event.type === "thinking") {
+        latestThinking = event.entries;
+        input.onThinking?.(event.entries);
+        continue;
+      }
+
+      if (event.type === "assistant") {
+        latestText = event.text;
+        input.onAssistantText?.(event.text);
+        continue;
+      }
+
+      latestText = event.text;
+      latestThinking = event.thinking;
+      latestThreadId = event.threadId;
+      latestModel = event.model;
+      latestUsage = event.usage;
+    }
+
+    const assistantMessageResult = finalizeConversationTurn(prepared, {
+      text: latestText,
+      model: latestModel,
+      threadId: latestThreadId,
+      usage: latestUsage,
+      thinking: latestThinking,
+    });
+
+    return {
+      snapshot: assistantMessageResult.snapshot,
+      assistant: {
+        text: latestText,
+        attachments: assistantMessageResult.message.attachments ?? [],
+        model: latestModel,
+        threadId: latestThreadId,
+        usage: latestUsage,
+        thinking: latestThinking,
+      },
+    };
+  }
+
   const prepared = prepareConversationTurn(input);
   const reply = await generateCodexReply({
     conversationTitle: prepared.conversation.title,
@@ -168,6 +250,7 @@ export async function runConversationTurn(input: ConversationTurnInput) {
       updateConversation(prepared.conversationId, {
         codexThreadId: threadId,
       });
+      input.onThreadReady?.(threadId);
     },
   });
   const assistantMessageResult = finalizeConversationTurn(prepared, reply);

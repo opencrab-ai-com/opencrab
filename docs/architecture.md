@@ -18,19 +18,25 @@ app/
   (app)/                 # 主应用路由
   api/                   # 服务端 API 路由
 components/
+  about/                 # 关于我们页面
+  agents/                # 智能体列表、详情与创建
   app-shell/             # 全局壳层与应用状态
   channels/              # 渠道配置、状态与说明组件
   composer/              # 输入框
   conversation/          # 会话区
+  projects/              # Team Mode 页面与 Team Room
   skills/                # 技能列表与详情
   sidebar/               # 左侧栏
+  tasks/                 # 定时任务列表、详情与表单
   ui/                    # 纯展示型基础组件
 lib/
+  agents/                # 智能体模板、类型与本地存储
   channels/              # 渠道协议适配、事件分发、store 与 secret store
   chatgpt/               # ChatGPT 连接状态与登录流程
   codex/                 # Codex SDK、浏览器连接、模型选项
   conversations/         # 会话时间与标题工具
   opencrab/              # 通用标签、错误、消息工具
+  projects/              # Team Mode 的 room、事件、artifact 与运行状态
   resources/             # 本地资源层：local store、uploads、API types
   runtime/               # 运行时配置，如公网地址与隧道状态
   server/                # API route 公共响应、参数和错误处理工具
@@ -54,10 +60,12 @@ scripts/
   - `state/runtime-config.json`：公网地址与隧道状态
   - `state/skills.json`：OpenCrab 自己维护的技能状态
   - `state/tasks.json`：定时任务与运行记录
+  - `state/projects.json`：Team Mode 的房间、成员、运行与产出索引
   - `uploads/`：上传的附件与提取后的文本
   - `logs/tunnels/`：自动公网隧道日志
   - `browser/chrome-debug-profile/`：独立浏览器模式的 Chrome profile
   - `skills/`：OpenCrab 自建技能目录与后续扩展保留位置
+  - `agents/`：自定义智能体的 profile 与补充上下文
 - `.playwright-cli/`：调试浏览器技能时生成的记录
 
 这些目录都已加入 `.gitignore`。
@@ -125,10 +133,11 @@ scripts/
 
 1. `app/api/bootstrap/route.ts`
    - 启动渠道 watchdog
-   - 强制跑一轮渠道启动同步
+   - 在后台触发渠道启动同步
    - 预热浏览器连接
    - 启动任务执行器
    - 同步渠道绑定会话的元数据
+   - 准备内置技能目录
 
 2. `app/(app)/layout.tsx`
    - 页面渲染时也会补一次浏览器预热
@@ -144,6 +153,7 @@ scripts/
 
 - 这里的“自动连接”会尊重用户手动断开的状态
 - 旧的 `state/channels.json` 只作为状态参考，新进程第一次启动时不会盲信上次退出前的 `ready`
+- 启动相关动作当前带有冷却控制，不会在每次前端快照轮询时都完整重跑
 
 ## State Boundaries
 
@@ -162,5 +172,6 @@ scripts/
 - `Channels` 当前只有 Telegram 具备附件链路；飞书仍以文本消息闭环为主
 - `任务` 当前依赖 OpenCrab 服务进程在运行，不是系统级常驻调度
 - `Skills` 当前管理的是 OpenCrab 自己的本地技能状态，不会直接安装或修改 Codex app 的技能目录
+- `Team Mode` 已可用，但仍处于快速迭代阶段，当前更适合单机内的持续协作场景
 - 当前持久化层仍是本地 JSON store，不是正式数据库
 - 当前没有多人协作、鉴权、云同步

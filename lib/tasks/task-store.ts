@@ -293,7 +293,7 @@ export function formatTaskScheduleLabel(schedule: TaskSchedule) {
     return `每周${formatWeekday(schedule.weekday ?? 1)} ${schedule.time || "09:00"}`;
   }
 
-  return `每隔 ${schedule.intervalHours || 6} 小时`;
+  return `每隔 ${getIntervalMinutes(schedule) || 5} 分钟`;
 }
 
 export function formatTaskTimeLabel(value: string | null, fallback = "还没有记录") {
@@ -386,10 +386,10 @@ function normalizeTaskInput(input: TaskCreateInput) {
 
 function normalizeSchedule(schedule: TaskSchedule): TaskSchedule {
   if (schedule.preset === "interval") {
-    const intervalHours = Math.max(1, Math.min(24, Math.round(schedule.intervalHours || 6)));
+    const intervalMinutes = Math.max(1, Math.min(1440, Math.round(getIntervalMinutes(schedule) || 5)));
     return {
       preset: "interval",
-      intervalHours,
+      intervalMinutes,
     };
   }
 
@@ -428,7 +428,7 @@ function clampWeekday(value: number) {
 
 function calculateNextRunAt(schedule: TaskSchedule, reference: Date) {
   if (schedule.preset === "interval") {
-    return new Date(reference.getTime() + (schedule.intervalHours || 6) * 60 * 60_000).toISOString();
+    return new Date(reference.getTime() + (getIntervalMinutes(schedule) || 5) * 60_000).toISOString();
   }
 
   const [hour, minute] = (schedule.time || "09:00").split(":").map((part) => Number(part));
@@ -476,6 +476,18 @@ function calculateNextRunAt(schedule: TaskSchedule, reference: Date) {
 
 function formatWeekday(weekday: number) {
   return ["日", "一", "二", "三", "四", "五", "六"][clampWeekday(weekday)] || "一";
+}
+
+function getIntervalMinutes(schedule: TaskSchedule) {
+  if (typeof schedule.intervalMinutes === "number" && Number.isFinite(schedule.intervalMinutes)) {
+    return schedule.intervalMinutes;
+  }
+
+  if (typeof schedule.intervalHours === "number" && Number.isFinite(schedule.intervalHours)) {
+    return schedule.intervalHours * 60;
+  }
+
+  return null;
 }
 
 function trimRuns(runs: TaskRunRecord[]) {

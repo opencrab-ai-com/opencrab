@@ -3,9 +3,10 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
 import { buttonClassName } from "@/components/ui/button";
+import { MetaPill as UnifiedMetaPill, StatusPill as UnifiedStatusPill } from "@/components/ui/pill";
 import {
   DialogActions,
   DialogHeader,
@@ -46,6 +47,7 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [selectedActivityMessageId, setSelectedActivityMessageId] = useState<string | null>(null);
+  const checkpointSectionRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (detail?.project?.runStatus === "waiting_user") {
@@ -190,6 +192,18 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
   const selectedAgent = selectedAgentId ? agentsById.get(selectedAgentId) ?? null : null;
   const selectedAgentTrajectory =
     selectedAgent && project ? resolveAgentTrajectory(selectedAgent, project, agentsById) : null;
+  const previewActiveAgent =
+    activeAgent ||
+    sortedAgents.find((agent) => agent.status === "working") ||
+    sortedAgents.find((agent) => agent.canDelegate) ||
+    null;
+  const activeAgentProgressTrail = useMemo(
+    () =>
+      [...(previewActiveAgent?.progressTrail ?? [])]
+        .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))
+        .slice(0, 4),
+    [previewActiveAgent?.progressTrail],
+  );
   const selectedActivityMessage =
     teamMessages.find((message) => message.id === selectedActivityMessageId) ?? null;
   const selectedActivityDescriptor =
@@ -302,6 +316,13 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
     } finally {
       setIsDeleting(false);
     }
+  }
+
+  function scrollToCheckpoint() {
+    checkpointSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   }
 
   const showTopRunButton = currentProject.runStatus !== "waiting_approval";
@@ -426,6 +447,54 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
           ) : null}
         </section>
 
+        {(project.runStatus === "waiting_approval" || project.runStatus === "waiting_user") ? (
+          <section className="rounded-[24px] border border-[#e7dcc7] bg-[linear-gradient(135deg,#fffaf2_0%,#fffdf9_100%)] p-5 shadow-soft">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-[#efd9b5] bg-[#fff3dc] px-3 py-1.5 text-[12px] font-medium text-[#9a6513]">
+                    {project.runStatus === "waiting_approval" ? "待你确认" : "待你补充"}
+                  </span>
+                  <span className="text-[12px] text-muted-strong">
+                    {project.runStatus === "waiting_approval"
+                      ? "团队已经交付了阶段结果"
+                      : "团队已经停在你的补充检查点"}
+                  </span>
+                </div>
+                <h2 className="mt-3 text-[20px] font-semibold tracking-[-0.03em] text-text">
+                  {project.runStatus === "waiting_approval"
+                    ? "这轮已经可以确认完成，或者继续提修改意见"
+                    : "先补充方向，再继续推进下一轮"}
+                </h2>
+                <p className="mt-2 max-w-[74ch] text-[14px] leading-7 text-muted-strong">
+                  {project.runStatus === "waiting_approval"
+                    ? "我已经把团队的阶段总结收口好了。你现在可以直接去确认，也可以带着补充意见继续推进。"
+                    : "当前团队不会继续盲跑。你补充这轮新方向后，再从检查点继续。"}
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={scrollToCheckpoint}
+                  className={buttonClassName({ variant: "primary" })}
+                >
+                  {project.runStatus === "waiting_approval" ? "去确认这轮输出" : "去补充后继续"}
+                </button>
+                {project.runStatus === "waiting_approval" ? (
+                  <button
+                    type="button"
+                    onClick={() => void handleCheckpointAction("approve")}
+                    className={buttonClassName({ variant: "secondary" })}
+                    disabled={isCheckpointSubmitting || isRefreshing || isRunning || isPausing}
+                  >
+                    {isCheckpointSubmitting ? "提交中..." : "直接确认完成"}
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          </section>
+        ) : null}
+
         <div className="space-y-6">
           <div className="space-y-6">
             <section className="rounded-[28px] border border-line bg-surface p-6 shadow-soft">
@@ -493,6 +562,69 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
                   {compactProjectSummary}
                 </p>
               </div>
+
+              {displayActiveAgent ? (
+                <div className="mt-4 rounded-[22px] border border-line bg-background p-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <div className="text-[11px] uppercase tracking-[0.14em] text-muted">当前执行过程</div>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <h3 className="text-[18px] font-semibold tracking-[-0.03em] text-text">
+                          {displayActiveAgent.name}
+                        </h3>
+                        <MetaPill>{displayActiveAgent.role}</MetaPill>
+                        {displayActiveAgent.progressLabel ? (
+                          <span className="rounded-full border border-[#d7e4ff] bg-[#eef4ff] px-2.5 py-1 text-[11px] font-medium text-[#2d56a3]">
+                            {displayActiveAgent.progressLabel}
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="mt-2 max-w-[74ch] text-[14px] leading-7 text-muted-strong">
+                        {displayActiveAgent.progressDetails ||
+                          displayActiveAgent.lastAssignedTask ||
+                          "当前还没有同步出更细的执行过程。"}
+                      </p>
+                    </div>
+                    <div className="text-[12px] text-muted-strong">
+                      {displayActiveAgent.lastHeartbeatAt
+                        ? `最近心跳：${formatActivityTimestamp(displayActiveAgent.lastHeartbeatAt)}`
+                        : "最近心跳：等待同步"}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                    {activeAgentProgressTrail.length > 0 ? (
+                      activeAgentProgressTrail.map((entry, index) => (
+                        <div
+                          key={entry.id}
+                          className="rounded-[18px] border border-line bg-surface-muted px-4 py-4"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-[11px] uppercase tracking-[0.14em] text-muted">
+                                {index === 0 ? "最新进展" : `过程 ${index + 1}`}
+                              </span>
+                              <span className="rounded-full border border-line bg-background px-2.5 py-1 text-[11px] font-medium text-text">
+                                {entry.label}
+                              </span>
+                            </div>
+                            <span className="text-[11px] text-muted-strong">
+                              {formatActivityTimestamp(entry.createdAt)}
+                            </span>
+                          </div>
+                          <p className="mt-2 text-[13px] leading-6 text-muted-strong">
+                            {entry.detail}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="rounded-[18px] border border-dashed border-line bg-surface-muted/60 px-4 py-4 text-[13px] leading-6 text-muted-strong">
+                        当前这位成员还没有同步出更多过程轨迹。开始运行后，这里会持续显示它最新的公开进展。
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : null}
             </section>
 
             <section className="rounded-[28px] border border-line bg-surface p-6 shadow-soft">
@@ -559,6 +691,15 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
                       </div>
 
                       <div className="mt-4">
+                        <div className="text-[11px] uppercase tracking-[0.14em] text-muted">当前进展</div>
+                        <p className="mt-1 line-clamp-2 text-[13px] leading-6 text-muted-strong">
+                          {agent.progressLabel
+                            ? `${agent.progressLabel} · ${agent.progressDetails || "过程细节正在同步"}`
+                            : "当前还没有同步出更细的执行过程。"}
+                        </p>
+                      </div>
+
+                      <div className="mt-4">
                         <div className="text-[11px] uppercase tracking-[0.14em] text-muted">当前任务</div>
                         <p className="mt-1 line-clamp-2 text-[13px] leading-6 text-muted-strong">
                           {agent.lastAssignedTask ||
@@ -572,7 +713,10 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
             </section>
 
             {(project.runStatus === "waiting_approval" || project.runStatus === "waiting_user") ? (
-              <section className="rounded-[28px] border border-line bg-surface p-6 shadow-soft">
+              <section
+                ref={checkpointSectionRef}
+                className="rounded-[28px] border border-line bg-surface p-6 shadow-soft"
+              >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-muted">
@@ -742,6 +886,19 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
               </div>
             ) : null}
             <div className="rounded-[18px] border border-line bg-surface-muted px-4 py-4">
+              <div className="text-[11px] uppercase tracking-[0.14em] text-muted">当前公开进展</div>
+              <p className="mt-2 whitespace-pre-wrap text-[14px] leading-7 text-text">
+                {selectedAgent.progressLabel
+                  ? `${selectedAgent.progressLabel}${selectedAgent.progressDetails ? `\n\n${selectedAgent.progressDetails}` : ""}`
+                  : "当前还没有同步出更细的执行过程。"}
+              </p>
+              <p className="mt-3 text-[12px] text-muted-strong">
+                {selectedAgent.lastHeartbeatAt
+                  ? `最近心跳：${formatActivityTimestamp(selectedAgent.lastHeartbeatAt)}`
+                  : "最近心跳：等待同步"}
+              </p>
+            </div>
+            <div className="rounded-[18px] border border-line bg-surface-muted px-4 py-4">
               <div className="text-[11px] uppercase tracking-[0.14em] text-muted">当前任务</div>
               <p className="mt-2 whitespace-pre-wrap text-[14px] leading-7 text-text">
                 {selectedAgent.lastAssignedTask || "当前还没有具体任务。"}
@@ -758,6 +915,34 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
               <p className="mt-2 whitespace-pre-wrap text-[14px] leading-7 text-text">
                 {selectedAgent.lastResultSummary || "这位成员还没有交回阶段结果。"}
               </p>
+            </div>
+            <div className="rounded-[18px] border border-line bg-surface-muted px-4 py-4">
+              <div className="text-[11px] uppercase tracking-[0.14em] text-muted">最近执行轨迹</div>
+              <div className="mt-3 space-y-3">
+                {(selectedAgent.progressTrail ?? []).length > 0 ? (
+                  [...(selectedAgent.progressTrail ?? [])]
+                    .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))
+                    .map((entry) => (
+                      <div key={entry.id} className="rounded-[14px] border border-line bg-background px-3 py-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="rounded-full border border-line bg-surface-muted px-2.5 py-1 text-[11px] font-medium text-text">
+                            {entry.label}
+                          </span>
+                          <span className="text-[11px] text-muted-strong">
+                            {formatActivityTimestamp(entry.createdAt)}
+                          </span>
+                        </div>
+                        <p className="mt-2 text-[13px] leading-6 text-muted-strong">
+                          {entry.detail}
+                        </p>
+                      </div>
+                    ))
+                ) : (
+                  <p className="text-[13px] leading-6 text-muted-strong">
+                    这位成员还没有留下更多可公开展示的执行轨迹。
+                  </p>
+                )}
+              </div>
             </div>
             <div className="flex flex-wrap gap-2 text-[12px] text-muted-strong">
               {selectedAgent.agentProfileId ? (
@@ -1389,7 +1574,11 @@ function hasProjectDetailMeaningfulChange(current: ProjectDetail | null, next: P
       previous.blockedByAgentId !== agent.blockedByAgentId ||
       previous.lastAssignedTask !== agent.lastAssignedTask ||
       previous.lastResultSummary !== agent.lastResultSummary ||
-      previous.lastCompletedAt !== agent.lastCompletedAt
+      previous.lastCompletedAt !== agent.lastCompletedAt ||
+      previous.progressLabel !== agent.progressLabel ||
+      previous.progressDetails !== agent.progressDetails ||
+      previous.lastHeartbeatAt !== agent.lastHeartbeatAt ||
+      JSON.stringify(previous.progressTrail ?? []) !== JSON.stringify(agent.progressTrail ?? [])
     );
   });
 }
@@ -1444,11 +1633,7 @@ function mapAgentStatusToProjectStatus(status: ProjectAgentStatus): ProjectRunSt
 }
 
 function MetaPill({ children }: { children: ReactNode }) {
-  return (
-    <span className="rounded-full border border-line bg-surface-muted px-3 py-1.5 text-[12px] text-muted-strong">
-      {children}
-    </span>
-  );
+  return <UnifiedMetaPill>{children}</UnifiedMetaPill>;
 }
 
 function StatusPill({
@@ -1458,27 +1643,23 @@ function StatusPill({
   status: ProjectRunStatus;
   children: ReactNode;
 }) {
-  return (
-    <span className={`rounded-full px-3 py-1.5 text-[12px] font-medium ${getProjectStatusTone(status)}`}>
-      {children}
-    </span>
-  );
+  return <UnifiedStatusPill tone={getProjectStatusTone(status)}>{children}</UnifiedStatusPill>;
 }
 
 function getProjectStatusTone(status: ProjectRunStatus) {
   switch (status) {
     case "running":
-      return "bg-[#edf3ff] text-[#2f5dc3]";
+      return "info";
     case "paused":
-      return "bg-[#f3f4f6] text-[#5f6368]";
+      return "neutral";
     case "waiting_approval":
-      return "bg-[#fff6e6] text-[#a9660f]";
+      return "warning";
     case "waiting_user":
-      return "bg-[#fff0ec] text-[#c14b31]";
+      return "accent";
     case "completed":
-      return "bg-[#edf8ef] text-[#25623e]";
+      return "success";
     default:
-      return "bg-[#f3f4f6] text-[#5f6368]";
+      return "neutral";
   }
 }
 

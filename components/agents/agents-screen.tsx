@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AgentAvatar } from "@/components/agents/agent-avatar";
 import { AgentOnboardingDialog } from "@/components/agents/agent-onboarding-dialog";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
 import { Button, buttonClassName } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
+import { MetaPill as UnifiedMetaPill, StatusPill as UnifiedStatusPill } from "@/components/ui/pill";
 
 export function AgentsScreen() {
   const router = useRouter();
@@ -153,14 +155,17 @@ function AgentSection({
           {agents.map((agent) => (
             <article key={agent.id} className="rounded-[24px] border border-line bg-background p-5">
               <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-start gap-3">
+                  <AgentAvatar src={agent.avatarDataUrl} name={agent.name} size={52} />
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-[20px] font-semibold tracking-[-0.03em] text-text">{agent.name}</h3>
                     <Badge tone={agent.source === "system" ? "warm" : "neutral"}>
                       {agent.source === "system" ? "系统" : "自定义"}
                     </Badge>
+                    </div>
+                    <div className="mt-2 text-[13px] text-muted-strong">{agent.roleLabel}</div>
                   </div>
-                  <div className="mt-2 text-[13px] text-muted-strong">{agent.roleLabel}</div>
                 </div>
 
                 <div className="rounded-[18px] bg-[#f7f8fb] px-3 py-2 text-right text-[12px] text-muted-strong">
@@ -208,23 +213,11 @@ function OverviewCard({ label, value }: { label: string; value: string }) {
 }
 
 function Badge({ children, tone }: { children: React.ReactNode; tone: "warm" | "neutral" }) {
-  return (
-    <span
-      className={`rounded-full px-3 py-1.5 text-[12px] ${
-        tone === "warm" ? "bg-[#fff4ea] text-[#b9682e]" : "bg-[#f3f4f6] text-[#5f6368]"
-      }`}
-    >
-      {children}
-    </span>
-  );
+  return <UnifiedStatusPill tone={tone === "warm" ? "warning" : "neutral"}>{children}</UnifiedStatusPill>;
 }
 
 function MetaPill({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="rounded-full border border-line bg-surface-muted px-3 py-1.5">
-      {children}
-    </span>
-  );
+  return <UnifiedMetaPill>{children}</UnifiedMetaPill>;
 }
 
 function formatAvailability(value: "solo" | "team" | "both") {

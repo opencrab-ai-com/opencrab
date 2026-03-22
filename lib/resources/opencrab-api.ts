@@ -116,6 +116,7 @@ export async function getAgentDetail(agentId: string) {
 export async function createAgent(input: {
   name: string;
   summary: string;
+  avatarDataUrl?: string | null;
   roleLabel?: string;
   description?: string;
   availability?: "solo" | "team" | "both";
@@ -143,6 +144,7 @@ export async function updateAgent(
   patch: Partial<{
     name: string;
     summary: string;
+    avatarDataUrl: string | null;
     roleLabel: string;
     description: string;
     availability: "solo" | "team" | "both";

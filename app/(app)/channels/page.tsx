@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AppPage } from "@/components/ui/app-page";
 import { PageHeader } from "@/components/ui/page-header";
+import { StatusPill as UnifiedStatusPill } from "@/components/ui/pill";
 import {
   ensureChannelStartupSync,
   ensureChannelWatchdog,
@@ -103,20 +104,14 @@ function MetricCard({ label, value }: { label: string; value: string }) {
 function StatusBadge({ channel }: { channel: ChannelOverview }) {
   const tone =
     channel.status === "ready"
-      ? "border-[#cfe7d4] bg-[#eef8f0] text-[#23633a]"
+      ? "success"
       : channel.status === "connecting"
-        ? "border-[#d9def8] bg-[#f4f6ff] text-[#3b4cca]"
-      : channel.status === "error"
-        ? "border-[#f3d0cb] bg-[#fff3f1] text-[#b42318]"
-        : "border-line bg-surface-muted text-muted-strong";
+        ? "info"
+        : channel.status === "error"
+          ? "danger"
+          : "neutral";
 
-  return (
-    <span
-      className={`shrink-0 rounded-full border px-3 py-1.5 text-[12px] font-medium ${tone}`}
-    >
-      {getChannelStatusLabel(channel.status)}
-    </span>
-  );
+  return <UnifiedStatusPill tone={tone}>{getChannelStatusLabel(channel.status)}</UnifiedStatusPill>;
 }
 
 function buildChannelHeadline(channel: ChannelOverview) {

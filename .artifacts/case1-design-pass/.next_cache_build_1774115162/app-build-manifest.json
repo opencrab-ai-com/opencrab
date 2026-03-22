@@ -1,0 +1,29 @@
+{
+  "pages": {
+    "/_not-found": [
+      "static/chunks/node_modules_640c85._.js",
+      "static/chunks/node_modules_next_dist_client_components_not-found-boundary_a52e72.js",
+      "static/chunks/node_modules_c1c333._.js",
+      "static/chunks/0f475_dist_client_components_static-generation-searchparams-bailout-provider_fd3e47.js",
+      "static/chunks/node_modules_713168._.js",
+      "static/chunks/node_modules_next_dist_client_components_render-from-template-context_681ab9.js",
+      "static/chunks/node_modules_next_dist_compiled_react-dom_0078e2._.js",
+      "static/chunks/node_modules_next_dist_compiled_324943._.js",
+      "static/chunks/node_modules_next_dist_client_99d490._.js",
+      "static/chunks/node_modules_next_dist_07428c._.js",
+      "static/chunks/node_modules_@swc_helpers_84a751._.js",
+      "static/chunks/node_modules_next_dist_client_components_layout-router_d2bfdc.js",
+      "static/chunks/node_modules_next_dist_compiled_react-dom_0078e2._.js",
+      "static/chunks/node_modules_next_dist_compiled_324943._.js",
+      "static/chunks/node_modules_next_dist_client_790cc4._.js",
+      "static/chunks/node_modules_next_dist_90d799._.js",
+      "static/chunks/node_modules_@swc_helpers_84a751._.js",
+      "static/chunks/node_modules_next_dist_client_components_app-router_b77b7b.js",
+      "static/chunks/node_modules_0f059a._.js",
+      "static/chunks/node_modules_next_dist_client_components_error-boundary_46b724.js",
+      "static/chunks/[root of the server]__af5402._.js",
+      "static/chunks/client shared chunk group_d47e97._.js",
+      "static/chunks/client shared chunk group_191373._.js"
+    ]
+  }
+}

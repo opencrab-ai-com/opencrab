@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { TaskForm } from "@/components/tasks/task-form";
 import { Button, buttonClassName } from "@/components/ui/button";
+import { StatusPill as UnifiedStatusPill } from "@/components/ui/pill";
 import {
   createTask,
   getTasks,
@@ -438,16 +439,12 @@ function EmptyPanel({ label }: { label: string }) {
 }
 
 function TaskStatusPill({ task }: { task: TaskRecord }) {
-  const tone = task.isRunning
-    ? "bg-[#eef3ff] text-[#285cc7]"
-    : task.status === "active"
-      ? "bg-[#eef8f0] text-[#23633a]"
-      : "bg-[#f3f4f6] text-[#5f6368]";
-
   return (
-    <span className={`shrink-0 rounded-full px-3 py-1 text-[12px] font-medium ${tone}`}>
+    <UnifiedStatusPill
+      tone={task.isRunning ? "info" : task.status === "active" ? "success" : "neutral"}
+    >
       {task.isRunning ? "执行中" : task.status === "active" ? "运行中" : "已暂停"}
-    </span>
+    </UnifiedStatusPill>
   );
 }
 
@@ -496,7 +493,9 @@ function formatTemplateSchedule(template: TaskTemplate) {
   }
 
   if (schedule.preset === "interval") {
-    return `每隔 ${schedule.intervalHours || 6} 小时`;
+    const intervalMinutes =
+      schedule.intervalMinutes ?? ((schedule.intervalHours ?? 0) > 0 ? schedule.intervalHours! * 60 : 5);
+    return `每隔 ${intervalMinutes} 分钟`;
   }
 
   return `每天 ${schedule.time || "09:00"}`;

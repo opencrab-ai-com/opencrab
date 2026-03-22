@@ -12,6 +12,7 @@ export async function POST(request: Request) {
     const body = await readJsonBody<{
       name?: string;
       summary?: string;
+      avatarDataUrl?: string | null;
       roleLabel?: string;
       description?: string;
       availability?: "solo" | "team" | "both";
@@ -32,6 +33,7 @@ export async function POST(request: Request) {
     const agent = createAgentProfile({
       name: body.name || "",
       summary: body.summary || "",
+      avatarDataUrl: body.avatarDataUrl,
       roleLabel: body.roleLabel,
       description: body.description,
       availability: body.availability,

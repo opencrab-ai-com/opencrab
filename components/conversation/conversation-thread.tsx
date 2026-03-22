@@ -4,8 +4,11 @@ import { memo, useCallback, useDeferredValue, useEffect, useLayoutEffect, useMem
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { AgentAvatar } from "@/components/agents/agent-avatar";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
+import type { AgentProfileRecord } from "@/lib/agents/types";
 import type { AttachmentItem } from "@/lib/seed-data";
+import { formatConversationMessageTimestamp } from "@/lib/conversations/utils";
 import { buildConversationDetailViewModel } from "@/lib/view-models/conversations";
 
 type ConversationThreadProps = {
@@ -23,7 +26,7 @@ export const ConversationThread = memo(function ConversationThread({
 });
 
 function ConversationThreadBody({ conversationId }: ConversationThreadProps) {
-  const { conversations, conversationMessages } = useOpenCrabApp();
+  const { agents, conversations, conversationMessages } = useOpenCrabApp();
   const threadRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const shouldStickToBottomRef = useRef(true);
@@ -36,6 +39,8 @@ function ConversationThreadBody({ conversationId }: ConversationThreadProps) {
     () => conversations.find((item) => item.id === conversationId),
     [conversationId, conversations],
   );
+  const agentsById = useMemo(() => new Map(agents.map((agent) => [agent.id, agent] as const)), [agents]);
+  const agentsByName = useMemo(() => new Map(agents.map((agent) => [agent.name, agent] as const)), [agents]);
   const rawMessages = conversationMessages[conversationId] ?? [];
   const deferredMessages = useDeferredValue(rawMessages);
   const detailViewModel = useMemo(
@@ -162,6 +167,12 @@ function ConversationThreadBody({ conversationId }: ConversationThreadProps) {
             <ConversationMessageCard
               key={message.id}
               message={message}
+              avatarDataUrl={resolveAssistantAvatar({
+                agentsById,
+                agentsByName,
+                activeConversationAgentId: activeConversation?.agentProfileId ?? null,
+                message,
+              })}
               isThinkingExpanded={thinkingOverrides[message.id] ?? message.status === "pending"}
               onToggleThinking={() =>
                 setThinkingOverrides((current) => ({
@@ -180,13 +191,26 @@ function ConversationThreadBody({ conversationId }: ConversationThreadProps) {
 
 const ConversationMessageCard = memo(function ConversationMessageCard({
   message,
+  avatarDataUrl,
   isThinkingExpanded,
   onToggleThinking,
 }: {
   message: ReturnType<typeof buildConversationDetailViewModel>["messages"][number];
+  avatarDataUrl: string | null;
   isThinkingExpanded: boolean;
   onToggleThinking: () => void;
 }) {
+  const actorName =
+    message.role === "assistant"
+      ? message.actorLabel || "OpenCrab"
+      : message.source === "telegram"
+        ? "Telegram 用户"
+        : message.source === "feishu"
+          ? "飞书用户"
+          : message.source === "task"
+            ? "定时任务"
+            : "我";
+
   return (
     <article
       className={`max-w-[760px] rounded-[24px] px-5 py-4 ${
@@ -195,16 +219,16 @@ const ConversationMessageCard = memo(function ConversationMessageCard({
           : "self-start border border-line bg-surface text-text shadow-soft"
       }`}
     >
-      <div className="mb-2 text-[11px] text-muted">
-        {message.role === "assistant"
-          ? message.actorLabel || "OpenCrab"
-          : message.source === "telegram"
-            ? "Telegram 用户"
-            : message.source === "feishu"
-              ? "飞书用户"
-              : message.source === "task"
-                ? "定时任务"
-                : "我"}
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          {message.role === "assistant" ? (
+            <AgentAvatar src={avatarDataUrl} name={actorName} size={32} className="rounded-[14px]" />
+          ) : null}
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#e8e3d7] bg-[#fbf8f1] px-3 py-1.5">
+            <span className="text-[13px] font-semibold tracking-[-0.02em] text-text">{actorName}</span>
+          </div>
+        </div>
+        <span className="text-[11px] text-muted">{formatConversationMessageTimestamp(message.timestamp)}</span>
       </div>
       {message.role === "assistant" && message.thinking?.length ? (
         <ThinkingPanel
@@ -290,6 +314,34 @@ function AttachmentCard({ attachment }: { attachment: AttachmentItem }) {
       </div>
     </a>
   );
+}
+
+function resolveAssistantAvatar({
+  agentsById,
+  agentsByName,
+  activeConversationAgentId,
+  message,
+}: {
+  agentsById: Map<string, AgentProfileRecord>;
+  agentsByName: Map<string, AgentProfileRecord>;
+  activeConversationAgentId: string | null;
+  message: ReturnType<typeof buildConversationDetailViewModel>["messages"][number];
+}) {
+  if (message.role !== "assistant") {
+    return null;
+  }
+
+  const conversationAgent = activeConversationAgentId ? agentsById.get(activeConversationAgentId) ?? null : null;
+
+  if (conversationAgent?.avatarDataUrl) {
+    return conversationAgent.avatarDataUrl;
+  }
+
+  if (message.actorLabel) {
+    return agentsByName.get(message.actorLabel)?.avatarDataUrl ?? null;
+  }
+
+  return null;
 }
 
 function ThinkingPanel({

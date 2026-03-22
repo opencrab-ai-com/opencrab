@@ -5,15 +5,30 @@
 - macOS
 - Node.js `20.9+`
 - 已安装并可执行 `codex`
-- 已完成 `codex login`
+- 账号具备可用的 Codex 使用资格
 
 ## Start
 
 ```bash
 npm install
 cp .env.example .env.local
-codex login
 npm run dev
+```
+
+首次启动后，如果还没有登录，可以直接在 `/settings` 页点击 `连接 ChatGPT` 完成授权。
+
+如果你更习惯终端方式，也可以手动执行：
+
+```bash
+codex login
+codex login status
+```
+
+当前默认 `npm run dev` 使用 Next.js 16 的 Turbopack。
+如果你需要临时回退到旧的 Webpack 模式，可以执行：
+
+```bash
+npm run dev:webpack
 ```
 
 默认开发地址：
@@ -33,6 +48,13 @@ npm run build
 - `OPENCRAB_CODEX_MODEL=gpt-5.4`
 - `OPENCRAB_CODEX_REASONING_EFFORT=medium`
 - `OPENCRAB_CODEX_SANDBOX_MODE=workspace-write`
+- `OPENCRAB_PUBLIC_BASE_URL=http://127.0.0.1:3000`
+
+设置页当前还能直接管理：
+
+- 默认语言
+- 浏览器连接方式
+- 是否允许命令继承 `OPENAI_API_KEY`
 
 ## Local Runtime Directories
 
@@ -59,11 +81,13 @@ OpenCrab 自己的运行时数据会写到：
 - `state/runtime-config.json`
 - `state/skills.json`
 - `state/tasks.json`
+- `state/projects.json`
 - `uploads/`
 - `uploads/index.json`
 - `logs/tunnels/`
 - `browser/chrome-debug-profile/`
 - `skills/`
+- `agents/`
 
 首次启动时会自动把旧的 `~/Library/Application Support/OpenCrab/` 迁移到新目录。
 
@@ -73,9 +97,9 @@ OpenCrab 自己的运行时数据会写到：
 npm run clean:runtime
 ```
 
-## Channels
+## 渠道
 
-`Channels` 第一版支持 Telegram 和飞书。
+当前支持 Telegram 和飞书。
 
 当前行为：
 
@@ -110,12 +134,14 @@ OpenCrab 当前在重启后会自动做这些事：
 - 预热浏览器 MCP 连接
 - 启动任务执行器
 - 修正渠道会话元数据
+- 准备内置技能目录
 
 补充说明：
 
 - Telegram / 飞书如果是用户手动断开的，重启后会保持断开
 - 浏览器远程调试的首次授权仍然可能需要用户点一次允许
 - 定时任务依赖 OpenCrab 服务进程处于运行状态
+- 这些启动动作当前是“后台触发 + 冷却式同步”，不会在每次前端轮询时都强制完整执行一遍
 
 更完整说明见：
 
@@ -131,17 +157,18 @@ OpenCrab 当前在重启后会自动做这些事：
 
 ## Debugging Codex
 
-检查登录状态：
+检查底层登录状态：
 
 ```bash
 codex login status
 ```
 
-如果 UI 提示 Codex 不可用，优先检查：
+如果 UI 提示 ChatGPT / Codex 不可用，优先检查：
 
 1. `codex login status`
 2. `/api/codex/status`
-3. 浏览器连接模式是否正确
+3. `/api/chatgpt/connect/status`
+4. 浏览器连接模式是否正确
 
 ## Browser Modes
 
@@ -167,3 +194,16 @@ codex login status
 - PDF 目前支持可提取文字的 PDF，不支持纯扫描 OCR
 - Word 提取依赖 macOS 自带 `textutil`
 - Telegram 渠道会把图片和文件下载进 OpenCrab 的上传存储，再参与后续回复
+
+## Current Product Areas
+
+当前主导航已经包含这些产品区块：
+
+- `对话`
+- `智能体`
+- `团队模式`
+- `渠道`
+- `定时任务`
+- `技能`
+- `关于我们`
+- `设置`

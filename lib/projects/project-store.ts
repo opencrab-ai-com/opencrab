@@ -531,19 +531,74 @@ async function planProjectConversationWithManager(
   const runtimeConversationId = ensureAgentRuntimeConversation(state, room, manager);
   const otherAgents = projectAgents.filter((agent) => agent.id !== manager.id);
   const prompt = buildManagerPlanningPrompt(room, otherAgents, content, recentMessages);
+  updateAgentPublicProgress(state, manager.id, {
+    label: "正在判断下一步",
+    detail: "项目经理正在结合当前群聊、上游结果和团队目标，判断下一棒该由谁接力。",
+  });
+  writeState(state);
   const result = await runConversationTurn({
     conversationId: runtimeConversationId,
     content: prompt,
     model: manager.model,
     reasoningEffort: manager.reasoningEffort,
     sandboxMode: manager.sandboxMode,
+    onThreadReady: () => {
+      const nextState = readState();
+      updateAgentPublicProgress(nextState, manager.id, {
+        label: "已接入运行时",
+        detail: "项目经理已经拿到新的 runtime 会话，正在整理接下来的分工判断。",
+      });
+      writeState(nextState);
+    },
+    onThinking: (entries) => {
+      const nextState = readState();
+      updateAgentPublicProgress(nextState, manager.id, summarizeThinkingProgress(entries, {
+        agent: manager,
+        task: content,
+        fallbackLabel: "正在分析协作节奏",
+        fallbackDetail: "项目经理正在比较目标、依赖和现有结果，决定下一步是否派工或先向用户收束。",
+      }));
+      writeState(nextState);
+    },
+    onAssistantText: (text) => {
+      const nextState = readState();
+      updateAgentPublicProgress(nextState, manager.id, summarizeAssistantDraftProgress(text, {
+        fallbackLabel: "正在整理群聊回复",
+        fallbackDetail: "项目经理正在把分工判断整理成一条适合发到群聊里的安排说明。",
+      }));
+      writeState(nextState);
+    },
   });
+  syncMutableProjectState(state, readState());
   const plan = parseManagerPlan(result.assistant.text, otherAgents);
 
   updateProjectAgent(state, manager.id, {
     status: plan.delegations.length > 0 ? "planning" : plan.decision === "waiting_user" ? "planning" : "reviewing",
     lastAssignedTask: content,
     lastResultSummary: compactRuntimeText(plan.checkpointSummary || plan.groupReply),
+    progressLabel:
+      plan.delegations.length > 0
+        ? "已完成分工判断"
+        : plan.decision === "waiting_approval"
+          ? "已整理交付总结"
+          : "正在等待用户补充",
+    progressDetails: compactConversationExcerpt(
+      plan.checkpointSummary || plan.groupReply,
+      160,
+    ),
+    lastHeartbeatAt: new Date().toISOString(),
+    progressTrail: appendAgentProgressTrail(
+      state.agents.find((agent) => agent.id === manager.id)?.progressTrail ?? manager.progressTrail,
+      {
+      label:
+        plan.delegations.length > 0
+          ? "已完成分工判断"
+          : plan.decision === "waiting_approval"
+            ? "已整理交付总结"
+            : "正在等待用户补充",
+      detail: compactConversationExcerpt(plan.checkpointSummary || plan.groupReply, 160),
+      },
+    ),
   });
 
   return plan;
@@ -752,6 +807,13 @@ async function executeAgentTask(
   updateProjectAgent(state, agent.id, {
     status: "working",
     lastAssignedTask: task,
+    progressLabel: "准备开始执行",
+    progressDetails: `已接到新任务：${compactConversationExcerpt(task, 120)}`,
+    lastHeartbeatAt: new Date().toISOString(),
+    progressTrail: appendAgentProgressTrail(agent.progressTrail, {
+      label: "准备开始执行",
+      detail: `已接到新任务：${compactConversationExcerpt(task, 120)}`,
+    }),
   });
   writeState(state);
 
@@ -762,8 +824,35 @@ async function executeAgentTask(
     model: agent.model,
     reasoningEffort: agent.reasoningEffort,
     sandboxMode: agent.sandboxMode,
+    onThreadReady: () => {
+      const nextState = readState();
+      updateAgentPublicProgress(nextState, agent.id, {
+        label: "已接入运行时",
+        detail: "已经拿到新的 runtime 会话，开始读取上下文和当前这棒任务。",
+      });
+      writeState(nextState);
+    },
+    onThinking: (entries) => {
+      const nextState = readState();
+      updateAgentPublicProgress(nextState, agent.id, summarizeThinkingProgress(entries, {
+        agent,
+        task,
+        fallbackLabel: "正在处理当前任务",
+        fallbackDetail: "正在梳理任务上下文、已有结果和可交付边界。",
+      }));
+      writeState(nextState);
+    },
+    onAssistantText: (text) => {
+      const nextState = readState();
+      updateAgentPublicProgress(nextState, agent.id, summarizeAssistantDraftProgress(text, {
+        fallbackLabel: "正在整理阶段结果",
+        fallbackDetail: "已经进入产出阶段，正在把当前这棒的结果整理成可交付说明。",
+      }));
+      writeState(nextState);
+    },
   });
   const replyText = result.assistant.text.trim();
+  syncMutableProjectState(state, readState());
   const latestState = readState();
   const latestAgent = latestState.agents.find((item) => item.id === agent.id) ?? null;
 
@@ -776,10 +865,25 @@ async function executeAgentTask(
     lastResultSummary: compactRuntimeText(replyText),
     blockedByAgentId: null,
     lastCompletedAt: new Date().toISOString(),
+    progressLabel: "已交回阶段结果",
+    progressDetails: compactConversationExcerpt(replyText, 160),
+    lastHeartbeatAt: new Date().toISOString(),
+    progressTrail: appendAgentProgressTrail(latestAgent?.progressTrail ?? agent.progressTrail, {
+      label: "已交回阶段结果",
+      detail: compactConversationExcerpt(replyText, 160),
+    }),
   });
   writeState(state);
 
   return replyText;
+}
+
+function syncMutableProjectState(target: ProjectStoreState, source: ProjectStoreState) {
+  target.rooms = source.rooms;
+  target.agents = source.agents;
+  target.events = source.events;
+  target.artifacts = source.artifacts;
+  target.runs = source.runs;
 }
 
 function buildWorkerExecutionPrompt(
@@ -1244,14 +1348,21 @@ function recoverStalledProjectRuntime(input: {
     deleteConversation(activeAgent.runtimeConversationId);
   }
 
+  const now = new Date().toISOString();
   updateProjectAgent(input.state, activeAgent.id, {
     runtimeConversationId: null,
     status: "idle",
     blockedByAgentId: null,
     lastResultSummary: "上一轮后台执行没有正常回传，项目经理已自动重试当前棒次。",
+    progressLabel: "检测到异常，准备重试",
+    progressDetails: `项目经理发现这一棒疑似卡住，正在重建 ${activeAgent.name} 的后台会话并重推同一任务。`,
+    lastHeartbeatAt: now,
+    progressTrail: appendAgentProgressTrail(activeAgent.progressTrail, {
+      label: "检测到异常，准备重试",
+      detail: `项目经理发现这一棒疑似卡住，正在重建 ${activeAgent.name} 的后台会话并重推同一任务。`,
+      createdAt: now,
+    }),
   });
-
-  const now = new Date().toISOString();
   const managerReply = [
     `我检查到 @${activeAgent.name} 这一棒已经卡住了，卡点是：${runtimeState.detail}`,
     "我已经中断旧的后台会话，并按当前同一任务重新推了一次，不会影响上一棒已经完成的结果。",
@@ -1352,6 +1463,21 @@ function buildProjectProgressReply(
     activeAgent.lastAssignedTask || "当前正在处理项目经理刚刚分配的这一棒任务。",
     120,
   );
+  const progressLine =
+    activeAgent.progressLabel && activeAgent.progressDetails
+      ? `当前公开进展：${activeAgent.progressLabel}。${activeAgent.progressDetails}`
+      : activeAgent.progressLabel
+        ? `当前公开进展：${activeAgent.progressLabel}。`
+        : "当前还没有拿到更细的执行过程说明。";
+  const heartbeatLine = activeAgent.lastHeartbeatAt
+    ? `最近一次心跳：${new Intl.DateTimeFormat("zh-CN", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).format(new Date(activeAgent.lastHeartbeatAt))}`
+    : "最近一次心跳还未记录。";
   const completedSummary = completedAgent?.lastResultSummary
     ? compactConversationExcerpt(completedAgent.lastResultSummary, 100)
     : null;
@@ -1360,6 +1486,8 @@ function buildProjectProgressReply(
     `当前还在正常推进，没有卡住。现在这一棒由 @${activeAgent.name} 在执行，我这边不会打断它。`,
     `当前阶段：${inferRuntimeStageLabel(activeAgent, activeAgent.lastAssignedTask)}。`,
     `这位成员正在处理：${taskSummary}`,
+    progressLine,
+    heartbeatLine,
     completedAgent
       ? `上一棒已由 ${completedAgent.name} 交回，我已经基于它完成接力判断：${completedSummary}`
       : "上一棒还没有形成可回看的阶段结果。",
@@ -1396,6 +1524,14 @@ function handleProjectRuntimeFailure(
     status: "idle",
     blockedByAgentId: null,
     lastResultSummary: `执行遇到问题：${compactError}`,
+    progressLabel: "执行遇到问题",
+    progressDetails: compactConversationExcerpt(managerReply, 160),
+    lastHeartbeatAt: input.now,
+    progressTrail: appendAgentProgressTrail(input.failedAgent.progressTrail, {
+      label: "执行遇到问题",
+      detail: compactConversationExcerpt(managerReply, 160),
+      createdAt: input.now,
+    }),
   });
 
   applyProjectManagerCheckpoint(state, {
@@ -1455,6 +1591,141 @@ function compactAgentResponsibility(agent: ProjectAgentRecord) {
 function compactRuntimeText(value: string) {
   const normalized = value.replace(/\s+/g, " ").trim();
   return normalized.length > 160 ? `${normalized.slice(0, 157)}...` : normalized;
+}
+
+function appendAgentProgressTrail(
+  trail: ProjectAgentRecord["progressTrail"],
+  input: {
+    label: string;
+    detail: string;
+    createdAt?: string;
+  },
+) {
+  const nextCreatedAt = input.createdAt || new Date().toISOString();
+  const normalizedDetail = compactConversationExcerpt(input.detail, 180);
+  const currentTrail = Array.isArray(trail) ? [...trail] : [];
+  const previous = currentTrail[currentTrail.length - 1] ?? null;
+
+  if (previous && previous.label === input.label && previous.detail === normalizedDetail) {
+    currentTrail[currentTrail.length - 1] = {
+      ...previous,
+      createdAt: nextCreatedAt,
+    };
+    return currentTrail.slice(-6);
+  }
+
+  return [
+    ...currentTrail.slice(-5),
+    {
+      id: `agent-progress-${crypto.randomUUID()}`,
+      label: input.label,
+      detail: normalizedDetail,
+      createdAt: nextCreatedAt,
+    },
+  ];
+}
+
+function updateAgentPublicProgress(
+  state: ProjectStoreState,
+  agentId: string,
+  input: {
+    label: string;
+    detail: string;
+    createdAt?: string;
+  },
+) {
+  const createdAt = input.createdAt || new Date().toISOString();
+  const normalizedDetail = compactConversationExcerpt(input.detail, 180);
+
+  updateProjectAgent(state, agentId, {
+    progressLabel: input.label,
+    progressDetails: normalizedDetail,
+    lastHeartbeatAt: createdAt,
+    progressTrail: appendAgentProgressTrail(
+      state.agents.find((agent) => agent.id === agentId)?.progressTrail,
+      {
+        label: input.label,
+        detail: normalizedDetail,
+        createdAt,
+      },
+    ),
+  });
+}
+
+function summarizeThinkingProgress(
+  entries: string[],
+  input: {
+    agent: ProjectAgentRecord;
+    task: string;
+    fallbackLabel: string;
+    fallbackDetail: string;
+  },
+) {
+  const joined = entries.join(" ").replace(/\s+/g, " ").trim();
+  const normalized = joined.toLowerCase();
+  const taskPreview = compactConversationExcerpt(input.task, 100);
+
+  if (/(read|open|inspect|scan|browse|search|文件|目录|路径|读取|查看|搜索|检索)/i.test(normalized)) {
+    return {
+      label: "正在读取上下文",
+      detail: `正在围绕“${taskPreview}”读取相关文件、群聊上下文和上游结果。`,
+    };
+  }
+
+  if (/(plan|analy|compare|review|judge|decid|总结|判断|分析|比较|评审|收束|依赖)/i.test(normalized)) {
+    return {
+      label: "正在分析方案",
+      detail: `正在分析当前任务的依赖、边界和最合适的推进方式：${taskPreview}`,
+    };
+  }
+
+  if (/(write|edit|implement|code|page|component|draft|生成|撰写|实现|修改|搭建|落地)/i.test(normalized)) {
+    return {
+      label: "正在落地执行",
+      detail: `已经进入产出阶段，正在把这棒任务落成可交付结果：${taskPreview}`,
+    };
+  }
+
+  if (/(final|respond|reply|compose|整理输出|输出|回复|汇总|交付)/i.test(normalized)) {
+    return {
+      label: "正在整理输出",
+      detail: "当前主要在收束已有判断，准备形成一条适合回传给团队或用户的阶段结果。",
+    };
+  }
+
+  return {
+    label: input.fallbackLabel,
+    detail: input.fallbackDetail,
+  };
+}
+
+function summarizeAssistantDraftProgress(
+  text: string,
+  input: {
+    fallbackLabel: string;
+    fallbackDetail: string;
+  },
+) {
+  const normalized = text.replace(/\s+/g, " ").trim();
+
+  if (!normalized) {
+    return {
+      label: input.fallbackLabel,
+      detail: input.fallbackDetail,
+    };
+  }
+
+  if (normalized.length > 120) {
+    return {
+      label: "正在整理阶段结果",
+      detail: `已经形成较完整的输出草稿，正在做最后整理：${compactConversationExcerpt(normalized, 120)}`,
+    };
+  }
+
+  return {
+    label: input.fallbackLabel,
+    detail: input.fallbackDetail,
+  };
 }
 
 function buildProjectCheckpointSummary(
@@ -1579,6 +1850,19 @@ function applyRuntimeDelegationState(
         ...agent,
         status: input.delegations.length > 0 ? "planning" : "reviewing",
         blockedByAgentId: null,
+        progressLabel: input.delegations.length > 0 ? "已完成本轮派工" : agent.progressLabel ?? null,
+        progressDetails:
+          input.delegations.length > 0
+            ? `当前先由 ${delegatedAgents.map((item) => item.name).join("、")} 接力推进，项目经理会等结果回来后继续判断。`
+            : agent.progressDetails ?? null,
+        lastHeartbeatAt: new Date().toISOString(),
+        progressTrail:
+          input.delegations.length > 0
+            ? appendAgentProgressTrail(agent.progressTrail, {
+                label: "已完成本轮派工",
+                detail: `当前先由 ${delegatedAgents.map((item) => item.name).join("、")} 接力推进，项目经理会等结果回来后继续判断。`,
+              })
+            : agent.progressTrail ?? [],
       };
     }
 
@@ -1590,6 +1874,19 @@ function applyRuntimeDelegationState(
         status: "working",
         blockedByAgentId: null,
         lastAssignedTask: input.delegations[delegationIndex]?.task || agent.lastAssignedTask || null,
+        progressLabel: "等待开始执行",
+        progressDetails: `项目经理已把当前这棒交给他：${compactConversationExcerpt(
+          input.delegations[delegationIndex]?.task || agent.lastAssignedTask || "当前任务待同步。",
+          120,
+        )}`,
+        lastHeartbeatAt: new Date().toISOString(),
+        progressTrail: appendAgentProgressTrail(agent.progressTrail, {
+          label: "等待开始执行",
+          detail: `项目经理已把当前这棒交给他：${compactConversationExcerpt(
+            input.delegations[delegationIndex]?.task || agent.lastAssignedTask || "当前任务待同步。",
+            120,
+          )}`,
+        }),
       };
     }
 
@@ -1599,6 +1896,17 @@ function applyRuntimeDelegationState(
         status: "idle",
         blockedByAgentId: delegatedAgents[delegationIndex - 1]?.id ?? primaryAgent?.id ?? null,
         lastAssignedTask: input.delegations[delegationIndex]?.task || agent.lastAssignedTask || null,
+        progressLabel: "等待上游结果",
+        progressDetails: `这位成员已经在接力链上，但需要等 ${
+          delegatedAgents[delegationIndex - 1]?.name || primaryAgent?.name || "上游成员"
+        } 先交回结果后才会真正开工。`,
+        lastHeartbeatAt: new Date().toISOString(),
+        progressTrail: appendAgentProgressTrail(agent.progressTrail, {
+          label: "等待上游结果",
+          detail: `这位成员已经在接力链上，但需要等 ${
+            delegatedAgents[delegationIndex - 1]?.name || primaryAgent?.name || "上游成员"
+          } 先交回结果后才会真正开工。`,
+        }),
       };
     }
 
@@ -1606,6 +1914,13 @@ function applyRuntimeDelegationState(
       ...agent,
       status: agent.lastResultSummary ? "reviewing" : "idle",
       blockedByAgentId: primaryAgent?.id ?? null,
+      progressLabel: agent.lastResultSummary ? "已交回阶段结果" : "尚未上场",
+      progressDetails: agent.lastResultSummary
+        ? compactConversationExcerpt(agent.lastResultSummary, 120)
+        : primaryAgent
+          ? `当前不在这轮接力链里，项目经理会先观察 ${primaryAgent.name} 这棒的结果。`
+          : "当前还没有进入这轮接力链。",
+      lastHeartbeatAt: agent.lastHeartbeatAt ?? new Date().toISOString(),
     };
   });
 }
@@ -1638,6 +1953,19 @@ function clearRuntimeDelegationState(
       ...agent,
       status: agent.id === input.managerId ? "reviewing" : agent.lastResultSummary ? "reviewing" : "idle",
       blockedByAgentId: null,
+      progressLabel:
+        agent.id === input.managerId
+          ? "正在收束阶段结果"
+          : agent.lastResultSummary
+            ? "已交回阶段结果"
+            : "待命",
+      progressDetails:
+        agent.id === input.managerId
+          ? "项目经理正在基于已有阶段结果做收束判断。"
+          : agent.lastResultSummary
+            ? compactConversationExcerpt(agent.lastResultSummary, 120)
+            : "当前没有新的执行任务，等待项目经理决定下一步。",
+      lastHeartbeatAt: new Date().toISOString(),
     };
   });
 }
@@ -1687,6 +2015,29 @@ function applyProjectManagerCheckpoint(
       ...agent,
       status: agent.id === input.managerId ? "reviewing" : agent.lastResultSummary ? "reviewing" : "idle",
       blockedByAgentId: null,
+      progressLabel:
+        agent.id === input.managerId
+          ? input.decision === "waiting_approval"
+            ? "已整理交付总结"
+            : "正在等待用户补充"
+          : agent.lastResultSummary
+            ? "已交回阶段结果"
+            : "待命",
+      progressDetails:
+        agent.id === input.managerId
+          ? compactConversationExcerpt(formattedSummary, 160)
+          : agent.lastResultSummary
+            ? compactConversationExcerpt(agent.lastResultSummary, 120)
+            : "当前没有新的执行任务，等待项目经理恢复推进。",
+      lastHeartbeatAt: input.now,
+      progressTrail:
+        agent.id === input.managerId
+          ? appendAgentProgressTrail(agent.progressTrail, {
+              label: input.decision === "waiting_approval" ? "已整理交付总结" : "正在等待用户补充",
+              detail: compactConversationExcerpt(formattedSummary, 160),
+              createdAt: input.now,
+            })
+          : agent.progressTrail ?? [],
     };
   });
 
@@ -2674,6 +3025,12 @@ function buildTeamAgents(input: {
       runtimeConversationId: null,
       lastAssignedTask: null,
       lastResultSummary: null,
+      progressLabel: isLead ? "准备统筹首轮协作" : "等待项目经理安排",
+      progressDetails: isLead
+        ? "团队刚创建完成，项目经理准备先读取目标和当前上下文，再安排第一棒。"
+        : "当前还没有进入执行阶段，拿到 baton 后会开始工作。",
+      lastHeartbeatAt: null,
+      progressTrail: [],
       blockedByAgentId: null,
       lastCompletedAt: null,
       model: detail?.defaultModel || profile.defaultModel || input.defaultModel,
@@ -2707,6 +3064,10 @@ function buildFallbackAgents(input: {
       runtimeConversationId: null,
       lastAssignedTask: null,
       lastResultSummary: null,
+      progressLabel: "准备统筹首轮协作",
+      progressDetails: "团队刚创建完成，项目经理准备先读取目标和当前上下文，再安排第一棒。",
+      lastHeartbeatAt: null,
+      progressTrail: [],
       blockedByAgentId: null,
       lastCompletedAt: null,
       model: input.defaultModel,
@@ -2726,6 +3087,10 @@ function buildFallbackAgents(input: {
       runtimeConversationId: null,
       lastAssignedTask: null,
       lastResultSummary: null,
+      progressLabel: "等待项目经理安排",
+      progressDetails: "当前还没有进入执行阶段，拿到 baton 后会开始工作。",
+      lastHeartbeatAt: null,
+      progressTrail: [],
       blockedByAgentId: null,
       lastCompletedAt: null,
       model: input.defaultModel,
@@ -2745,6 +3110,10 @@ function buildFallbackAgents(input: {
       runtimeConversationId: null,
       lastAssignedTask: null,
       lastResultSummary: null,
+      progressLabel: "等待项目经理安排",
+      progressDetails: "当前还没有进入执行阶段，拿到 baton 后会开始工作。",
+      lastHeartbeatAt: null,
+      progressTrail: [],
       blockedByAgentId: null,
       lastCompletedAt: null,
       model: input.defaultModel,
@@ -2864,6 +3233,10 @@ function normalizeStoredProjectAgents(
         runtimeConversationId: agent.runtimeConversationId ?? null,
         lastAssignedTask: agent.lastAssignedTask ?? null,
         lastResultSummary: agent.lastResultSummary ?? null,
+        progressLabel: agent.progressLabel ?? null,
+        progressDetails: agent.progressDetails ?? null,
+        lastHeartbeatAt: agent.lastHeartbeatAt ?? null,
+        progressTrail: Array.isArray(agent.progressTrail) ? agent.progressTrail.slice(-6) : [],
         blockedByAgentId: agent.blockedByAgentId ?? null,
         lastCompletedAt: agent.lastCompletedAt ?? null,
         canDelegate: isLead,

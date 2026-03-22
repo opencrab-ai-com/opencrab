@@ -25,6 +25,13 @@ export type ProjectRunRecordStatus =
 
 export type ProjectCheckpointAction = "approve" | "request_changes" | "resume" | "pause";
 
+export type ProjectAgentProgressEntry = {
+  id: string;
+  label: string;
+  detail: string;
+  createdAt: string;
+};
+
 export type ProjectRoomRecord = {
   id: string;
   title: string;
@@ -60,6 +67,10 @@ export type ProjectAgentRecord = {
   runtimeConversationId?: string | null;
   lastAssignedTask?: string | null;
   lastResultSummary?: string | null;
+  progressLabel?: string | null;
+  progressDetails?: string | null;
+  lastHeartbeatAt?: string | null;
+  progressTrail?: ProjectAgentProgressEntry[];
   blockedByAgentId?: string | null;
   lastCompletedAt?: string | null;
   model: string;

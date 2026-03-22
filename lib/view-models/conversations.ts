@@ -78,7 +78,7 @@ export function buildSidebarViewModel(input: {
     conversations: sortByLatest(
       visibleConversations.filter((item) => item.folderId === folder.id).map(enhanceConversation),
     ),
-  }));
+  })).filter((folder) => folder.conversations.length > 0);
 
   return {
     folders,

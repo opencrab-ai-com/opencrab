@@ -15,31 +15,43 @@ type AppShellProps = {
   children: React.ReactNode;
 };
 
+type ConversationListMode = "direct" | "agent" | "team" | "channel";
+
 const navItems: Array<{
   key: NavKey;
   label: string;
   href: string;
   icon: React.ReactNode;
+  conversationMode?: ConversationListMode;
 }> = [
   {
     key: "conversations",
     label: "对话",
     href: "/conversations",
     icon: <ConversationIcon />,
+    conversationMode: "direct",
   },
   {
     key: "agents",
     label: "智能体",
     href: "/agents",
     icon: <AgentIcon />,
+    conversationMode: "agent",
   },
   {
     key: "projects",
     label: "团队模式",
     href: "/projects",
     icon: <TeamIcon />,
+    conversationMode: "team",
   },
-  { key: "channels", label: "渠道", href: "/channels", icon: <GridIcon /> },
+  {
+    key: "channels",
+    label: "渠道",
+    href: "/channels",
+    icon: <GridIcon />,
+    conversationMode: "channel",
+  },
   { key: "tasks", label: "定时任务", href: "/tasks", icon: <TaskIcon /> },
   { key: "skills", label: "技能", href: "/skills", icon: <StarIcon /> },
 ];
@@ -53,7 +65,10 @@ const secondaryNavItems: Array<{
 
 const LAST_CONVERSATION_PATH_KEY = "opencrab:last-conversation-path";
 const LAST_CONVERSATION_PATH_EVENT = "opencrab:last-conversation-path-change";
+const CONVERSATION_MODE_KEY = "opencrab:conversation-list-mode";
+const CONVERSATION_MODE_EVENT = "opencrab:conversation-list-mode-change";
 const DEFAULT_CONVERSATION_HREF = "/conversations";
+const DEFAULT_CONVERSATION_MODE: ConversationListMode = "direct";
 
 export function AppShell({ sidebar, children }: AppShellProps) {
   const pathname = usePathname();
@@ -63,6 +78,11 @@ export function AppShell({ sidebar, children }: AppShellProps) {
     subscribeToLastConversationPath,
     getLastConversationHref,
     () => DEFAULT_CONVERSATION_HREF,
+  );
+  const selectedConversationMode = useSyncExternalStore(
+    subscribeToConversationMode,
+    getSelectedConversationMode,
+    () => DEFAULT_CONVERSATION_MODE,
   );
 
   useEffect(() => {
@@ -77,9 +97,10 @@ export function AppShell({ sidebar, children }: AppShellProps) {
         item.key === "conversations"
           ? {
               ...item,
-              href: pathname.startsWith("/conversations/")
-                ? pathname
-                : lastConversationHref,
+              href:
+                pathname.startsWith("/conversations/") || pathname === "/"
+                  ? pathname
+                  : lastConversationHref,
             }
           : item,
       ),
@@ -124,11 +145,13 @@ export function AppShell({ sidebar, children }: AppShellProps) {
 
         <nav className="mt-2 flex flex-col gap-0.5" aria-label="主导航">
           {resolvedNavItems.map((item) => {
-            const isActive =
-              (item.key === "conversations" &&
-                (pathname === "/" || pathname.startsWith("/conversations"))) ||
-              pathname === item.href ||
-              pathname.startsWith(`${item.href}/`);
+            const isConversationModeActive =
+              item.conversationMode &&
+              (pathname === "/" || pathname.startsWith("/conversations")) &&
+              selectedConversationMode === item.conversationMode;
+            const isRouteActive =
+              pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const isActive = Boolean(isConversationModeActive || isRouteActive);
 
             return (
               <Link
@@ -137,6 +160,10 @@ export function AppShell({ sidebar, children }: AppShellProps) {
                 onClick={() => {
                   if (isConversationPath(pathname)) {
                     saveLastConversationHref(pathname);
+                  }
+
+                  if (item.conversationMode) {
+                    saveSelectedConversationMode(item.conversationMode);
                   }
                 }}
                 className={`flex min-h-9 items-center gap-3 rounded-xl px-3 text-[14px] transition ${
@@ -256,6 +283,24 @@ function subscribeToLastConversationPath(onStoreChange: () => void) {
   };
 }
 
+function subscribeToConversationMode(onStoreChange: () => void) {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  const handleChange = () => {
+    onStoreChange();
+  };
+
+  window.addEventListener("storage", handleChange);
+  window.addEventListener(CONVERSATION_MODE_EVENT, handleChange);
+
+  return () => {
+    window.removeEventListener("storage", handleChange);
+    window.removeEventListener(CONVERSATION_MODE_EVENT, handleChange);
+  };
+}
+
 function getLastConversationHref() {
   if (typeof window === "undefined") {
     return DEFAULT_CONVERSATION_HREF;
@@ -268,6 +313,15 @@ function getLastConversationHref() {
     : DEFAULT_CONVERSATION_HREF;
 }
 
+function getSelectedConversationMode(): ConversationListMode {
+  if (typeof window === "undefined") {
+    return DEFAULT_CONVERSATION_MODE;
+  }
+
+  const stored = window.localStorage.getItem(CONVERSATION_MODE_KEY);
+  return isConversationListMode(stored) ? stored : DEFAULT_CONVERSATION_MODE;
+}
+
 function saveLastConversationHref(pathname: string) {
   if (typeof window === "undefined" || !isConversationPath(pathname)) {
     return;
@@ -277,10 +331,23 @@ function saveLastConversationHref(pathname: string) {
   window.dispatchEvent(new Event(LAST_CONVERSATION_PATH_EVENT));
 }
 
+function saveSelectedConversationMode(mode: ConversationListMode) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(CONVERSATION_MODE_KEY, mode);
+  window.dispatchEvent(new Event(CONVERSATION_MODE_EVENT));
+}
+
 function isConversationPath(
   pathname: string | null | undefined,
 ): pathname is string {
   return typeof pathname === "string" && pathname.startsWith("/conversations/");
+}
+
+function isConversationListMode(value: string | null): value is ConversationListMode {
+  return value === "direct" || value === "agent" || value === "team" || value === "channel";
 }
 
 function ConversationIcon() {

@@ -7,6 +7,11 @@ import {
   writeFileSync,
 } from "node:fs";
 import path from "node:path";
+import {
+  createAgentAvatarDataUrl,
+  normalizeAgentAvatarDataUrl,
+  shouldReplaceWithModernAvatar,
+} from "@/lib/agents/avatar-library";
 import { generateAgentDraft } from "@/lib/agents/templates";
 import { OPENCRAB_AGENTS_DIR } from "@/lib/resources/runtime-paths";
 import type {
@@ -37,6 +42,7 @@ type StoredAgentProfile = Omit<AgentProfileDetail, "fileCount">;
 type AgentSeed = {
   id: string;
   name: string;
+  avatarDataUrl?: string | null;
   summary: string;
   roleLabel: string;
   description: string;
@@ -282,6 +288,7 @@ const SYSTEM_AGENT_SEEDS: AgentSeed[] = [
 type CreateAgentInput = {
   name: string;
   summary: string;
+  avatarDataUrl?: string | null;
   roleLabel?: string;
   description?: string;
   availability?: AgentAvailability;
@@ -331,6 +338,7 @@ export function createAgentProfile(input: CreateAgentInput) {
   const detail = normalizeAgentDetail({
     id: agentId,
     name: input.name,
+    avatarDataUrl: normalizeAgentAvatarDataUrl(input.avatarDataUrl),
     summary: input.summary,
     roleLabel: input.roleLabel || "Specialist",
     description: input.description || input.summary,
@@ -361,6 +369,10 @@ export function updateAgentProfile(agentId: string, input: UpdateAgentInput) {
   const detail = normalizeAgentDetail({
     ...existing,
     name: input.name ?? existing.name,
+    avatarDataUrl:
+      input.avatarDataUrl === undefined
+        ? existing.avatarDataUrl
+        : normalizeAgentAvatarDataUrl(input.avatarDataUrl),
     summary: input.summary ?? existing.summary,
     roleLabel: input.roleLabel ?? existing.roleLabel,
     description: input.description ?? existing.description,
@@ -440,6 +452,7 @@ function ensureAgentsReady() {
     persistAgentProfile(
       normalizeAgentDetail({
         ...seed,
+        avatarDataUrl: seed.avatarDataUrl ?? null,
         createdAt: now,
         updatedAt: now,
       }),
@@ -475,6 +488,7 @@ function readAgentProfile(agentId: string): AgentProfileDetail | null {
   return normalizeAgentDetail({
     id: parsed.id || agentId,
     name: parsed.name || "",
+    avatarDataUrl: normalizeAgentAvatarDataUrl(parsed.avatarDataUrl),
     summary: parsed.summary || "",
     roleLabel: parsed.roleLabel || "Specialist",
     description: parsed.description || parsed.summary || "",
@@ -523,6 +537,7 @@ function toAgentRecord(detail: AgentProfileDetail): AgentProfileRecord {
   return {
     id: detail.id,
     name: detail.name,
+    avatarDataUrl: detail.avatarDataUrl,
     summary: detail.summary,
     roleLabel: detail.roleLabel,
     description: detail.description,
@@ -541,10 +556,20 @@ function toAgentRecord(detail: AgentProfileDetail): AgentProfileRecord {
 
 function normalizeAgentDetail(input: Omit<StoredAgentProfile, "fileCount">): AgentProfileDetail {
   const files = buildAgentFiles(input.files);
+  const normalizedName = input.name.trim() || "未命名智能体";
+  const rawAvatarDataUrl = normalizeAgentAvatarDataUrl(input.avatarDataUrl);
+  const avatarDataUrl =
+    rawAvatarDataUrl && !shouldReplaceWithModernAvatar(rawAvatarDataUrl)
+      ? rawAvatarDataUrl
+      : createAgentAvatarDataUrl({
+          name: normalizedName,
+          seed: input.id,
+        });
 
   return {
     id: input.id,
-    name: input.name.trim() || "未命名智能体",
+    name: normalizedName,
+    avatarDataUrl,
     summary: input.summary.trim() || "暂未填写说明。",
     roleLabel: input.roleLabel.trim() || "Specialist",
     description: input.description.trim() || input.summary.trim() || "暂未填写说明。",

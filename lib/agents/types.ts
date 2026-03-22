@@ -13,6 +13,7 @@ export type AgentFiles = Record<AgentFileKey, string>;
 export type AgentProfileRecord = {
   id: string;
   name: string;
+  avatarDataUrl: string | null;
   summary: string;
   roleLabel: string;
   description: string;
@@ -39,4 +40,3 @@ export type AgentProfileListResponse = {
 export type AgentProfileDetailResponse = {
   agent: AgentProfileDetail | null;
 };
-

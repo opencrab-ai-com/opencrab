@@ -10,6 +10,41 @@ export function formatMessageTime(date: Date) {
   })}`;
 }
 
+export function formatConversationMessageTimestamp(value?: string | Date | null, now = new Date()) {
+  if (!value) {
+    return "时间未知";
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "时间未知";
+  }
+
+  const nowDate = startOfDay(now);
+  const targetDate = startOfDay(date);
+  const diffDays = Math.round((nowDate.getTime() - targetDate.getTime()) / 86400000);
+  const timePart = date.toLocaleTimeString("zh-CN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  if (diffDays === 0) {
+    return `今天 ${timePart}`;
+  }
+
+  if (diffDays === 1) {
+    return `昨天 ${timePart}`;
+  }
+
+  if (date.getFullYear() === now.getFullYear()) {
+    return `${date.getMonth() + 1}月${date.getDate()}日 ${timePart}`;
+  }
+
+  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${timePart}`;
+}
+
 export function formatConversationTimeLabel(value: string | Date, now = new Date()) {
   const date = value instanceof Date ? value : new Date(value);
 

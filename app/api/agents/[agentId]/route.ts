@@ -37,6 +37,7 @@ export async function PATCH(
     const body = await readJsonBody<{
       name?: string;
       summary?: string;
+      avatarDataUrl?: string | null;
       roleLabel?: string;
       description?: string;
       availability?: "solo" | "team" | "both";

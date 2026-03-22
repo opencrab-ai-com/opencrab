@@ -12,6 +12,8 @@
     "clean:runtime": "node scripts/clean_runtime.mjs"
   },
   "dependencies": {
+    "@dicebear/collection": "^9.4.2",
+    "@dicebear/core": "^9.4.2",
     "@larksuiteoapi/node-sdk": "^1.59.0",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "@openai/codex-sdk": "^0.114.0",

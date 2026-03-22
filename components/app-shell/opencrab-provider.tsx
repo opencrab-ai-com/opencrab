@@ -130,6 +130,7 @@ type OpenCrabContextValue = {
   createAgent: (input: {
     name: string;
     summary: string;
+    avatarDataUrl?: string | null;
     roleLabel?: string;
     description?: string;
     availability?: "solo" | "team" | "both";
@@ -151,6 +152,7 @@ type OpenCrabContextValue = {
     patch: Partial<{
       name: string;
       summary: string;
+      avatarDataUrl: string | null;
       roleLabel: string;
       description: string;
       availability: "solo" | "team" | "both";
@@ -968,6 +970,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     async (input: {
       name: string;
       summary: string;
+      avatarDataUrl?: string | null;
       roleLabel?: string;
       description?: string;
       availability?: "solo" | "team" | "both";
@@ -1004,6 +1007,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       patch: Partial<{
         name: string;
         summary: string;
+        avatarDataUrl: string | null;
         roleLabel: string;
         description: string;
         availability: "solo" | "team" | "both";
