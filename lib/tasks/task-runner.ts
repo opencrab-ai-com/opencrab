@@ -11,6 +11,7 @@ import { getSnapshot } from "@/lib/resources/local-store";
 import type { UploadedAttachment } from "@/lib/resources/opencrab-api-types";
 import { runConversationTurn } from "@/lib/conversations/run-conversation-turn";
 import { getProjectDetail, runProject } from "@/lib/projects/project-store";
+import { logServerError } from "@/lib/server/observability";
 import {
   completeTaskRun,
   getDueTasks,
@@ -41,7 +42,13 @@ export function ensureTaskRunner() {
   }
 
   const task = runDueTasks()
-    .catch(() => undefined)
+    .catch((error) => {
+      logServerError({
+        event: "task_runner_cycle_failed",
+        message: error instanceof Error ? error.message : "任务执行周期失败。",
+      });
+      return undefined;
+    })
     .finally(() => {
       globalThis.__opencrabTaskRunnerPromise = undefined;
       globalThis.__opencrabTaskRunnerLastRunAt = Date.now();

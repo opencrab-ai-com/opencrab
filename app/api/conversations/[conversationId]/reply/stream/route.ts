@@ -1,11 +1,4 @@
-import { getAgentProfile } from "@/lib/agents/agent-store";
-import { streamCodexReply } from "@/lib/codex/sdk";
-import {
-  finalizeConversationTurn,
-  prepareConversationTurn,
-} from "@/lib/conversations/run-conversation-turn";
-import { addMessage, updateConversation } from "@/lib/resources/local-store";
-import type { ReplyStreamEvent } from "@/lib/resources/opencrab-api-types";
+import { buildConversationReplyStream } from "@/lib/modules/conversations/conversation-stream-service";
 import type {
   CodexReasoningEffort,
   CodexSandboxMode,
@@ -32,145 +25,16 @@ export async function POST(
       userMessageId?: string;
       assistantMessageId?: string;
     }>(request, {});
-    const prepared = prepareConversationTurn({
+
+    return buildConversationReplyStream({
+      request,
       conversationId,
-      content: body.content,
-      model: body.model,
-      reasoningEffort: body.reasoningEffort,
-      sandboxMode: body.sandboxMode,
-      attachmentIds: body.attachmentIds,
-      userMessageId: body.userMessageId,
-      assistantMessageId: body.assistantMessageId,
-    });
-
-    const encoder = new TextEncoder();
-    const stream = new ReadableStream({
-      async start(controller) {
-        let latestText = "";
-        let latestThinking: string[] = [];
-        let latestThreadId: string | null =
-          prepared.conversation.codexThreadId ?? null;
-        let didComplete = false;
-
-        function emit(event: ReplyStreamEvent) {
-          controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`));
-        }
-
-        try {
-          for await (const event of streamCodexReply({
-            conversationTitle: prepared.conversation.title,
-            threadId: prepared.conversation.codexThreadId,
-            content: prepared.content,
-            agentProfile: prepared.conversation.agentProfileId
-              ? getAgentProfile(prepared.conversation.agentProfileId)
-              : null,
-            model: body.model,
-            reasoningEffort: body.reasoningEffort,
-            sandboxMode: body.sandboxMode,
-            imagePaths: prepared.imagePaths,
-            textAttachments: prepared.textAttachments,
-            signal: request.signal,
-          })) {
-            if (event.type === "thread") {
-              latestThreadId = event.threadId;
-              updateConversation(conversationId, {
-                codexThreadId: event.threadId,
-                lastAssistantModel:
-                  body.model ||
-                  prepared.conversation.lastAssistantModel ||
-                  null,
-              });
-              emit(event);
-              continue;
-            }
-
-            if (event.type === "thinking") {
-              latestThinking = event.entries;
-              emit(event);
-              continue;
-            }
-
-            if (event.type === "assistant") {
-              latestText = event.text;
-              emit(event);
-              continue;
-            }
-
-            latestText = event.text;
-            latestThinking = event.thinking;
-            latestThreadId = event.threadId;
-            const assistantMessageResult = finalizeConversationTurn(prepared, {
-              text: event.text,
-              model: event.model,
-              threadId: event.threadId,
-              usage: event.usage,
-              thinking: event.thinking,
-            });
-
-            emit({
-              type: "done",
-              snapshot: assistantMessageResult.snapshot,
-              assistant: {
-                text: event.text,
-                model: event.model,
-                threadId: event.threadId,
-                usage: event.usage,
-                thinking: event.thinking,
-              },
-            });
-            didComplete = true;
-          }
-        } catch (error) {
-          if (request.signal.aborted) {
-            if (latestThreadId) {
-              updateConversation(conversationId, {
-                codexThreadId: latestThreadId,
-                lastAssistantModel:
-                  body.model ||
-                  prepared.conversation.lastAssistantModel ||
-                  null,
-              });
-            }
-
-            addMessage(conversationId, {
-              id: prepared.assistantMessageId,
-              role: "assistant",
-              content: latestText.trim() || "已停止当前回复。",
-              thinking: latestThinking,
-              meta: `已停止 · ${body.model || prepared.conversation.lastAssistantModel || "OpenCrab"}`,
-              status: "stopped",
-            });
-          } else {
-            const message =
-              error instanceof Error
-                ? error.message
-                : "OpenCrab 回复生成失败。";
-            emit({
-              type: "error",
-              error: message,
-            });
-          }
-        } finally {
-          if (!didComplete && !request.signal.aborted && !latestText.trim()) {
-            emit({
-              type: "error",
-              error: "OpenCrab 当前没有返回可用内容，请稍后再试。",
-            });
-          }
-
-          controller.close();
-        }
-      },
-    });
-
-    return new Response(stream, {
-      headers: {
-        "Content-Type": "application/x-ndjson; charset=utf-8",
-        "Cache-Control": "no-cache, no-transform",
-        Connection: "keep-alive",
-      },
+      body,
     });
   } catch (error) {
-    return errorResponse(error, "OpenCrab 回复生成失败。");
+    return errorResponse(error, "OpenCrab 回复生成失败。", 500, {
+      request,
+      operation: "conversation_reply_stream",
+    });
   }
 }

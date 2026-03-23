@@ -1,4 +1,3 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import type { ChannelId, ChannelSecretsStore, FeishuSecrets, TelegramSecrets } from "@/lib/channels/types";
 import {
   getChannelDetail,
@@ -7,11 +6,14 @@ import {
 } from "@/lib/channels/channel-store";
 import {
   OPENCRAB_CHANNEL_SECRET_STORE_PATH,
-  OPENCRAB_STATE_DIR,
 } from "@/lib/resources/runtime-paths";
+import { createSyncJsonFileStore } from "@/lib/infrastructure/json-store/sync-json-file-store";
 
-const STORE_DIR = OPENCRAB_STATE_DIR;
 const STORE_PATH = OPENCRAB_CHANNEL_SECRET_STORE_PATH;
+const store = createSyncJsonFileStore<ChannelSecretsStore>({
+  filePath: STORE_PATH,
+  seed: () => ({}),
+});
 
 export function getTelegramSecrets(): TelegramSecrets {
   const state = readState();
@@ -205,30 +207,11 @@ export function setFeishuConnectionEnabled(enabled: boolean) {
 }
 
 function readState(): ChannelSecretsStore {
-  ensureStoreFile();
-
-  try {
-    return JSON.parse(readFileSync(STORE_PATH, "utf8")) as ChannelSecretsStore;
-  } catch {
-    const seed: ChannelSecretsStore = {};
-    writeFileSync(STORE_PATH, JSON.stringify(seed, null, 2), "utf8");
-    return seed;
-  }
+  return store.read();
 }
 
 function writeState(state: ChannelSecretsStore) {
-  ensureStoreFile();
-  writeFileSync(STORE_PATH, JSON.stringify(state, null, 2), "utf8");
-}
-
-function ensureStoreFile() {
-  if (!existsSync(STORE_DIR)) {
-    mkdirSync(STORE_DIR, { recursive: true });
-  }
-
-  if (!existsSync(STORE_PATH)) {
-    writeFileSync(STORE_PATH, JSON.stringify({}, null, 2), "utf8");
-  }
+  store.write(state);
 }
 
 function pickNonEmptyTelegramSecrets(

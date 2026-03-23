@@ -97,10 +97,7 @@ export function AppShell({ sidebar, children }: AppShellProps) {
         item.key === "conversations"
           ? {
               ...item,
-              href:
-                pathname.startsWith("/conversations/") || pathname === "/"
-                  ? pathname
-                  : lastConversationHref,
+              href: pathname.startsWith("/conversations/") ? pathname : lastConversationHref,
             }
           : item,
       ),
@@ -140,7 +137,14 @@ export function AppShell({ sidebar, children }: AppShellProps) {
         </div>
 
         <div className="mt-1.5 flex flex-col gap-0.5">
-          <SidebarAction href="/">新对话</SidebarAction>
+          <SidebarAction
+            href="/"
+            onClick={() => {
+              saveSelectedConversationMode("direct");
+            }}
+          >
+            新对话
+          </SidebarAction>
         </div>
 
         <nav className="mt-2 flex flex-col gap-0.5" aria-label="主导航">
@@ -150,7 +154,7 @@ export function AppShell({ sidebar, children }: AppShellProps) {
               (pathname === "/" || pathname.startsWith("/conversations")) &&
               selectedConversationMode === item.conversationMode;
             const isRouteActive =
-              pathname === item.href || pathname.startsWith(`${item.href}/`);
+              pathname !== "/" && (pathname === item.href || pathname.startsWith(`${item.href}/`));
             const isActive = Boolean(isConversationModeActive || isRouteActive);
 
             return (
@@ -236,13 +240,15 @@ export function AppShell({ sidebar, children }: AppShellProps) {
 
 type SidebarActionProps = {
   href: string;
+  onClick?: () => void;
   children: React.ReactNode;
 };
 
-function SidebarAction({ href, children }: SidebarActionProps) {
+function SidebarAction({ href, onClick, children }: SidebarActionProps) {
   return (
     <Link
       href={href}
+      onClick={onClick}
       className="flex min-h-9 items-center gap-3 rounded-xl px-3 text-[14px] text-text transition hover:bg-surface-muted"
     >
       <span className="text-muted-strong">

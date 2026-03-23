@@ -1,6 +1,6 @@
 import { createReadStream, existsSync } from "node:fs";
 import { NextResponse } from "next/server";
-import { getUploadById } from "@/lib/resources/upload-store";
+import { uploadService } from "@/lib/modules/uploads/upload-service";
 import {
   notFoundJson,
   readRouteParams,
@@ -12,7 +12,7 @@ export async function GET(
   context: RouteContext<{ attachmentId: string }>,
 ) {
   const { attachmentId } = await readRouteParams(context);
-  const attachment = getUploadById(attachmentId);
+  const attachment = uploadService.getDownloadableAttachment(attachmentId);
 
   if (!attachment || !existsSync(attachment.storedPath)) {
     return notFoundJson("附件不存在。");

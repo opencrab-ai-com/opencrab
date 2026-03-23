@@ -1,6 +1,6 @@
 # OpenCrab Architecture
 
-`OpenCrab` 是一个面向普通用户的 Web 助手，当前以“聊天主入口 + Codex 执行引擎”为核心。
+`OpenCrab` 是一个面向普通用户、本地优先的工作台。聊天仍然是主入口，但当前产品面已经覆盖智能体、Team Mode、渠道、定时任务、技能与设置。
 
 ## Current Stack
 
@@ -30,6 +30,9 @@ components/
   tasks/                 # 定时任务列表、详情与表单
   ui/                    # 纯展示型基础组件
 lib/
+  shared/                # 通用错误、契约与无业务归属的基础能力
+  infrastructure/        # 文件存储等基础设施适配层
+  modules/               # 新一轮模块化重构中的领域 service / repository 入口
   agents/                # 智能体模板、类型与本地存储
   channels/              # 渠道协议适配、事件分发、store 与 secret store
   chatgpt/               # ChatGPT 连接状态与登录流程
@@ -39,7 +42,7 @@ lib/
   projects/              # Team Mode 的 room、事件、artifact 与运行状态
   resources/             # 本地资源层：local store、uploads、API types
   runtime/               # 运行时配置，如公网地址与隧道状态
-  server/                # API route 公共响应、参数和错误处理工具
+  server/                # API route 公共响应、参数、错误处理与共享 JSON store 工具
   skills/                # 技能目录与状态存储
   tasks/                 # 定时任务 store、runner 与类型
   tunnel/                # 公网地址与隧道维护
@@ -76,6 +79,34 @@ scripts/
 - 首次启动时会自动把旧的 `~/Library/Application Support/OpenCrab/` 迁移到新的目录结构
 - OpenCrab 自己的会话、附件和浏览器 profile 都不会默认落到代码仓库里
 
+## Persistence Strategy
+
+当前持久化层仍然是本地 JSON store，但核心 store 已统一收敛到共享的原子写入工具：
+
+- 兼容入口：`lib/server/json-file-store.ts`
+- 新基础设施入口：`lib/infrastructure/json-store/sync-json-file-store.ts`
+- 写入方式：先写临时文件，再原子替换目标文件
+- 目标：降低 `state/*.json`、`uploads/index.json` 等文件在异常中断或重复写入时的损坏概率
+
+这并不等同于正式数据库，但它把最容易分叉、复制和出错的文件存储逻辑先统一了。
+
+## Refactor Direction
+
+当前仓库已经开始按“模块化单体”方向迁移：
+
+- `lib/shared/`：放无业务归属的共享能力
+- `lib/infrastructure/`：放存储、适配器等基础设施实现
+- `lib/modules/`：放 conversations / settings / uploads / projects 等领域服务入口
+
+旧路径仍然保留并继续工作，当前策略是“旧 facade 继续对外，新模块逐步接管内部实现”。
+
+目前已经落地的迁移示例包括：
+
+- `app/api/projects/*` 先通过 `lib/modules/projects/*` 服务层进入 Team Mode 域
+- `app/api/settings`、`app/api/uploads`、对话回复路由都先经由 `lib/modules/*` 再转入旧实现
+- `app/api/tasks/*`、`app/api/agents/*` 也已经切到独立 service facade
+- `components/app-shell/opencrab-provider.tsx` 已开始把设置控制、消息发送与附件上传拆到独立 controller hook
+
 ## Core Flows
 
 ## 1. Conversation Flow
@@ -95,6 +126,15 @@ scripts/
 4. PDF 通过 `scripts/pdf_extract.mjs` 提取文本
 5. Word 文档通过 macOS `textutil` 转成纯文本
 6. Codex 回复时会读取可供 prompt 使用的文本路径
+7. 如果模型输出里提到本地文件，只有 allowlist 目录中的文件才会自动注册为可下载附件
+
+当前 allowlist 目录包括：
+
+- `$OPENCRAB_HOME/uploads/`
+- 仓库下的 `output/`
+- 仓库下的 `tmp/`
+- 仓库下的 `.playwright-cli/`
+- 当前已创建的 Team Mode 工作空间目录
 
 ## 3. Browser Tool Flow
 
@@ -158,12 +198,15 @@ scripts/
 ## State Boundaries
 
 - `resources`：负责持久化与读写
+- `agents`：负责智能体模板、自定义 profile、头像与能力边界
 - `channels`：负责渠道协议适配、去重、绑定关系和渠道状态
+- `projects`：负责 Team Room、成员运行态、事件、artifact 和推进节奏
+- `modules`：负责把旧 store / runtime 能力整理成更稳定的 service 边界，供 API route 和前端逐步接入
 - `server`：负责 API route 的输入输出约定，统一 JSON 响应和错误语义
 - `skills`：负责技能目录发现、本地状态与自定义技能条目
 - `runtime`：负责公网地址、隧道和运行时配置
 - `tasks`：负责定时任务持久化、调度与运行记录
-- `provider`：负责前端应用状态与流式消息生命周期
+- `provider`：负责前端应用状态组合；settings / message 等高频逻辑正逐步拆到 controller hook
 - `view-models`：负责把资源数据映射成左侧栏等 UI 结构
 - `ui`：只负责展示，不直接碰资源层
 

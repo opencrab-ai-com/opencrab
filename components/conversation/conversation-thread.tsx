@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { AgentAvatar } from "@/components/agents/agent-avatar";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
+import { OpenCrabMark } from "@/components/branding/opencrab-brand";
 import type { AgentProfileRecord } from "@/lib/agents/types";
 import type { AttachmentItem } from "@/lib/seed-data";
 import { formatConversationMessageTimestamp } from "@/lib/conversations/utils";
@@ -26,7 +27,14 @@ export const ConversationThread = memo(function ConversationThread({
 });
 
 function ConversationThreadBody({ conversationId }: ConversationThreadProps) {
-  const { agents, conversations, conversationMessages } = useOpenCrabApp();
+  const {
+    agents,
+    conversations,
+    conversationMessages,
+    selectedUserDisplayName,
+    selectedUserAvatarDataUrl,
+    thinkingModeEnabled,
+  } = useOpenCrabApp();
   const threadRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const shouldStickToBottomRef = useRef(true);
@@ -173,6 +181,9 @@ function ConversationThreadBody({ conversationId }: ConversationThreadProps) {
                 activeConversationAgentId: activeConversation?.agentProfileId ?? null,
                 message,
               })}
+              currentUserDisplayName={selectedUserDisplayName}
+              currentUserAvatarDataUrl={selectedUserAvatarDataUrl}
+              thinkingModeEnabled={thinkingModeEnabled}
               isThinkingExpanded={thinkingOverrides[message.id] ?? message.status === "pending"}
               onToggleThinking={() =>
                 setThinkingOverrides((current) => ({
@@ -192,18 +203,27 @@ function ConversationThreadBody({ conversationId }: ConversationThreadProps) {
 const ConversationMessageCard = memo(function ConversationMessageCard({
   message,
   avatarDataUrl,
+  currentUserDisplayName,
+  currentUserAvatarDataUrl,
+  thinkingModeEnabled,
   isThinkingExpanded,
   onToggleThinking,
 }: {
   message: ReturnType<typeof buildConversationDetailViewModel>["messages"][number];
   avatarDataUrl: string | null;
+  currentUserDisplayName: string;
+  currentUserAvatarDataUrl: string | null;
+  thinkingModeEnabled: boolean;
   isThinkingExpanded: boolean;
   onToggleThinking: () => void;
 }) {
+  const isLocalUserMessage = message.role === "user" && (!message.source || message.source === "local");
   const actorName =
     message.role === "assistant"
       ? message.actorLabel || "OpenCrab"
-      : message.source === "telegram"
+      : isLocalUserMessage
+        ? currentUserDisplayName || "我"
+        : message.source === "telegram"
         ? "Telegram 用户"
         : message.source === "feishu"
           ? "飞书用户"
@@ -221,8 +241,22 @@ const ConversationMessageCard = memo(function ConversationMessageCard({
     >
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          {message.role === "assistant" ? (
-            <AgentAvatar src={avatarDataUrl} name={actorName} size={32} className="rounded-[14px]" />
+          {message.role === "assistant" || isLocalUserMessage ? (
+            message.role === "assistant" && !avatarDataUrl && actorName === "OpenCrab" ? (
+              <div
+                className="flex h-8 w-8 items-center justify-center rounded-[14px] border border-line bg-[#f6f4ef]"
+                aria-hidden="true"
+              >
+                <OpenCrabMark className="h-6 w-6" title="OpenCrab" />
+              </div>
+            ) : (
+              <AgentAvatar
+                src={message.role === "assistant" ? avatarDataUrl : currentUserAvatarDataUrl}
+                name={actorName}
+                size={32}
+                className="rounded-[14px]"
+              />
+            )
           ) : null}
           <div className="inline-flex items-center gap-2 rounded-full border border-[#e8e3d7] bg-[#fbf8f1] px-3 py-1.5">
             <span className="text-[13px] font-semibold tracking-[-0.02em] text-text">{actorName}</span>
@@ -230,7 +264,7 @@ const ConversationMessageCard = memo(function ConversationMessageCard({
         </div>
         <span className="text-[11px] text-muted">{formatConversationMessageTimestamp(message.timestamp)}</span>
       </div>
-      {message.role === "assistant" && message.thinking?.length ? (
+      {thinkingModeEnabled && message.role === "assistant" && message.thinking?.length ? (
         <ThinkingPanel
           entries={message.thinking}
           isPending={message.status === "pending"}

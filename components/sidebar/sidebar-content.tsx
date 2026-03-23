@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
 import {
   DialogActions,
@@ -705,8 +705,32 @@ type RowActionMenuProps = {
 };
 
 function RowActionMenu({ label, kind, isOpen, onToggle, onRename, onDelete }: RowActionMenuProps) {
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const [menuDirection, setMenuDirection] = useState<"down" | "up">("down");
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const root = rootRef.current;
+
+    if (!root) {
+      return;
+    }
+
+    const rect = root.getBoundingClientRect();
+    const estimatedMenuHeight = 92;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+
+    setMenuDirection(
+      spaceBelow < estimatedMenuHeight + 12 && spaceAbove > spaceBelow ? "up" : "down",
+    );
+  }, [isOpen]);
+
   return (
-    <div data-sidebar-action-root="true" className="relative shrink-0">
+    <div ref={rootRef} data-sidebar-action-root="true" className="relative shrink-0">
       <button
         type="button"
         onClick={(event) => {
@@ -728,7 +752,11 @@ function RowActionMenu({ label, kind, isOpen, onToggle, onRename, onDelete }: Ro
       </button>
 
       {isOpen ? (
-        <div className="absolute top-[calc(100%+8px)] right-0 z-20 min-w-[132px] rounded-[18px] border border-line bg-surface p-1.5 shadow-[0_16px_36px_rgba(15,23,42,0.14)]">
+        <div
+          className={`absolute right-0 z-20 min-w-[132px] rounded-[18px] border border-line bg-surface p-1.5 shadow-[0_16px_36px_rgba(15,23,42,0.14)] ${
+            menuDirection === "up" ? "bottom-[calc(100%+8px)]" : "top-[calc(100%+8px)]"
+          }`}
+        >
         <button
           type="button"
           onClick={(event) => {

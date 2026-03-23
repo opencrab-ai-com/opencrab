@@ -1,7 +1,7 @@
-import { replyToProjectConversation } from "@/lib/projects/project-store";
+import { projectChatService } from "@/lib/modules/projects/project-chat-service";
 import {
   errorResponse,
-  json,
+  noStoreJson,
   readJsonBody,
   readRouteParams,
   type RouteContext,
@@ -18,14 +18,17 @@ export async function POST(
       content?: string;
     }>(request, {});
 
-    const snapshot = await replyToProjectConversation({
+    const snapshot = await projectChatService.reply({
       projectId,
       conversationId: body.conversationId || "",
       content: body.content || "",
     });
 
-    return json({ snapshot });
+    return noStoreJson({ snapshot });
   } catch (error) {
-    return errorResponse(error, "团队群聊回复失败。", 400);
+    return errorResponse(error, "团队群聊回复失败。", 400, {
+      request,
+      operation: "project_chat_reply",
+    });
   }
 }

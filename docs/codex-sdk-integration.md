@@ -1,15 +1,17 @@
 # Codex Integration
 
-`OpenCrab` 通过 `@openai/codex-sdk` 接入 Codex，当前只支持 `Sign in with ChatGPT` 登录，不使用 API key。
+`OpenCrab` 通过 `@openai/codex-sdk` 接入执行环境。当前登录仍然复用 ChatGPT 账号态，不使用 API key；连接流程会兼容 `browser` 与 `device_code` 两种授权形态。
 
 ## Key Files
 
 - `lib/codex/sdk.ts`
 - `lib/codex/options.ts`
 - `lib/codex/browser-session.ts`
+- `lib/chatgpt/connection.ts`
 - `app/api/codex/status/route.ts`
 - `app/api/conversations/[conversationId]/reply/route.ts`
 - `app/api/conversations/[conversationId]/reply/stream/route.ts`
+- `app/(app)/settings/page.tsx`
 
 ## Design Decisions
 
@@ -37,9 +39,10 @@
 - 默认 sandbox：`workspace-write`
 - 默认 approval policy：`never`
 - 默认浏览器模式：`current-browser`
+- 默认语言：`zh-Hans`
 
 ## Notes
 
 - 登录成功不代表浏览器工具一定可用，这两类状态要分开看
 - 如果页面提示 Codex 不可用，先检查 `codex login status`
-- 设置页里的默认模型、推理强度和 sandbox 会影响网页对话，也会影响 Telegram / 飞书渠道的后续回合
+- 设置页里的默认模型、推理强度、默认语言和 sandbox 会影响网页对话，也会影响 Telegram / 飞书渠道、定时任务以及 Team Mode 的后续回合

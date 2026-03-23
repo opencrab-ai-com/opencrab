@@ -84,6 +84,9 @@ export type AppSettings = {
   defaultSandboxMode: "read-only" | "workspace-write" | "danger-full-access";
   browserConnectionMode: "current-browser" | "managed-browser";
   defaultLanguage: AppLanguage;
+  userDisplayName: string;
+  userAvatarDataUrl: string | null;
+  thinkingModeEnabled: boolean;
   allowOpenAiApiKeyForCommands: boolean;
 };
 
@@ -206,5 +209,8 @@ export const appSettings: AppSettings = {
   defaultSandboxMode: "workspace-write",
   browserConnectionMode: "current-browser",
   defaultLanguage: "zh-Hans",
+  userDisplayName: "我",
+  userAvatarDataUrl: null,
+  thinkingModeEnabled: true,
   allowOpenAiApiKeyForCommands: false,
 };

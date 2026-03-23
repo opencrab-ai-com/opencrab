@@ -80,11 +80,11 @@ export function SkillDetailScreen({ skillId }: { skillId: string }) {
       ) : (
         <>
           <section className="rounded-[28px] border border-line bg-surface p-6 shadow-soft">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-              <div className="flex items-start gap-5">
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+              <div className="flex min-w-0 items-start gap-5">
                 <SkillIcon icon={skill.icon} />
 
-                <div>
+                <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-3">
                     <h1 className="text-[32px] font-semibold tracking-[-0.05em] text-text">{skill.name}</h1>
                     <StatusPill status={skill.status}>{skill.statusLabel}</StatusPill>
@@ -100,14 +100,15 @@ export function SkillDetailScreen({ skillId }: { skillId: string }) {
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="flex shrink-0 flex-wrap gap-3 lg:justify-end">
                 {skill.status === "available" ? (
                   <Button
                     disabled={pendingAction === "install"}
                     onClick={() => void handleAction("install")}
                     variant="primary"
+                    className="min-w-[176px] whitespace-nowrap px-6"
                   >
-                    安装到 OpenCrab
+                    安装到OpenCrab
                   </Button>
                 ) : (
                   <>
@@ -117,6 +118,7 @@ export function SkillDetailScreen({ skillId }: { skillId: string }) {
                         void handleAction(skill.status === "disabled" ? "enable" : "disable")
                       }
                       variant="secondary"
+                      className="whitespace-nowrap"
                     >
                       {skill.status === "disabled" ? "启用" : "禁用"}
                     </Button>
@@ -124,6 +126,7 @@ export function SkillDetailScreen({ skillId }: { skillId: string }) {
                       disabled={pendingAction === "uninstall"}
                       onClick={() => void handleAction("uninstall")}
                       variant="secondary"
+                      className="whitespace-nowrap"
                     >
                       卸载
                     </Button>

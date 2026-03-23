@@ -1,8 +1,7 @@
-import { runTaskNow } from "@/lib/tasks/task-runner";
-import { getTask } from "@/lib/tasks/task-store";
+import { taskService } from "@/lib/modules/tasks/task-service";
 import {
   errorResponse,
-  json,
+  noStoreJson,
   notFoundJson,
   readRouteParams,
   type RouteContext,
@@ -14,15 +13,18 @@ export async function POST(
 ) {
   const { taskId } = await readRouteParams(context);
 
-  if (!getTask(taskId)) {
+  if (!taskService.get(taskId)) {
     return notFoundJson("定时任务不存在。");
   }
 
   try {
-    const task = runTaskNow(taskId);
+    const task = taskService.runNow(taskId);
 
-    return json({ task });
+    return noStoreJson({ task });
   } catch (error) {
-    return errorResponse(error, "执行定时任务失败。");
+    return errorResponse(error, "执行定时任务失败。", 500, {
+      request: _request,
+      operation: "run_task_now",
+    });
   }
 }

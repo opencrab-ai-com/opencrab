@@ -1,7 +1,7 @@
-import { deleteTask, getTask, updateTask } from "@/lib/tasks/task-store";
+import { taskService } from "@/lib/modules/tasks/task-service";
 import {
   errorResponse,
-  json,
+  noStoreJson,
   notFoundJson,
   readJsonBody,
   readRouteParams,
@@ -14,13 +14,13 @@ export async function GET(
   context: RouteContext<{ taskId: string }>,
 ) {
   const { taskId } = await readRouteParams(context);
-  const task = getTask(taskId);
+  const task = taskService.get(taskId);
 
   if (!task) {
     return notFoundJson("定时任务不存在。");
   }
 
-  return json({ task });
+  return noStoreJson({ task });
 }
 
 export async function PATCH(
@@ -31,15 +31,18 @@ export async function PATCH(
 
   try {
     const body = await readJsonBody<TaskUpdateInput>(request, {});
-    const task = updateTask(taskId, body);
+    const task = taskService.update(taskId, body);
 
     if (!task) {
       return notFoundJson("定时任务不存在。");
     }
 
-    return json({ task: getTask(taskId) });
+    return noStoreJson({ task: taskService.get(taskId) });
   } catch (error) {
-    return errorResponse(error, "更新定时任务失败。", 400);
+    return errorResponse(error, "更新定时任务失败。", 400, {
+      request,
+      operation: "update_task",
+    });
   }
 }
 
@@ -49,11 +52,11 @@ export async function DELETE(
 ) {
   const { taskId } = await readRouteParams(context);
 
-  if (!getTask(taskId)) {
+  if (!taskService.get(taskId)) {
     return notFoundJson("定时任务不存在。");
   }
 
-  deleteTask(taskId);
+  taskService.remove(taskId);
 
-  return json({ ok: true });
+  return noStoreJson({ ok: true });
 }

@@ -7,21 +7,17 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { usePathname } from "next/navigation";
 import { flushSync } from "react-dom";
 import type {
   AppLanguage,
-  AppSettings,
   ConversationItem,
   ConversationMessage,
   FolderItem,
 } from "@/lib/seed-data";
-import { buildConversationTitle } from "@/lib/conversations/utils";
 import {
-  cancelChatGptConnection as cancelChatGptConnectionResource,
   createAgent as createAgentResource,
   createConversation as createConversationResource,
   createFolder as createFolderResource,
@@ -34,22 +30,19 @@ import {
   getCodexOptions as getCodexOptionsResource,
   getCodexStatus as getCodexStatusResource,
   deleteAgent as deleteAgentResource,
-  disconnectChatGptConnection as disconnectChatGptConnectionResource,
-  startChatGptConnection as startChatGptConnectionResource,
-  replyToProjectConversation as replyToProjectConversationResource,
-  streamReplyToConversation,
   updateAgent as updateAgentResource,
   updateConversation,
   updateFolder as updateFolderResource,
-  updateSettings as updateSettingsResource,
-  uploadAttachments as uploadAttachmentsResource,
   warmCodexBrowserSession as warmCodexBrowserSessionResource,
 } from "@/lib/resources/opencrab-api";
+import { useOpenCrabSettingsController } from "@/components/app-shell/use-opencrab-settings-controller";
 import {
-  buildUserMessagePreview,
-  formatClientMessageTime,
   getUserFacingError,
 } from "@/lib/opencrab/messages";
+import {
+  type SendMessageInput,
+  useOpenCrabMessageController,
+} from "@/components/app-shell/use-opencrab-message-controller";
 import type { AgentProfileDetail, AgentProfileRecord } from "@/lib/agents/types";
 import type {
   AppSnapshot,
@@ -62,12 +55,6 @@ import type {
   CodexStatusResponse,
   UploadedAttachment,
 } from "@/lib/resources/opencrab-api-types";
-
-type SendMessageInput = {
-  conversationId?: string;
-  content?: string;
-  attachments?: UploadedAttachment[];
-};
 
 type OpenCrabContextValue = {
   folders: FolderItem[];
@@ -83,6 +70,9 @@ type OpenCrabContextValue = {
   selectedReasoningEffort: CodexReasoningEffort;
   selectedSandboxMode: CodexSandboxMode;
   selectedLanguage: AppLanguage;
+  selectedUserDisplayName: string;
+  selectedUserAvatarDataUrl: string | null;
+  thinkingModeEnabled: boolean;
   allowOpenAiApiKeyForCommands: boolean;
   expandedFolders: Record<string, boolean>;
   isHydrated: boolean;
@@ -100,6 +90,9 @@ type OpenCrabContextValue = {
   setSelectedReasoningEffort: (effort: CodexReasoningEffort) => Promise<void>;
   setSelectedSandboxMode: (mode: CodexSandboxMode) => Promise<void>;
   setSelectedLanguage: (language: AppLanguage) => Promise<void>;
+  setSelectedUserDisplayName: (name: string) => Promise<void>;
+  setSelectedUserAvatarDataUrl: (avatarDataUrl: string | null) => Promise<void>;
+  setThinkingModeEnabled: (enabled: boolean) => Promise<void>;
   setSelectedBrowserConnectionMode: (
     mode: BrowserConnectionMode,
   ) => Promise<void>;
@@ -183,26 +176,6 @@ type OpenCrabProviderProps = {
   children: React.ReactNode;
 };
 
-type ActiveStreamState = {
-  key: string;
-  conversationId: string;
-  assistantMessageId: string;
-  controller: AbortController;
-  model: string;
-};
-
-type PersistedSettingsPatch = Partial<
-  Pick<
-    AppSettings,
-    | "defaultModel"
-    | "defaultReasoningEffort"
-    | "defaultSandboxMode"
-    | "browserConnectionMode"
-    | "defaultLanguage"
-    | "allowOpenAiApiKeyForCommands"
-  >
->;
-
 const GLOBAL_SNAPSHOT_SYNC_INTERVAL_MS = 12_000;
 
 export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
@@ -221,32 +194,14 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     useState<ChatGptConnectionStatusResponse | null>(null);
   const [browserSessionStatus, setBrowserSessionStatus] =
     useState<CodexBrowserSessionStatus | null>(null);
-  const [selectedBrowserConnectionMode, setSelectedBrowserConnectionModeState] =
-    useState<BrowserConnectionMode>("current-browser");
-  const [selectedModel, setSelectedModelState] = useState("");
-  const [selectedReasoningEffort, setSelectedReasoningEffortState] =
-    useState<CodexReasoningEffort>("medium");
-  const [selectedSandboxMode, setSelectedSandboxModeState] =
-    useState<CodexSandboxMode>("workspace-write");
-  const [selectedLanguage, setSelectedLanguageState] =
-    useState<AppLanguage>("zh-Hans");
-  const [allowOpenAiApiKeyForCommands, setAllowOpenAiApiKeyForCommandsState] =
-    useState(false);
   const [expandedFolders, setExpandedFolders] = useState<
     Record<string, boolean>
   >({});
   const [isHydrated, setIsHydrated] = useState(false);
   const [isMutating, setIsMutating] = useState(false);
-  const [isSendingMessage, setIsSendingMessage] = useState(false);
-  const [isUploadingAttachments, setIsUploadingAttachments] = useState(false);
   const [isChatGptConnectionPending, setIsChatGptConnectionPending] =
     useState(false);
-  const [activeStreamingConversationId, setActiveStreamingConversationId] =
-    useState<string | null>(null);
-  const [activeStreamingConversationIds, setActiveStreamingConversationIds] =
-    useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const activeStreamsRef = useRef<Map<string, ActiveStreamState>>(new Map());
 
   const applySnapshot = useCallback((snapshot: AppSnapshot) => {
     startTransition(() => {
@@ -285,6 +240,41 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       });
     });
   }, []);
+
+  const {
+    selectedBrowserConnectionMode,
+    selectedModel,
+    selectedReasoningEffort,
+    selectedSandboxMode,
+    selectedLanguage,
+    selectedUserDisplayName,
+    selectedUserAvatarDataUrl,
+    thinkingModeEnabled,
+    allowOpenAiApiKeyForCommands,
+    hydrateFromSnapshot,
+    reconcileModelSelection,
+    setSelectedModel,
+    setSelectedReasoningEffort,
+    setSelectedSandboxMode,
+    setSelectedLanguage,
+    setSelectedUserDisplayName,
+    setSelectedUserAvatarDataUrl,
+    setThinkingModeEnabled,
+    setSelectedBrowserConnectionMode,
+    setAllowOpenAiApiKeyForCommands,
+    refreshChatGptConnectionStatus,
+    startChatGptConnection,
+    cancelChatGptConnection,
+    disconnectChatGptConnection,
+  } = useOpenCrabSettingsController({
+    codexModels,
+    applySnapshot,
+    onCodexStatusChange: setCodexStatus,
+    onChatGptConnectionStatusChange: setChatGptConnectionStatus,
+    onBrowserSessionStatusChange: setBrowserSessionStatus,
+    onError: setErrorMessage,
+    onChatGptPendingChange: setIsChatGptConnectionPending,
+  });
 
   const patchConversation = useCallback(
     (conversationId: string, patch: Partial<ConversationItem>) => {
@@ -358,20 +348,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
         }
 
         applySnapshot(snapshot);
-        setSelectedModelState(snapshot.settings.defaultModel || "");
-        setSelectedReasoningEffortState(
-          snapshot.settings.defaultReasoningEffort || "medium",
-        );
-        setSelectedSandboxModeState(
-          snapshot.settings.defaultSandboxMode || "workspace-write",
-        );
-        setSelectedBrowserConnectionModeState(
-          snapshot.settings.browserConnectionMode || "current-browser",
-        );
-        setSelectedLanguageState(snapshot.settings.defaultLanguage || "zh-Hans");
-        setAllowOpenAiApiKeyForCommandsState(
-          Boolean(snapshot.settings.allowOpenAiApiKeyForCommands),
-        );
+        hydrateFromSnapshot(snapshot);
       } catch (error) {
         if (active) {
           setErrorMessage(
@@ -403,28 +380,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
         setCodexStatus(status);
         setBrowserSessionStatus(browserStatus);
         setChatGptConnectionStatus(chatGptConnection);
-        setSelectedModelState((current) => {
-          const preferredModelId = current || codexOptions.defaultModel;
-          const resolvedModel =
-            codexOptions.models.find((item) => item.id === preferredModelId) ||
-            codexOptions.models[0] ||
-            null;
-          const resolvedModelId = resolvedModel?.id || "";
-
-          setSelectedReasoningEffortState((effort) => {
-            if (!resolvedModel) {
-              return effort;
-            }
-
-            return resolvedModel.reasoningOptions.some(
-              (item) => item.effort === effort,
-            )
-              ? effort
-              : resolvedModel.defaultReasoningEffort;
-          });
-
-          return resolvedModelId;
-        });
+        reconcileModelSelection(codexOptions.models, codexOptions.defaultModel);
 
         void warmCodexBrowserSessionResource()
           .then((nextStatus) => {
@@ -484,7 +440,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     return () => {
       active = false;
     };
-  }, [applySnapshot]);
+  }, [applySnapshot, hydrateFromSnapshot, reconcileModelSelection]);
 
   useEffect(() => {
     const stage = chatGptConnectionStatus?.stage;
@@ -523,58 +479,6 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     };
   }, [chatGptConnectionStatus?.stage]);
 
-  useEffect(() => {
-    if (!isHydrated) {
-      return;
-    }
-
-    if (pathname.startsWith("/projects/")) {
-      return;
-    }
-
-    let active = true;
-
-    async function syncExternalSnapshot() {
-      if (
-        !active ||
-        document.visibilityState !== "visible" ||
-        activeStreamsRef.current.size > 0
-      ) {
-        return;
-      }
-
-      try {
-        const snapshot = await getAppSnapshot();
-
-        if (active) {
-          applySnapshot(snapshot);
-        }
-      } catch {
-        // Keep this silent. External channel sync should not interrupt the user if one poll fails.
-      }
-    }
-
-    const intervalId = window.setInterval(() => {
-      void syncExternalSnapshot();
-    }, GLOBAL_SNAPSHOT_SYNC_INTERVAL_MS);
-
-    function handleVisibilityChange() {
-      if (document.visibilityState === "visible") {
-        void syncExternalSnapshot();
-      }
-    }
-
-    window.addEventListener("focus", handleVisibilityChange);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      active = false;
-      window.clearInterval(intervalId);
-      window.removeEventListener("focus", handleVisibilityChange);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [applySnapshot, isHydrated, pathname]);
-
   const toggleFolder = useCallback((folderId: string) => {
     setExpandedFolders((current) => ({
       ...current,
@@ -589,249 +493,8 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
   const refreshSnapshot = useCallback(async () => {
     const snapshot = await getAppSnapshot();
     applySnapshot(snapshot);
-  }, [applySnapshot]);
-
-  const syncStreamingState = useCallback(() => {
-    const activeStreams = Array.from(activeStreamsRef.current.values());
-    const conversationIds = activeStreams.map((item) => item.conversationId);
-    setActiveStreamingConversationIds(conversationIds);
-    setActiveStreamingConversationId(conversationIds[0] ?? null);
-    setIsSendingMessage(activeStreams.length > 0);
-  }, []);
-
-  const clearStreamState = useCallback(
-    (key: string) => {
-      if (!activeStreamsRef.current.has(key)) {
-        return;
-      }
-
-      activeStreamsRef.current.delete(key);
-      syncStreamingState();
-    },
-    [syncStreamingState],
-  );
-
-  const persistedSettings = useMemo<PersistedSettingsPatch>(
-    () => ({
-      defaultModel: selectedModel,
-      defaultReasoningEffort: selectedReasoningEffort,
-      defaultSandboxMode: selectedSandboxMode,
-      browserConnectionMode: selectedBrowserConnectionMode,
-      defaultLanguage: selectedLanguage,
-      allowOpenAiApiKeyForCommands,
-    }),
-    [
-      allowOpenAiApiKeyForCommands,
-      selectedBrowserConnectionMode,
-      selectedLanguage,
-      selectedModel,
-      selectedReasoningEffort,
-      selectedSandboxMode,
-    ],
-  );
-
-  const handleSettingsSaveError = useCallback((error: unknown) => {
-    setErrorMessage(getUserFacingError(error, "保存设置失败，请稍后再试。"));
-  }, []);
-
-  const persistSettings = useCallback(
-    async (
-      patch: PersistedSettingsPatch,
-      options?: {
-        warmBrowserSession?: boolean;
-      },
-    ) => {
-      const result = await updateSettingsResource({
-        ...persistedSettings,
-        ...patch,
-      });
-      applySnapshot(result.snapshot);
-
-      if (options?.warmBrowserSession) {
-        const nextStatus = await warmCodexBrowserSessionResource();
-        setBrowserSessionStatus(nextStatus);
-      }
-    },
-    [applySnapshot, persistedSettings],
-  );
-
-  const setSelectedModel = useCallback(
-    async (model: string) => {
-      setSelectedModelState(model);
-      const nextModel = codexModels.find((item) => item.id === model);
-
-      if (!nextModel) {
-        return;
-      }
-
-      const nextReasoningEffort = nextModel.reasoningOptions.some(
-        (item) => item.effort === selectedReasoningEffort,
-      )
-        ? selectedReasoningEffort
-        : nextModel.defaultReasoningEffort;
-
-      setSelectedReasoningEffortState(nextReasoningEffort);
-
-      try {
-        await persistSettings({
-          defaultModel: model,
-          defaultReasoningEffort: nextReasoningEffort,
-        });
-      } catch (error) {
-        handleSettingsSaveError(error);
-      }
-    },
-    [
-      codexModels,
-      handleSettingsSaveError,
-      persistSettings,
-      selectedReasoningEffort,
-    ],
-  );
-
-  const setSelectedReasoningEffort = useCallback(
-    async (effort: CodexReasoningEffort) => {
-      setSelectedReasoningEffortState(effort);
-
-      try {
-        await persistSettings({
-          defaultReasoningEffort: effort,
-        });
-      } catch (error) {
-        handleSettingsSaveError(error);
-      }
-    },
-    [handleSettingsSaveError, persistSettings],
-  );
-
-  const setSelectedSandboxMode = useCallback(
-    async (mode: CodexSandboxMode) => {
-      setSelectedSandboxModeState(mode);
-
-      try {
-        await persistSettings({
-          defaultSandboxMode: mode,
-        });
-      } catch (error) {
-        handleSettingsSaveError(error);
-      }
-    },
-    [handleSettingsSaveError, persistSettings],
-  );
-
-  const setSelectedLanguage = useCallback(
-    async (language: AppLanguage) => {
-      setSelectedLanguageState(language);
-
-      try {
-        await persistSettings({
-          defaultLanguage: language,
-        });
-      } catch (error) {
-        handleSettingsSaveError(error);
-      }
-    },
-    [handleSettingsSaveError, persistSettings],
-  );
-
-  const setSelectedBrowserConnectionMode = useCallback(
-    async (mode: BrowserConnectionMode) => {
-      setSelectedBrowserConnectionModeState(mode);
-
-      try {
-        await persistSettings(
-          {
-            browserConnectionMode: mode,
-          },
-          { warmBrowserSession: true },
-        );
-      } catch (error) {
-        handleSettingsSaveError(error);
-      }
-    },
-    [handleSettingsSaveError, persistSettings],
-  );
-
-  const setAllowOpenAiApiKeyForCommands = useCallback(
-    async (enabled: boolean) => {
-      setAllowOpenAiApiKeyForCommandsState(enabled);
-
-      try {
-        await persistSettings({
-          allowOpenAiApiKeyForCommands: enabled,
-        });
-      } catch (error) {
-        handleSettingsSaveError(error);
-      }
-    },
-    [handleSettingsSaveError, persistSettings],
-  );
-
-  const refreshChatGptConnectionStatus = useCallback(async () => {
-    setErrorMessage(null);
-
-    try {
-      const [chatGptConnection, status] = await Promise.all([
-        getChatGptConnectionStatusResource(),
-        getCodexStatusResource(),
-      ]);
-      setChatGptConnectionStatus(chatGptConnection);
-      setCodexStatus(status);
-      return chatGptConnection;
-    } catch (error) {
-      setErrorMessage(
-        getUserFacingError(error, "刷新 ChatGPT 连接状态失败，请稍后再试。"),
-      );
-      return null;
-    }
-  }, []);
-
-  const runChatGptConnectionAction = useCallback(
-    async (
-      action: () => Promise<ChatGptConnectionStatusResponse>,
-      errorMessage: string,
-    ) => {
-      setIsChatGptConnectionPending(true);
-      setErrorMessage(null);
-
-      try {
-        const [chatGptConnection, status] = await Promise.all([
-          action(),
-          getCodexStatusResource(),
-        ]);
-        setChatGptConnectionStatus(chatGptConnection);
-        setCodexStatus(status);
-        return chatGptConnection;
-      } catch (error) {
-        setErrorMessage(getUserFacingError(error, errorMessage));
-        return null;
-      } finally {
-        setIsChatGptConnectionPending(false);
-      }
-    },
-    [],
-  );
-
-  const startChatGptConnection = useCallback(async () => {
-    return runChatGptConnectionAction(
-      startChatGptConnectionResource,
-      "发起 ChatGPT 连接失败，请稍后再试。",
-    );
-  }, [runChatGptConnectionAction]);
-
-  const cancelChatGptConnection = useCallback(async () => {
-    return runChatGptConnectionAction(
-      cancelChatGptConnectionResource,
-      "取消 ChatGPT 连接失败，请稍后再试。",
-    );
-  }, [runChatGptConnectionAction]);
-
-  const disconnectChatGptConnection = useCallback(async () => {
-    return runChatGptConnectionAction(
-      disconnectChatGptConnectionResource,
-      "断开 ChatGPT 连接失败，请稍后再试。",
-    );
-  }, [runChatGptConnectionAction]);
+    hydrateFromSnapshot(snapshot);
+  }, [applySnapshot, hydrateFromSnapshot]);
 
   const runMutation = useCallback(async <T,>(action: () => Promise<T>) => {
     setIsMutating(true);
@@ -1050,300 +713,80 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     [refreshAgents, runMutation],
   );
 
-  const uploadAttachments = useCallback(async (files: File[]) => {
-    if (files.length === 0) {
-      return [];
+  const {
+    activeStreamingConversationId,
+    activeStreamingConversationIds,
+    isConversationStreaming,
+    isSendingMessage,
+    isUploadingAttachments,
+    sendMessage,
+    stopMessage,
+    uploadAttachments,
+  } = useOpenCrabMessageController({
+    conversations,
+    selectedModel,
+    selectedReasoningEffort,
+    selectedSandboxMode,
+    createConversation,
+    applySnapshot,
+    patchConversation,
+    appendMessages,
+    patchMessage,
+    onError: setErrorMessage,
+  });
+
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
     }
 
-    setIsUploadingAttachments(true);
-    setErrorMessage(null);
-
-    try {
-      const result = await uploadAttachmentsResource(files);
-      return result.attachments;
-    } catch (error) {
-      setErrorMessage(getUserFacingError(error, "上传附件失败，请稍后再试。"));
-      return [];
-    } finally {
-      setIsUploadingAttachments(false);
+    if (pathname.startsWith("/projects/")) {
+      return;
     }
-  }, []);
 
-  const stopMessage = useCallback(
-    (conversationId?: string | null) => {
-      const activeStream = conversationId
-        ? Array.from(activeStreamsRef.current.values()).find(
-            (item) => item.conversationId === conversationId,
-          )
-        : Array.from(activeStreamsRef.current.values())[0];
+    let active = true;
 
-      if (!activeStream) {
+    async function syncExternalSnapshot() {
+      if (
+        !active ||
+        document.visibilityState !== "visible" ||
+        isSendingMessage
+      ) {
         return;
       }
 
-      activeStream.controller.abort();
-      patchMessage(
-        activeStream.conversationId,
-        activeStream.assistantMessageId,
-        (message) => ({
-          ...message,
-          content: message.content.trim() || "已停止当前回复。",
-          meta: `已停止 · ${activeStream.model}`,
-          status: "stopped",
-        }),
-      );
-      clearStreamState(activeStream.key);
-    },
-    [clearStreamState, patchMessage],
-  );
-
-  const isConversationStreaming = useCallback(
-    (conversationId?: string | null) => {
-      if (!conversationId) {
-        return false;
-      }
-
-      return Array.from(activeStreamsRef.current.values()).some(
-        (item) => item.conversationId === conversationId,
-      );
-    },
-    [],
-  );
-
-  const sendMessage = useCallback(
-    async (input: SendMessageInput) => {
-      const content = input.content?.trim() || "";
-      const attachments = input.attachments || [];
-
-      if (!content && attachments.length === 0) {
-        return null;
-      }
-
-      setErrorMessage(null);
-
       try {
-        let conversationId = input.conversationId;
-        let createdConversation = false;
+        const snapshot = await getAppSnapshot();
 
-        if (
-          !conversationId ||
-          !conversations.some((item) => item.id === conversationId)
-        ) {
-          const titleSource =
-            content || attachments[0]?.name || "带附件的新对话";
-          conversationId = await createConversation({
-            title: buildConversationTitle(titleSource),
-          });
-          createdConversation = true;
+        if (active) {
+          applySnapshot(snapshot);
+          hydrateFromSnapshot(snapshot);
         }
-
-        const targetConversation = conversations.find((item) => item.id === conversationId) ?? null;
-
-        if (targetConversation?.projectId) {
-          const userMessageId = `message-${crypto.randomUUID()}`;
-          const assistantMessageId = `message-${crypto.randomUUID()}`;
-          const preview = buildUserMessagePreview(content, attachments.map((attachment) => attachment.name));
-
-          patchConversation(conversationId, {
-            preview,
-            timeLabel: "刚刚",
-          });
-          appendMessages(conversationId, [
-            {
-              id: userMessageId,
-              role: "user",
-              content: preview,
-              timestamp: new Date().toISOString(),
-              meta: "团队群聊",
-              status: "done",
-            },
-            {
-              id: assistantMessageId,
-              role: "assistant",
-              actorLabel: "项目经理",
-              content: "",
-              timestamp: new Date().toISOString(),
-              meta: "团队群聊 · 项目经理正在整理并安排",
-              status: "pending",
-            },
-          ]);
-          setIsSendingMessage(true);
-
-          try {
-            const result = await replyToProjectConversationResource(targetConversation.projectId, {
-              conversationId,
-              content,
-            });
-            applySnapshot(result.snapshot);
-            return conversationId;
-          } catch (error) {
-            patchMessage(conversationId, assistantMessageId, {
-              content: "项目经理这一轮回复失败了，请再试一次。",
-              meta: "团队群聊 · 回复失败",
-              status: "done",
-            });
-            throw error;
-          } finally {
-            setIsSendingMessage(false);
-          }
-        }
-
-        const userMessageId = `message-${crypto.randomUUID()}`;
-        const assistantMessageId = `message-${crypto.randomUUID()}`;
-        const streamKey = crypto.randomUUID();
-        const controller = new AbortController();
-        activeStreamsRef.current.set(streamKey, {
-          key: streamKey,
-          conversationId,
-          assistantMessageId,
-          controller,
-          model: selectedModel,
-        });
-        syncStreamingState();
-
-        const preview = buildUserMessagePreview(
-          content,
-          attachments.map((attachment) => attachment.name),
-        );
-        const applyOptimisticMessageState = () => {
-          patchConversation(conversationId, {
-            preview,
-            timeLabel: "刚刚",
-          });
-          appendMessages(conversationId, [
-            {
-              id: userMessageId,
-              role: "user",
-              content: preview,
-              timestamp: new Date().toISOString(),
-              attachments: attachments.map((attachment) => ({
-                id: attachment.id,
-                name: attachment.name,
-                kind: attachment.kind,
-                size: attachment.size,
-                mimeType: attachment.mimeType,
-              })),
-              meta: formatClientMessageTime(),
-              status: "done",
-            },
-            {
-              id: assistantMessageId,
-              role: "assistant",
-              content: "",
-              timestamp: new Date().toISOString(),
-              thinking: ["OpenCrab 正在思考和整理上下文..."],
-              meta: `OpenCrab 正在回复中... · ${selectedModel}`,
-              status: "pending",
-            },
-          ]);
-        };
-
-        if (createdConversation) {
-          flushSync(() => {
-            applyOptimisticMessageState();
-          });
-        } else {
-          applyOptimisticMessageState();
-        }
-
-        void streamReplyToConversation(
-          conversationId,
-          {
-            content: content || undefined,
-            attachmentIds: attachments.map((attachment) => attachment.id),
-            model: selectedModel,
-            reasoningEffort: selectedReasoningEffort,
-            sandboxMode: selectedSandboxMode,
-            userMessageId,
-            assistantMessageId,
-          },
-          {
-            signal: controller.signal,
-            onEvent: (event) => {
-              if (event.type === "thread") {
-                patchConversation(conversationId, {
-                  codexThreadId: event.threadId,
-                });
-                return;
-              }
-
-              if (event.type === "thinking") {
-                patchMessage(conversationId, assistantMessageId, {
-                  thinking: event.entries,
-                });
-                return;
-              }
-
-              if (event.type === "assistant") {
-                patchMessage(conversationId, assistantMessageId, {
-                  content: event.text,
-                  meta: `OpenCrab 正在回复中... · ${selectedModel}`,
-                  status: "pending",
-                });
-                return;
-              }
-
-              if (event.type === "done") {
-                applySnapshot(event.snapshot);
-                clearStreamState(streamKey);
-                return;
-              }
-
-              patchMessage(conversationId, assistantMessageId, (message) => ({
-                ...message,
-                content: message.content.trim() || "这次回复失败了，请重试。",
-                meta: `回复失败 · ${selectedModel}`,
-                status: "stopped",
-              }));
-              setErrorMessage(
-                getUserFacingError(event.error, "消息发送失败，请稍后再试。"),
-              );
-              clearStreamState(streamKey);
-            },
-          },
-        ).catch((error) => {
-          if (controller.signal.aborted) {
-            return;
-          }
-
-          patchMessage(conversationId, assistantMessageId, (message) => ({
-            ...message,
-            content: message.content.trim() || "这次回复失败了，请重试。",
-            meta: `回复失败 · ${selectedModel}`,
-            status: "stopped",
-          }));
-          setErrorMessage(
-            getUserFacingError(error, "消息发送失败，请稍后再试。"),
-          );
-          clearStreamState(streamKey);
-        });
-
-        return conversationId;
-      } catch (error) {
-        setErrorMessage(
-          getUserFacingError(error, "消息发送失败，请稍后再试。"),
-        );
-        setIsSendingMessage(false);
-        setActiveStreamingConversationId(null);
-        activeStreamsRef.current.clear();
-        syncStreamingState();
-        return null;
+      } catch {
+        // Keep this silent. External channel sync should not interrupt the user if one poll fails.
       }
-    },
-    [
-      appendMessages,
-      applySnapshot,
-      clearStreamState,
-      conversations,
-      createConversation,
-      patchConversation,
-      patchMessage,
-      selectedModel,
-      selectedReasoningEffort,
-      selectedSandboxMode,
-      syncStreamingState,
-    ],
-  );
+    }
+
+    const intervalId = window.setInterval(() => {
+      void syncExternalSnapshot();
+    }, GLOBAL_SNAPSHOT_SYNC_INTERVAL_MS);
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        void syncExternalSnapshot();
+      }
+    }
+
+    window.addEventListener("focus", handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [applySnapshot, hydrateFromSnapshot, isHydrated, isSendingMessage, pathname]);
 
   const value = useMemo<OpenCrabContextValue>(
     () => ({
@@ -1360,6 +803,9 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       selectedReasoningEffort,
       selectedSandboxMode,
       selectedLanguage,
+      selectedUserDisplayName,
+      selectedUserAvatarDataUrl,
+      thinkingModeEnabled,
       allowOpenAiApiKeyForCommands,
       expandedFolders,
       isHydrated,
@@ -1377,6 +823,9 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       setSelectedReasoningEffort,
       setSelectedSandboxMode,
       setSelectedLanguage,
+      setSelectedUserDisplayName,
+      setSelectedUserAvatarDataUrl,
+      setThinkingModeEnabled,
       setSelectedBrowserConnectionMode,
       setAllowOpenAiApiKeyForCommands,
       refreshChatGptConnectionStatus,
@@ -1414,6 +863,9 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       selectedReasoningEffort,
       selectedSandboxMode,
       selectedLanguage,
+      selectedUserDisplayName,
+      selectedUserAvatarDataUrl,
+      thinkingModeEnabled,
       allowOpenAiApiKeyForCommands,
       expandedFolders,
       isHydrated,
@@ -1431,6 +883,9 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       setSelectedReasoningEffort,
       setSelectedSandboxMode,
       setSelectedLanguage,
+      setSelectedUserDisplayName,
+      setSelectedUserAvatarDataUrl,
+      setThinkingModeEnabled,
       setSelectedBrowserConnectionMode,
       setAllowOpenAiApiKeyForCommands,
       refreshChatGptConnectionStatus,

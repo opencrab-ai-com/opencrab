@@ -108,11 +108,15 @@ export function Composer({
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
-      if (!containerRef.current?.contains(event.target as Node)) {
-        setIsUploadMenuOpen(false);
-        setActiveMenu(null);
-        setMentionState(null);
+      const target = event.target as HTMLElement | null;
+
+      if (target?.closest("[data-composer-popover-root='true']")) {
+        return;
       }
+
+      setIsUploadMenuOpen(false);
+      setActiveMenu(null);
+      setMentionState(null);
     }
 
     document.addEventListener("mousedown", handlePointerDown);
@@ -298,7 +302,7 @@ export function Composer({
           id="opencrab-composer"
           name="opencrab_composer"
           className={`w-full resize-none border-0 bg-transparent text-text outline-none placeholder:text-[#a0a097] disabled:cursor-not-allowed ${
-            compact ? "min-h-[48px] text-[14px] leading-6" : "min-h-[88px] text-[16px] leading-6"
+            compact ? "min-h-[96px] text-[14px] leading-6" : "min-h-[88px] text-[16px] leading-6"
           }`}
           placeholder={placeholder}
           value={currentValue}
@@ -342,6 +346,8 @@ export function Composer({
 
               if (event.key === "Escape") {
                 event.preventDefault();
+                setIsUploadMenuOpen(false);
+                setActiveMenu(null);
                 setMentionState(null);
                 return;
               }
@@ -360,7 +366,10 @@ export function Composer({
         />
 
         {mentionState ? (
-          <div className="absolute bottom-full left-0 z-40 mb-2 w-full max-w-[360px] overflow-hidden rounded-[18px] border border-line bg-surface shadow-[0_18px_48px_rgba(15,23,42,0.14)]">
+          <div
+            data-composer-popover-root="true"
+            className="absolute bottom-full left-0 z-40 mb-2 w-full max-w-[360px] overflow-hidden rounded-[18px] border border-line bg-surface shadow-[0_18px_48px_rgba(15,23,42,0.14)]"
+          >
             {filteredMentionOptions.length > 0 ? (
               <div className="max-h-[36vh] overflow-y-auto p-1.5">
                 {filteredMentionOptions.map((option, index) => (
@@ -391,7 +400,7 @@ export function Composer({
 
       <div className={`mt-1 flex flex-col sm:flex-row sm:items-center sm:justify-between ${compact ? "gap-1" : "gap-3"}`}>
         <div className="flex flex-wrap items-center gap-1.5">
-          <div className="relative">
+          <div data-composer-popover-root="true" className="relative">
             <button
               type="button"
               onClick={() => {
@@ -462,6 +471,7 @@ export function Composer({
             onToggle={() => {
               setActiveMenu((current) => (current === "model" ? null : "model"));
               setIsUploadMenuOpen(false);
+              setMentionState(null);
             }}
             disabled={disableOptionSelects || isStreaming || modelOptions.length === 0}
           >
@@ -488,6 +498,7 @@ export function Composer({
             onToggle={() => {
               setActiveMenu((current) => (current === "reasoning" ? null : "reasoning"));
               setIsUploadMenuOpen(false);
+              setMentionState(null);
             }}
             disabled={disableOptionSelects || isStreaming || reasoningOptions.length === 0}
           >
@@ -560,7 +571,7 @@ function DropdownChip({
   children,
 }: DropdownChipProps) {
   return (
-    <div className="relative">
+    <div data-composer-popover-root="true" className="relative">
       <button
         type="button"
         onClick={onToggle}

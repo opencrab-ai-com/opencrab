@@ -1,16 +1,27 @@
 import type { AppSettings } from "@/lib/seed-data";
-import { getSnapshot, updateSettings } from "@/lib/resources/local-store";
-import { json, readJsonBody } from "@/lib/server/api-route";
+import { settingsService } from "@/lib/modules/settings/settings-service";
+import {
+  errorResponse,
+  noStoreJson,
+  readJsonBody,
+} from "@/lib/server/api-route";
 
 export async function GET() {
-  return json({
-    settings: getSnapshot().settings,
+  return noStoreJson({
+    settings: settingsService.getSettings(),
   });
 }
 
 export async function PATCH(request: Request) {
-  const body = await readJsonBody<Partial<AppSettings>>(request, {});
-  const snapshot = updateSettings(body);
+  try {
+    const body = await readJsonBody<Partial<AppSettings>>(request, {});
+    const snapshot = settingsService.updateSettings(body);
 
-  return json({ snapshot });
+    return noStoreJson({ snapshot });
+  } catch (error) {
+    return errorResponse(error, "更新设置失败。", 400, {
+      request,
+      operation: "update_settings",
+    });
+  }
 }

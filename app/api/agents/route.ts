@@ -1,36 +1,24 @@
-import { createAgentProfile, listAgentProfiles } from "@/lib/agents/agent-store";
-import { errorResponse, json, readJsonBody } from "@/lib/server/api-route";
+import {
+  type AgentCreateInput,
+  agentService,
+} from "@/lib/modules/agents/agent-service";
+import {
+  errorResponse,
+  noStoreJson,
+  readJsonBody,
+} from "@/lib/server/api-route";
 
 export function GET() {
-  return json({
-    agents: listAgentProfiles(),
+  return noStoreJson({
+    agents: agentService.list(),
   });
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await readJsonBody<{
-      name?: string;
-      summary?: string;
-      avatarDataUrl?: string | null;
-      roleLabel?: string;
-      description?: string;
-      availability?: "solo" | "team" | "both";
-      teamRole?: "lead" | "research" | "writer" | "specialist";
-      defaultModel?: string | null;
-      defaultReasoningEffort?: "minimal" | "low" | "medium" | "high" | "xhigh" | null;
-      defaultSandboxMode?: "read-only" | "workspace-write" | "danger-full-access" | null;
-      starterPrompts?: string[];
-      files?: Partial<{
-        soul: string;
-        responsibility: string;
-        tools: string;
-        user: string;
-        knowledge: string;
-      }>;
-    }>(request, {});
+    const body = await readJsonBody<Partial<AgentCreateInput>>(request, {});
 
-    const agent = createAgentProfile({
+    const agent = agentService.create({
       name: body.name || "",
       summary: body.summary || "",
       avatarDataUrl: body.avatarDataUrl,
@@ -45,10 +33,13 @@ export async function POST(request: Request) {
       files: body.files,
     });
 
-    return json({
+    return noStoreJson({
       agent,
     });
   } catch (error) {
-    return errorResponse(error, "创建智能体失败。", 400);
+    return errorResponse(error, "创建智能体失败。", 400, {
+      request,
+      operation: "create_agent",
+    });
   }
 }

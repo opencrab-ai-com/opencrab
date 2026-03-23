@@ -18,9 +18,9 @@ import type {
 } from "@/lib/resources/opencrab-api-types";
 import {
   OPENCRAB_SKILLS_DIR,
-  OPENCRAB_STATE_DIR,
   OPENCRAB_SKILLS_STORE_PATH,
 } from "@/lib/resources/runtime-paths";
+import { createSyncJsonFileStore } from "@/lib/infrastructure/json-store/sync-json-file-store";
 
 type CatalogSeed = {
   id: string;
@@ -53,11 +53,15 @@ type SkillStoreState = {
   items: Record<string, StoredSkillState>;
 };
 
-const STORE_DIR = OPENCRAB_STATE_DIR;
 const STORE_PATH = OPENCRAB_SKILLS_STORE_PATH;
 const CODEX_SKILLS_ROOT = path.join(process.env.HOME || process.cwd(), ".codex", "skills");
 const BUNDLED_SKILLS_SOURCE_ROOT = path.join(process.cwd(), "skills");
 let hasEnsuredBundledSkills = false;
+const store = createSyncJsonFileStore<SkillStoreState>({
+  filePath: STORE_PATH,
+  seed: createSeedState,
+  normalize: normalizeState,
+});
 
 const CODEX_ORDER = [
   "imagegen",
@@ -191,6 +195,9 @@ const RECOMMENDED_SKILLS_IDS = [
   "notion-meeting-intelligence",
   "notion-research-documentation",
   "notion-spec-to-implementation",
+  "planning-with-files",
+  "best-minds",
+  "find-skills",
   "chatgpt-apps",
   "claude-api",
   "mcp-builder",
@@ -562,6 +569,39 @@ const RECOMMENDED_SKILLS: CatalogSeed[] = [
     sourceLabel: "OpenAI Curated",
     sourceUrl: "https://github.com/openai/skills/tree/main/skills/.curated/notion-spec-to-implementation",
     installHint: "$skill-installer notion-spec-to-implementation",
+  }),
+  createRecommendedSkill({
+    id: "planning-with-files",
+    name: "Planning With Files",
+    summary: "Use persistent markdown files like task_plan.md, findings.md, and progress.md to plan and track complex work.",
+    category: "business-ops",
+    icon: "doc",
+    scenarios: ["复杂任务拆解", "持续记录进展", "多轮任务不中断接力"],
+    sourceLabel: "Community Verified",
+    sourceUrl: "https://github.com/OthmanAdi/planning-with-files/tree/master/.codex/skills/planning-with-files",
+    installHint: "复制上游技能目录到 ~/.opencrab/skills/planning-with-files/",
+  }),
+  createRecommendedSkill({
+    id: "best-minds",
+    name: "Best Minds",
+    summary: "Answer by simulating the world-class experts who understand a problem best, grounded in their real public ideas.",
+    category: "writing-knowledge",
+    icon: "book",
+    scenarios: ["专家视角分析", "商业与战略判断", "更有依据的观点生成"],
+    sourceLabel: "Community Verified",
+    sourceUrl: "https://github.com/Ceeon/best-minds",
+    installHint: "复制上游技能目录到 ~/.opencrab/skills/best-minds/",
+  }),
+  createRecommendedSkill({
+    id: "find-skills",
+    name: "Find Skills",
+    summary: "Help users discover and install relevant skills when they ask for a capability, workflow, or specialized help.",
+    category: "product-tech",
+    icon: "puzzle",
+    scenarios: ["帮用户找 skill", "按场景发现能力", "扩展 OpenCrab 技能库"],
+    sourceLabel: "Community Verified",
+    sourceUrl: "https://github.com/vercel-labs/skills/tree/main/skills/find-skills",
+    installHint: "复制上游技能目录到 ~/.opencrab/skills/find-skills/",
   }),
   createRecommendedSkill({
     id: "chatgpt-apps",
@@ -1044,7 +1084,16 @@ async function fetchUpstreamSkillMarkdown(treeUrl: string) {
     return null;
   }
 
-  const rawUrl = "https://raw.githubusercontent.com/" + parsed.owner + "/" + parsed.repo + "/" + parsed.ref + "/" + parsed.treePath + "/SKILL.md";
+  const rawUrl =
+    "https://raw.githubusercontent.com/" +
+    parsed.owner +
+    "/" +
+    parsed.repo +
+    "/" +
+    parsed.ref +
+    "/" +
+    (parsed.treePath ? parsed.treePath + "/" : "") +
+    "SKILL.md";
   const response = await fetch(rawUrl, {
     headers: {
       "User-Agent": "OpenCrab",
@@ -1061,17 +1110,42 @@ async function fetchUpstreamSkillMarkdown(treeUrl: string) {
 }
 
 function parseGitHubTreeUrl(treeUrl: string) {
-  const match = treeUrl.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/);
+  let url: URL;
 
-  if (!match) {
+  try {
+    url = new URL(treeUrl);
+  } catch {
+    return null;
+  }
+
+  if (url.hostname !== "github.com") {
+    return null;
+  }
+
+  const segments = url.pathname.split("/").filter(Boolean);
+
+  if (segments.length < 2) {
+    return null;
+  }
+
+  if (segments.length === 2) {
+    return {
+      owner: segments[0],
+      repo: segments[1],
+      ref: "main",
+      treePath: "",
+    };
+  }
+
+  if (segments[2] !== "tree" || segments.length < 4) {
     return null;
   }
 
   return {
-    owner: match[1],
-    repo: match[2],
-    ref: match[3],
-    treePath: match[4],
+    owner: segments[0],
+    repo: segments[1],
+    ref: segments[3],
+    treePath: segments.slice(4).join("/"),
   };
 }
 
@@ -1082,7 +1156,9 @@ async function downloadGitHubDirectory(
   treePath: string,
   destDir: string,
 ) {
-  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${treePath}?ref=${ref}`;
+  const apiUrl = treePath
+    ? `https://api.github.com/repos/${owner}/${repo}/contents/${treePath}?ref=${ref}`
+    : `https://api.github.com/repos/${owner}/${repo}/contents?ref=${ref}`;
   const response = await fetch(apiUrl, {
     headers: {
       Accept: "application/vnd.github+json",
@@ -1418,33 +1494,11 @@ function dedupeById(items: CatalogSeed[]) {
 }
 
 function readState(): SkillStoreState {
-  ensureStoreFile();
-
-  try {
-    const parsed = JSON.parse(readFileSync(STORE_PATH, "utf8")) as Partial<SkillStoreState>;
-    const normalized = normalizeState(parsed);
-    writeFileSync(STORE_PATH, JSON.stringify(normalized, null, 2), "utf8");
-    return normalized;
-  } catch {
-    const seed = createSeedState();
-    writeFileSync(STORE_PATH, JSON.stringify(seed, null, 2), "utf8");
-    return seed;
-  }
+  return store.read();
 }
 
 function writeState(state: SkillStoreState) {
-  ensureStoreFile();
-  writeFileSync(STORE_PATH, JSON.stringify(state, null, 2), "utf8");
-}
-
-function ensureStoreFile() {
-  if (!existsSync(STORE_DIR)) {
-    mkdirSync(STORE_DIR, { recursive: true });
-  }
-
-  if (!existsSync(STORE_PATH)) {
-    writeFileSync(STORE_PATH, JSON.stringify(createSeedState(), null, 2), "utf8");
-  }
+  store.write(state);
 }
 
 function createSeedState(): SkillStoreState {

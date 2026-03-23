@@ -39,6 +39,7 @@ npm run dev:webpack
 
 ```bash
 npm run lint
+npm run test
 npm run typecheck
 npm run build
 ```
@@ -154,6 +155,74 @@ OpenCrab 当前在重启后会自动做这些事：
 - `lib/server/api-route.ts`
 
 这里集中处理 JSON 响应、动态路由参数读取、请求体解析和常见错误响应，避免每个 route 重复拼装同一套模板逻辑。
+
+## Shared Store Layer
+
+当前几个核心本地 store 已统一复用：
+
+- `lib/server/json-file-store.ts`
+
+主要目的：
+
+- 统一 seed / normalize / write 逻辑
+- 通过临时文件 + 原子替换降低 JSON 文件损坏概率
+- 减少 `local-store`、`task-store`、`project-store`、`skill-store`、`secret-store`、`upload index` 里的重复模板代码
+- 当某个 JSON store 读取到损坏文件时，当前会先把旧文件备份成 `*.corrupt.<timestamp>.json`，再自动回种子状态，避免直接无痕覆盖
+
+## Module Service Layer
+
+当前新的模块服务入口已经开始接管高频链路：
+
+- `lib/modules/settings/settings-service.ts`
+- `lib/modules/uploads/upload-service.ts`
+- `lib/modules/conversations/*`
+- `lib/modules/projects/*`
+
+建议新代码优先写进这些 service / controller 入口，而不是继续把 API route 或超大 provider 直接绑在旧 store 上。
+
+## App Shell Controllers
+
+前端状态层当前也在继续拆分：
+
+- `components/app-shell/use-opencrab-settings-controller.ts`
+- `components/app-shell/use-opencrab-message-controller.ts`
+
+`opencrab-provider.tsx` 仍然是组合层，但新逻辑应优先进入独立 controller hook，再由 provider 统一暴露给页面。
+
+## Output Attachment Boundary
+
+模型输出里提到的本地文件，不会再被无条件自动注册。
+
+当前只允许这些目录里的文件自动注册为可下载附件：
+
+- `$OPENCRAB_HOME/uploads/`
+- 仓库下 `output/`
+- 仓库下 `tmp/`
+- 仓库下 `.playwright-cli/`
+- 当前已创建的 Team Mode 工作空间目录
+
+## Upload Limits
+
+当前上传链路已经补了默认保护：
+
+- 单次最多 `8` 个附件
+- 单文件默认最大 `25 MB`
+- 单次总上传默认最大 `40 MB`
+
+可通过环境变量调整：
+
+- `OPENCRAB_UPLOAD_MAX_FILES`
+- `OPENCRAB_UPLOAD_MAX_FILE_BYTES`
+- `OPENCRAB_UPLOAD_MAX_TOTAL_BYTES`
+
+## API Error Responses
+
+当前服务端错误响应会带请求编号：
+
+- `requestId`
+- `code`
+
+如果你在 UI 里看到失败提示，报错里通常会包含 `请求编号`，方便回查服务端日志。
 
 ## Debugging Codex
 

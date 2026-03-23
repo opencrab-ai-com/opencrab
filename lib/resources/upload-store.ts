@@ -1,20 +1,29 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, statSync } from "node:fs";
 import { execFile } from "node:child_process";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
 import {
-  OPENCRAB_RUNTIME_DIR,
   OPENCRAB_UPLOADS_DIR as UPLOADS_DIR,
   OPENCRAB_UPLOADS_INDEX_PATH as UPLOADS_INDEX_PATH,
 } from "@/lib/resources/runtime-paths";
 import type { UploadedAttachment } from "@/lib/resources/opencrab-api-types";
+import {
+  isAttachmentPathAllowed,
+  resolveExistingPath,
+} from "@/lib/resources/attachment-access-policy";
+import { createSyncJsonFileStore } from "@/lib/infrastructure/json-store/sync-json-file-store";
 const execFileAsync = promisify(execFile);
 
 type StoredAttachment = UploadedAttachment & {
   storedPath: string;
   promptPath?: string;
 };
+const indexStore = createSyncJsonFileStore<StoredAttachment[]>({
+  filePath: UPLOADS_INDEX_PATH,
+  seed: () => [],
+  normalize: (value) => normalizeStoredAttachments(Array.isArray(value) ? value : []),
+});
 
 export async function saveUpload(file: File) {
   const originalName = file.name || "upload";
@@ -98,11 +107,13 @@ export function registerOutputAttachmentsFromText(content: string) {
   const registered: UploadedAttachment[] = [];
 
   for (const filePath of extractCandidatePaths(content)) {
-    if (!existsSync(filePath)) {
+    const resolvedPath = resolveExistingPath(filePath);
+
+    if (!resolvedPath || !isAttachmentPathAllowed(resolvedPath)) {
       continue;
     }
 
-    const existing = nextItems.find((item) => item.storedPath === filePath);
+    const existing = nextItems.find((item) => item.storedPath === resolvedPath);
 
     if (existing) {
       registered.push(toPublicAttachment(existing));
@@ -121,9 +132,9 @@ export function registerOutputAttachmentsFromText(content: string) {
       id: `output-${crypto.randomUUID()}`,
       name,
       kind,
-      size: safeReadFileSize(filePath),
+      size: safeReadFileSize(resolvedPath),
       mimeType,
-      storedPath: filePath,
+      storedPath: resolvedPath,
     };
 
     nextItems.push(attachment);
@@ -137,41 +148,29 @@ export function registerOutputAttachmentsFromText(content: string) {
   return registered;
 }
 
-function ensureUploadStore() {
-  if (!existsSync(STORE_DIR)) {
-    mkdirSync(STORE_DIR, { recursive: true });
-  }
+export function canAccessAttachment(attachment: Pick<StoredAttachment, "storedPath">) {
+  return isAttachmentPathAllowed(attachment.storedPath);
+}
 
+function ensureUploadStore() {
   if (!existsSync(UPLOADS_DIR)) {
     mkdirSync(UPLOADS_DIR, { recursive: true });
   }
-
-  if (!existsSync(UPLOADS_INDEX_PATH)) {
-    writeFileSync(UPLOADS_INDEX_PATH, "[]", "utf8");
-  }
 }
-
-const STORE_DIR = OPENCRAB_RUNTIME_DIR;
 
 function readIndex() {
   ensureUploadStore();
-
-  try {
-    return JSON.parse(readFileSync(UPLOADS_INDEX_PATH, "utf8")) as StoredAttachment[];
-  } catch {
-    writeFileSync(UPLOADS_INDEX_PATH, "[]", "utf8");
-    return [];
-  }
+  return indexStore.read();
 }
 
 function writeIndex(items: StoredAttachment[]) {
   ensureUploadStore();
-  writeFileSync(UPLOADS_INDEX_PATH, JSON.stringify(items, null, 2), "utf8");
+  indexStore.write(items);
 }
 
 function safeReadFileSize(filePath: string) {
   try {
-    return readFileSync(filePath).byteLength;
+    return statSync(filePath).size;
   } catch {
     return 0;
   }
@@ -230,6 +229,36 @@ function toPublicAttachment(attachment: StoredAttachment): UploadedAttachment {
     size: attachment.size,
     mimeType: attachment.mimeType,
   };
+}
+
+function normalizeStoredAttachments(items: Array<Partial<StoredAttachment> | undefined>) {
+  const normalized: StoredAttachment[] = [];
+
+  for (const item of structuredClone(items || [])) {
+    const storedPath = typeof item?.storedPath === "string" ? resolveExistingPath(item.storedPath) : null;
+
+    if (!storedPath) {
+      continue;
+    }
+
+    normalized.push({
+      id: item?.id || `upload-${crypto.randomUUID()}`,
+      name: item?.name || path.basename(storedPath),
+      kind:
+        item?.kind === "image" || item?.kind === "text" || item?.kind === "file"
+          ? item.kind
+          : getAttachmentKind(
+                item?.name || path.basename(storedPath),
+                item?.mimeType || "application/octet-stream",
+              ) || "file",
+      size: typeof item?.size === "number" ? item.size : safeReadFileSize(storedPath),
+      mimeType: item?.mimeType || getMimeTypeFromName(item?.name || path.basename(storedPath)),
+      storedPath,
+      promptPath: typeof item?.promptPath === "string" ? resolveExistingPath(item.promptPath) || undefined : undefined,
+    });
+  }
+
+  return normalized;
 }
 
 function getAttachmentKind(name: string, mimeType: string) {

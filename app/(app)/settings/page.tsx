@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
+import { AgentAvatar } from "@/components/agents/agent-avatar";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
 import { ChatGptConnectionPanel } from "@/components/chatgpt/chatgpt-connection-panel";
 import { AppPage } from "@/components/ui/app-page";
@@ -15,20 +16,36 @@ export default function SettingsPage() {
     selectedReasoningEffort,
     selectedSandboxMode,
     selectedLanguage,
+    selectedUserDisplayName,
+    selectedUserAvatarDataUrl,
+    thinkingModeEnabled,
     allowOpenAiApiKeyForCommands,
     setSelectedBrowserConnectionMode,
     setSelectedModel,
     setSelectedReasoningEffort,
     setSelectedSandboxMode,
     setSelectedLanguage,
+    setSelectedUserDisplayName,
+    setSelectedUserAvatarDataUrl,
+    setThinkingModeEnabled,
     setAllowOpenAiApiKeyForCommands,
     errorMessage,
   } = useOpenCrabApp();
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
 
   const activeModel = useMemo(
     () => codexModels.find((item) => item.id === selectedModel) || codexModels[0] || null,
     [codexModels, selectedModel],
   );
+
+  async function handleAvatarFileChange(file: File | null) {
+    if (!file) {
+      return;
+    }
+
+    const dataUrl = await readFileAsDataUrl(file);
+    await setSelectedUserAvatarDataUrl(dataUrl);
+  }
 
   return (
     <AppPage width="wide" contentClassName="space-y-6">
@@ -55,6 +72,66 @@ export default function SettingsPage() {
         </div>
 
         <div className="mt-8 grid gap-5 md:grid-cols-2">
+          <div className="space-y-4 rounded-[18px] border border-line bg-surface-muted px-4 py-4 md:col-span-2">
+            <div>
+              <h3 className="text-[15px] font-semibold tracking-[-0.02em] text-text">我的身份</h3>
+              <p className="mt-2 text-[12px] leading-6 text-muted-strong">
+                这里设置的是 OpenCrab 里“我”的昵称和头像。修改后，会立即体现在网页对话中的本地消息显示上。
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-4 md:flex-row md:items-start">
+              <div className="flex items-center gap-4">
+                <AgentAvatar
+                  src={selectedUserAvatarDataUrl}
+                  name={selectedUserDisplayName || "我"}
+                  size={64}
+                  className="rounded-[22px]"
+                />
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    className="inline-flex h-9 items-center rounded-full border border-line bg-surface px-4 text-[12px] text-text transition hover:bg-white"
+                  >
+                    上传头像
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void setSelectedUserAvatarDataUrl(null)}
+                    className="inline-flex h-9 items-center rounded-full border border-line bg-surface px-4 text-[12px] text-muted-strong transition hover:bg-white disabled:opacity-40"
+                    disabled={!selectedUserAvatarDataUrl}
+                  >
+                    清除头像
+                  </button>
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    className="hidden"
+                    onChange={(event) => {
+                      void handleAvatarFileChange(event.target.files?.[0] || null);
+                      event.currentTarget.value = "";
+                    }}
+                  />
+                </div>
+              </div>
+
+              <label className="flex-1 space-y-2">
+                <span className="text-[13px] font-medium text-text">昵称</span>
+                <input
+                  value={selectedUserDisplayName}
+                  onChange={(event) => void setSelectedUserDisplayName(event.target.value)}
+                  placeholder="我"
+                  className="h-11 w-full rounded-[14px] border border-line bg-surface px-4 text-[13px] text-text outline-none transition placeholder:text-[#a0a097]"
+                />
+                <p className="text-[12px] text-muted-strong">
+                  例如：Sky、阿蟹、产品负责人。未填写时会回退为“我”。
+                </p>
+              </label>
+            </div>
+          </div>
+
           <label className="space-y-2 md:col-span-2">
             <span className="text-[13px] font-medium text-text">浏览器连接方式</span>
             <SelectField
@@ -146,6 +223,32 @@ export default function SettingsPage() {
           <div className="space-y-3 rounded-[18px] border border-line bg-surface-muted px-4 py-4 md:col-span-2">
             <div className="flex items-start justify-between gap-4">
               <div>
+                <div className="text-[13px] font-medium text-text">Thinking 模式</div>
+                <p className="mt-2 text-[12px] leading-6 text-muted-strong">
+                  打开后，所有对话都会显示 OpenCrab 的思考过程面板。关闭后，所有对话统一隐藏这块内容，只保留最终回复。
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={thinkingModeEnabled}
+                onClick={() => void setThinkingModeEnabled(!thinkingModeEnabled)}
+                className={`relative mt-1 h-8 w-14 shrink-0 rounded-full transition ${
+                  thinkingModeEnabled ? "bg-[#111111]" : "bg-[#d8d8d2]"
+                }`}
+              >
+                <span
+                  className={`absolute top-1 h-6 w-6 rounded-full bg-white transition ${
+                    thinkingModeEnabled ? "left-7" : "left-1"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-3 rounded-[18px] border border-line bg-surface-muted px-4 py-4 md:col-span-2">
+            <div className="flex items-start justify-between gap-4">
+              <div>
                 <div className="text-[13px] font-medium text-text">
                   允许命令继承 OPENAI_API_KEY
                 </div>
@@ -209,4 +312,13 @@ function ChevronDownIcon() {
       <path d="m5 7.5 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
+    reader.onerror = () => reject(reader.error || new Error("读取头像失败"));
+    reader.readAsDataURL(file);
+  });
 }

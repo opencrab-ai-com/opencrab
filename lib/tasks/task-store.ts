@@ -1,7 +1,7 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { getProjectDetail } from "@/lib/projects/project-store";
 import { getSnapshot } from "@/lib/resources/local-store";
-import { OPENCRAB_STATE_DIR, OPENCRAB_TASKS_STORE_PATH } from "@/lib/resources/runtime-paths";
+import { OPENCRAB_TASKS_STORE_PATH } from "@/lib/resources/runtime-paths";
+import { createSyncJsonFileStore } from "@/lib/infrastructure/json-store/sync-json-file-store";
 import type {
   TaskCreateInput,
   TaskDetail,
@@ -14,10 +14,14 @@ import type {
   TaskUpdateInput,
 } from "@/lib/tasks/types";
 
-const STORE_DIR = OPENCRAB_STATE_DIR;
 const STORE_PATH = OPENCRAB_TASKS_STORE_PATH;
 const MAX_RUNS = 120;
 const MAX_RUNS_PER_TASK = 20;
+const store = createSyncJsonFileStore<TaskStoreState>({
+  filePath: STORE_PATH,
+  seed: createSeedState,
+  normalize: normalizeState,
+});
 
 export function listTasks(): TaskOverview[] {
   const state = readState();
@@ -495,40 +499,11 @@ function trimRuns(runs: TaskRunRecord[]) {
 }
 
 function readState(): TaskStoreState {
-  ensureStoreFile();
-
-  try {
-    const parsed = JSON.parse(readFileSync(STORE_PATH, "utf8")) as Partial<TaskStoreState>;
-    const normalized = normalizeState(parsed);
-    writeFileSync(STORE_PATH, JSON.stringify(normalized, null, 2), "utf8");
-    return normalized;
-  } catch {
-    const seed = createSeedState();
-    writeFileSync(STORE_PATH, JSON.stringify(seed, null, 2), "utf8");
-    return seed;
-  }
+  return store.read();
 }
 
 function mutateState<T>(mutator: (state: TaskStoreState) => T) {
-  const state = readState();
-  const result = mutator(state);
-  writeState(state);
-  return structuredClone(result);
-}
-
-function writeState(state: TaskStoreState) {
-  ensureStoreFile();
-  writeFileSync(STORE_PATH, JSON.stringify(state, null, 2), "utf8");
-}
-
-function ensureStoreFile() {
-  if (!existsSync(STORE_DIR)) {
-    mkdirSync(STORE_DIR, { recursive: true });
-  }
-
-  if (!existsSync(STORE_PATH)) {
-    writeFileSync(STORE_PATH, JSON.stringify(createSeedState(), null, 2), "utf8");
-  }
+  return store.mutate(mutator);
 }
 
 function createSeedState(): TaskStoreState {

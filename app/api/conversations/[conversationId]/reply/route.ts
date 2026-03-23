@@ -1,13 +1,11 @@
-import {
-  runConversationTurn,
-} from "@/lib/conversations/run-conversation-turn";
+import { conversationTurnService } from "@/lib/modules/conversations/conversation-turn-service";
 import type {
   CodexReasoningEffort,
   CodexSandboxMode,
 } from "@/lib/resources/opencrab-api-types";
 import {
   errorResponse,
-  json,
+  noStoreJson,
   readJsonBody,
   readRouteParams,
   type RouteContext,
@@ -26,7 +24,7 @@ export async function POST(
       sandboxMode?: CodexSandboxMode;
       attachmentIds?: string[];
     }>(request, {});
-    const result = await runConversationTurn({
+    const result = await conversationTurnService.reply({
       conversationId,
       content: body.content,
       model: body.model,
@@ -35,7 +33,7 @@ export async function POST(
       attachmentIds: body.attachmentIds,
     });
 
-    return json({
+    return noStoreJson({
       snapshot: result.snapshot,
       assistant: {
         text: result.assistant.text,
@@ -45,6 +43,9 @@ export async function POST(
       },
     });
   } catch (error) {
-    return errorResponse(error, "OpenCrab 回复生成失败。");
+    return errorResponse(error, "OpenCrab 回复生成失败。", 500, {
+      request,
+      operation: "conversation_reply",
+    });
   }
 }

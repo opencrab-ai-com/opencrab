@@ -1,10 +1,14 @@
 # Product Scope
 
+如果你想看更完整的产品定位、竞品关系、优势 / 劣势与外部参考，请先读：
+
+- [Product Positioning](./product-positioning.md)
+
 ## Positioning
 
-`OpenCrab` 是一个以中文为主、面向普通用户的 Codex Web 助手。
+`OpenCrab` 是一个以中文为主、面向普通用户的本地优先 AI 工作台。
 
-产品主入口是聊天，对话体验参考 ChatGPT；底层执行能力直接复用 Codex，不做多模型平台。
+产品主入口是聊天，对话体验参考 ChatGPT 风格工作台；底层执行能力复用 agent 能力，但产品形态不做成纯 CLI。
 
 ## Current V1 Focus
 
@@ -61,3 +65,4 @@
 - 中文优先
 - 设置低频化
 - 本地优先
+- 从“产品工作台”角度统一对话、执行、任务、渠道和协作

@@ -1,4 +1,3 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import {
   appSettings as seedAppSettings,
   conversationMessages as seedConversationMessages,
@@ -7,7 +6,6 @@ import {
 } from "@/lib/seed-data";
 import {
   OPENCRAB_LOCAL_STORE_PATH,
-  OPENCRAB_STATE_DIR,
 } from "@/lib/resources/runtime-paths";
 import type {
   AppSettings,
@@ -16,6 +14,7 @@ import type {
   ConversationSource,
 } from "@/lib/seed-data";
 import type { AppSnapshot } from "@/lib/resources/opencrab-api-types";
+import { createSyncJsonFileStore } from "@/lib/infrastructure/json-store/sync-json-file-store";
 
 export function getSnapshot(): AppSnapshot {
   return cloneSnapshot(readState());
@@ -321,43 +320,19 @@ export function syncConversationChannelMetadata(
 }
 
 function readState(): AppSnapshot {
-  ensureStoreFile();
-
-  try {
-    const raw = readFileSync(STORE_PATH, "utf8");
-    const parsed = JSON.parse(raw) as Partial<AppSnapshot>;
-    const normalized = normalizeSnapshot(parsed);
-    const nextSerialized = JSON.stringify(normalized, null, 2);
-
-    if (nextSerialized !== raw) {
-      writeFileSync(STORE_PATH, nextSerialized, "utf8");
-    }
-
-    return normalized;
-  } catch {
-    const seedState = createSeedState();
-    writeFileSync(STORE_PATH, JSON.stringify(seedState, null, 2), "utf8");
-    return seedState;
-  }
+  return store.read();
 }
 
 function writeState(state: AppSnapshot) {
-  ensureStoreFile();
-  writeFileSync(STORE_PATH, JSON.stringify(state, null, 2), "utf8");
+  store.write(state);
 }
 
-function ensureStoreFile() {
-  if (!existsSync(STORE_DIR)) {
-    mkdirSync(STORE_DIR, { recursive: true });
-  }
-
-  if (!existsSync(STORE_PATH)) {
-    writeFileSync(STORE_PATH, JSON.stringify(createSeedState(), null, 2), "utf8");
-  }
-}
-
-const STORE_DIR = OPENCRAB_STATE_DIR;
 const STORE_PATH = OPENCRAB_LOCAL_STORE_PATH;
+const store = createSyncJsonFileStore<AppSnapshot>({
+  filePath: STORE_PATH,
+  seed: createSeedState,
+  normalize: normalizeSnapshot,
+});
 
 function createSeedState(): AppSnapshot {
   return {
@@ -395,6 +370,18 @@ function normalizeSnapshot(snapshot: Partial<AppSnapshot>): AppSnapshot {
     settings: {
       ...seedAppSettings,
       ...(snapshot.settings || {}),
+      userDisplayName:
+        typeof snapshot.settings?.userDisplayName === "string" &&
+        snapshot.settings.userDisplayName.trim().length > 0
+          ? snapshot.settings.userDisplayName.trim()
+          : seedAppSettings.userDisplayName,
+      userAvatarDataUrl:
+        typeof snapshot.settings?.userAvatarDataUrl === "string" &&
+        snapshot.settings.userAvatarDataUrl.trim().length > 0
+          ? snapshot.settings.userAvatarDataUrl
+          : null,
+      thinkingModeEnabled:
+        snapshot.settings?.thinkingModeEnabled ?? seedAppSettings.thinkingModeEnabled,
     },
   };
 }

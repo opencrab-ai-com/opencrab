@@ -1,11 +1,7 @@
-import {
-  deleteAgentProfile,
-  getAgentProfile,
-  updateAgentProfile,
-} from "@/lib/agents/agent-store";
+import { agentService, type AgentMutationInput } from "@/lib/modules/agents/agent-service";
 import {
   errorResponse,
-  json,
+  noStoreJson,
   notFoundJson,
   readJsonBody,
   readRouteParams,
@@ -17,13 +13,13 @@ export async function GET(
   context: RouteContext<{ agentId: string }>,
 ) {
   const { agentId } = await readRouteParams(context);
-  const agent = getAgentProfile(agentId);
+  const agent = agentService.get(agentId);
 
   if (!agent) {
     return notFoundJson("智能体不存在。");
   }
 
-  return json({
+  return noStoreJson({
     agent,
   });
 }
@@ -34,34 +30,17 @@ export async function PATCH(
 ) {
   try {
     const { agentId } = await readRouteParams(context);
-    const body = await readJsonBody<{
-      name?: string;
-      summary?: string;
-      avatarDataUrl?: string | null;
-      roleLabel?: string;
-      description?: string;
-      availability?: "solo" | "team" | "both";
-      teamRole?: "lead" | "research" | "writer" | "specialist";
-      defaultModel?: string | null;
-      defaultReasoningEffort?: "minimal" | "low" | "medium" | "high" | "xhigh" | null;
-      defaultSandboxMode?: "read-only" | "workspace-write" | "danger-full-access" | null;
-      starterPrompts?: string[];
-      files?: Partial<{
-        soul: string;
-        responsibility: string;
-        tools: string;
-        user: string;
-        knowledge: string;
-      }>;
-    }>(request, {});
+    const body = await readJsonBody<AgentMutationInput>(request, {});
+    const agent = agentService.update(agentId, body);
 
-    const agent = updateAgentProfile(agentId, body);
-
-    return json({
+    return noStoreJson({
       agent,
     });
   } catch (error) {
-    return errorResponse(error, "更新智能体失败。", 400);
+    return errorResponse(error, "更新智能体失败。", 400, {
+      request,
+      operation: "update_agent",
+    });
   }
 }
 
@@ -71,9 +50,12 @@ export async function DELETE(
 ) {
   try {
     const { agentId } = await readRouteParams(context);
-    const ok = deleteAgentProfile(agentId);
-    return json({ ok });
+    const ok = agentService.remove(agentId);
+    return noStoreJson({ ok });
   } catch (error) {
-    return errorResponse(error, "删除智能体失败。", 400);
+    return errorResponse(error, "删除智能体失败。", 400, {
+      request: _request,
+      operation: "delete_agent",
+    });
   }
 }

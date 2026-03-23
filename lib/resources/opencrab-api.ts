@@ -345,6 +345,9 @@ export async function updateSettings(
     defaultSandboxMode: CodexSandboxMode;
     browserConnectionMode: BrowserConnectionMode;
     defaultLanguage: AppLanguage;
+    userDisplayName: string;
+    userAvatarDataUrl: string | null;
+    thinkingModeEnabled: boolean;
     allowOpenAiApiKeyForCommands: boolean;
   }>,
 ) {
@@ -552,13 +555,22 @@ async function assertOk(response: Response) {
 }
 
 async function buildApiError(response: Response) {
-  const errorBody = await readJsonResponse<{ error?: string } | null>(
+  const errorBody = await readJsonResponse<
+    { error?: string; code?: string; requestId?: string } | null
+  >(
     response,
     null,
   );
-  return new Error(
-    errorBody?.error || `API request failed: ${response.status}`,
-  );
+  const message = errorBody?.error || `API request failed: ${response.status}`;
+  const suffix = errorBody?.requestId
+    ? `（请求编号: ${errorBody.requestId}）`
+    : "";
+
+  return Object.assign(new Error(`${message}${suffix}`), {
+    code: errorBody?.code || null,
+    requestId: errorBody?.requestId || null,
+    status: response.status,
+  });
 }
 
 async function readJsonResponse<T>(

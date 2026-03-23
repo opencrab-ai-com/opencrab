@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { getAgentProfile, getSuggestedTeamAgents } from "@/lib/agents/agent-store";
 import { runConversationTurn } from "@/lib/conversations/run-conversation-turn";
@@ -13,8 +13,8 @@ import {
 } from "@/lib/resources/local-store";
 import {
   OPENCRAB_PROJECTS_STORE_PATH,
-  OPENCRAB_STATE_DIR,
 } from "@/lib/resources/runtime-paths";
+import { createSyncJsonFileStore } from "@/lib/infrastructure/json-store/sync-json-file-store";
 import type {
   ProjectAgentRecord,
   ProjectArtifactRecord,
@@ -25,8 +25,12 @@ import type {
   ProjectStoreState,
 } from "@/lib/projects/types";
 
-const STORE_DIR = OPENCRAB_STATE_DIR;
 const STORE_PATH = OPENCRAB_PROJECTS_STORE_PATH;
+const store = createSyncJsonFileStore<ProjectStoreState>({
+  filePath: STORE_PATH,
+  seed: createInitialState,
+  normalize: normalizeProjectStoreState,
+});
 
 declare global {
   var __opencrabProjectRuntimeQueues: Map<string, Promise<void>> | undefined;
@@ -3559,40 +3563,11 @@ function findProjectActorLabel(
 }
 
 function readState(): ProjectStoreState {
-  ensureStore();
-
-  try {
-    const raw = readFileSync(STORE_PATH, "utf8");
-    const parsed = JSON.parse(raw) as Partial<ProjectStoreState>;
-    const rooms = Array.isArray(parsed.rooms)
-      ? parsed.rooms.map((room) => ({
-          ...room,
-          workspaceDir: room.workspaceDir ?? null,
-          teamConversationId: room.teamConversationId ?? null,
-          currentStageLabel: room.currentStageLabel ?? null,
-          activeAgentId: room.activeAgentId ?? null,
-          nextAgentId: room.nextAgentId ?? null,
-        }))
-      : [];
-    const agents = normalizeStoredProjectAgents(Array.isArray(parsed.agents) ? parsed.agents : [], rooms);
-
-    return {
-      rooms,
-      agents,
-      events: Array.isArray(parsed.events) ? parsed.events : [],
-      artifacts: Array.isArray(parsed.artifacts) ? parsed.artifacts : [],
-      runs: Array.isArray(parsed.runs) ? parsed.runs : [],
-    };
-  } catch {
-    const initialState = createInitialState();
-    writeState(initialState);
-    return initialState;
-  }
+  return store.read();
 }
 
 function writeState(state: ProjectStoreState) {
-  ensureStore();
-  writeFileSync(STORE_PATH, JSON.stringify(state, null, 2), "utf8");
+  store.write(state);
 }
 
 function createInitialState(): ProjectStoreState {
@@ -3602,6 +3577,28 @@ function createInitialState(): ProjectStoreState {
     events: [],
     artifacts: [],
     runs: [],
+  };
+}
+
+function normalizeProjectStoreState(parsed: Partial<ProjectStoreState>): ProjectStoreState {
+  const rooms = Array.isArray(parsed.rooms)
+    ? parsed.rooms.map((room) => ({
+        ...room,
+        workspaceDir: room.workspaceDir ?? null,
+        teamConversationId: room.teamConversationId ?? null,
+        currentStageLabel: room.currentStageLabel ?? null,
+        activeAgentId: room.activeAgentId ?? null,
+        nextAgentId: room.nextAgentId ?? null,
+      }))
+    : [];
+  const agents = normalizeStoredProjectAgents(Array.isArray(parsed.agents) ? parsed.agents : [], rooms);
+
+  return {
+    rooms,
+    agents,
+    events: Array.isArray(parsed.events) ? parsed.events : [],
+    artifacts: Array.isArray(parsed.artifacts) ? parsed.artifacts : [],
+    runs: Array.isArray(parsed.runs) ? parsed.runs : [],
   };
 }
 
@@ -3866,14 +3863,4 @@ function upsertArtifactsAfterRun(
   }
 
   return nextArtifacts;
-}
-
-function ensureStore() {
-  if (!existsSync(STORE_DIR)) {
-    mkdirSync(STORE_DIR, { recursive: true });
-  }
-
-  if (!existsSync(STORE_PATH)) {
-    writeFileSync(STORE_PATH, JSON.stringify(createInitialState(), null, 2), "utf8");
-  }
 }

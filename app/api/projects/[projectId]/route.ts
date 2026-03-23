@@ -1,7 +1,9 @@
-import { deleteProject, getProjectDetail, runProject, updateProjectCheckpoint } from "@/lib/projects/project-store";
+import { projectManagementService } from "@/lib/modules/projects/project-management-service";
+import { projectQueryService } from "@/lib/modules/projects/project-query-service";
+import { projectRuntimeService } from "@/lib/modules/projects/project-runtime-service";
 import {
   errorResponse,
-  json,
+  noStoreJson,
   notFoundJson,
   readJsonBody,
   readRouteParams,
@@ -14,13 +16,13 @@ export async function GET(
   context: RouteContext<{ projectId: string }>,
 ) {
   const { projectId } = await readRouteParams(context);
-  const detail = getProjectDetail(projectId);
+  const detail = projectQueryService.getDetail(projectId);
 
   if (!detail) {
     return notFoundJson("这个团队模式不存在，可能已经被删除。");
   }
 
-  return json(detail);
+  return noStoreJson(detail);
 }
 
 export async function POST(
@@ -29,15 +31,18 @@ export async function POST(
 ) {
   try {
     const { projectId } = await readRouteParams(context);
-    const detail = await runProject(projectId);
+    const detail = await projectRuntimeService.run(projectId);
 
     if (!detail) {
       return notFoundJson("这个团队模式不存在，可能已经被删除。");
     }
 
-    return json(detail);
+    return noStoreJson(detail);
   } catch (error) {
-    return errorResponse(error, "启动团队运行失败。", 400);
+    return errorResponse(error, "启动团队运行失败。", 400, {
+      request: _request,
+      operation: "run_project",
+    });
   }
 }
 
@@ -51,15 +56,18 @@ export async function PATCH(
       action: ProjectCheckpointAction;
       note?: string | null;
     }>(request);
-    const detail = await updateProjectCheckpoint(projectId, body);
+    const detail = await projectRuntimeService.updateCheckpoint(projectId, body);
 
     if (!detail) {
       return notFoundJson("这个团队模式不存在，可能已经被删除。");
     }
 
-    return json(detail);
+    return noStoreJson(detail);
   } catch (error) {
-    return errorResponse(error, "更新团队检查点失败。", 400);
+    return errorResponse(error, "更新团队检查点失败。", 400, {
+      request,
+      operation: "update_project_checkpoint",
+    });
   }
 }
 
@@ -69,14 +77,17 @@ export async function DELETE(
 ) {
   try {
     const { projectId } = await readRouteParams(context);
-    const ok = deleteProject(projectId);
+    const ok = projectManagementService.remove(projectId);
 
     if (!ok) {
       return notFoundJson("这个团队模式不存在，可能已经被删除。");
     }
 
-    return json({ ok: true });
+    return noStoreJson({ ok: true });
   } catch (error) {
-    return errorResponse(error, "删除团队失败。", 400);
+    return errorResponse(error, "删除团队失败。", 400, {
+      request: _request,
+      operation: "delete_project",
+    });
   }
 }
