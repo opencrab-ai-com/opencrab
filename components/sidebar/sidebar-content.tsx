@@ -5,6 +5,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
 import {
+  DEFAULT_CONVERSATION_MODE,
+  isConversationListMode,
+  resolveConversationListMode,
+  type ConversationListMode,
+} from "@/lib/conversations/list-mode";
+import {
   DialogActions,
   DialogHeader,
   DialogPrimaryButton,
@@ -14,11 +20,8 @@ import {
 import type { ConversationItem } from "@/lib/seed-data";
 import { buildSidebarViewModel } from "@/lib/view-models/conversations";
 
-type ConversationListMode = "direct" | "agent" | "team" | "channel";
-
 const CONVERSATION_MODE_STORAGE_KEY = "opencrab:conversation-list-mode";
 const CONVERSATION_MODE_EVENT = "opencrab:conversation-list-mode-change";
-const DEFAULT_CONVERSATION_MODE: ConversationListMode = "direct";
 
 type DeleteTarget =
   | {
@@ -571,26 +574,6 @@ function getConversationSourceBadge(source: ConversationItem["source"]) {
   }
 
   return "";
-}
-
-function resolveConversationListMode(conversation: ConversationItem): ConversationListMode {
-  if (conversation.projectId) {
-    return "team";
-  }
-
-  if (conversation.agentProfileId) {
-    return "agent";
-  }
-
-  if (conversation.source && conversation.source !== "local") {
-    return "channel";
-  }
-
-  return "direct";
-}
-
-function isConversationListMode(value: string | null): value is ConversationListMode {
-  return value === "direct" || value === "agent" || value === "team" || value === "channel";
 }
 
 function subscribeToConversationMode(onStoreChange: () => void) {

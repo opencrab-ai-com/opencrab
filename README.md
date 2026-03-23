@@ -14,83 +14,198 @@
   中文 README ｜ <a href="./README-en.md">English</a>
 </p>
 
-OpenCrab 是一个面向普通用户、以中文为主、本地优先的小螃蟹工作台。
+OpenCrab 是一个中文优先、本地优先、chat-native 的开源 AI 工作台。
 
-它尽量把产品表面做简单：聊天是主入口，智能体、团队模式、渠道、定时任务和技能逐步收拢到同一套工作空间里，而不需要用户先学习一整套开发者工具链。
+它不把终端、路由配置、调度表达式或多 Agent 编排图当成主入口，而是把 `对话`、`智能体`、`团队模式`、`渠道`、`定时任务`、`技能` 收进同一个产品表面，让普通用户也能自然地开始使用。
 
-如果用一句更准确的话来描述：
+如果只用一句话来描述：
 
-`OpenCrab` 想做的是一个 `ChatGPT` 风格、中文优先、开源且本地优先的统一工作台，而不是另一个只服务工程师的终端代理。
+`OpenCrab` 想做的不是另一个只服务工程师的 agent shell，而是一个更像 `ChatGPT`、但把执行、协作、渠道和持续工作一起收进来的中文优先工作台。
 
 - 官网：[opencrab-ai.com](https://opencrab-ai.com)
 - 联系邮箱：[sky@opencrab-ai.com](mailto:sky@opencrab-ai.com)
 
+## OpenCrab 的特色
+
+- `ChatGPT 风格的产品表面`
+  从“发一句话”开始，而不是要求用户先学习终端、YAML、graph 或 gateway 配置。
+- `比多 Agent demo 更像真实团队`
+  Team Mode 不把多智能体理解成 subagents 拼接，而是朝“更像数字团队”的方向推进。
+- `Channels 不是移动端聊天补充`
+  渠道在 OpenCrab 里更像工作流的外部参与层，让用户、客户、同事和外部系统能继续参与正在运行的工作。
+- `定时任务不是提醒器升级版`
+  它更像按时间唤醒上下文继续运行的后台执行单元，而不是一条定时 prompt。
+- `本地优先，不把运行时塞进仓库`
+  对话、附件、浏览器状态、技能状态和渠道 secret 默认留在本机运行时目录。
+
 ## 产品截图
 
-| 首页 | 对话线程 |
+| 对话页 | 智能体页 |
 | --- | --- |
-| <img src="./docs/screenshots/homepage.png" alt="OpenCrab 首页" width="480"> | <img src="./docs/screenshots/conversation-thread.png" alt="OpenCrab 对话线程" width="480"> |
+| <img src="./docs/screenshots/conversation.png" alt="OpenCrab 对话页" width="480"> | <img src="./docs/screenshots/agents.png" alt="OpenCrab 智能体页" width="480"> |
 
-| 渠道总览 | Telegram 渠道 |
+| 团队模式页 | 渠道页 |
 | --- | --- |
-| <img src="./docs/screenshots/channels-overview.png" alt="OpenCrab 渠道总览" width="480"> | <img src="./docs/screenshots/telegram-channel.png" alt="OpenCrab Telegram 渠道" width="480"> |
+| <img src="./docs/screenshots/team-mode.png" alt="OpenCrab 团队模式页" width="480"> | <img src="./docs/screenshots/channels.png" alt="OpenCrab 渠道页" width="480"> |
 
-| 设置 | 定时任务 |
+| 定时任务页 | 技能页 |
 | --- | --- |
-| <img src="./docs/screenshots/settings.png" alt="OpenCrab 设置" width="480"> | <img src="./docs/screenshots/tasks.png" alt="OpenCrab 定时任务" width="480"> |
+| <img src="./docs/screenshots/tasks.png" alt="OpenCrab 定时任务页" width="480"> | <img src="./docs/screenshots/skills.png" alt="OpenCrab 技能页" width="480"> |
 
-| 技能 | 渠道页 |
-| --- | --- |
-| <img src="./docs/screenshots/skills.png" alt="OpenCrab 技能" width="480"> | <img src="./docs/screenshots/channels.png" alt="OpenCrab 渠道页" width="480"> |
+## OpenCrab 到底是什么
 
-## 产品定位
+- 一个以聊天为主入口的 AI 工作台
+- 一个本地优先的 runtime 外壳，而不是纯云端黑盒
+- 一个把对话、执行、团队协作、渠道、定时任务和技能统一起来的产品面
+- 一个试图按“开源项目 + 商业产品”双标准持续演进的项目
 
-- `ChatGPT` 风格的聊天工作台，而不是终端优先工具
-- 中文优先、本地优先、开源可改
-- 把对话、执行、渠道、定时任务、团队协作和技能放进同一产品表面
-- 目标不是只做“会写代码的智能体”，而是做“能真正持续完成工作的工作台”
+它不是什么：
 
-## 为什么它有自己的位置
+- 不是只面向工程师的终端代理
+- 不是只会调模型的聊天壳子
+- 不是把多 Agent 机械拼起来的研究 demo
+- 不是一个把基础设施术语直接暴露给普通用户的控制台
 
-- 相比纯聊天产品，它更强调本地执行、渠道接入、定时调度和团队推进
-- 相比纯 CLI / agent runtime，它更强调产品表面、低门槛和普通用户体验
-- 相比纯知识工作助手，它同时兼顾编码执行、渠道、任务和团队模式
+## 为什么它和一般 agent 产品不一样
+
+很多产品只解决其中一小块：
+
+- 要么强在终端和编码执行
+- 要么强在 SaaS 聊天表面
+- 要么强在 gateway、routing 和 automation runtime
+- 要么强在知识工作和 polished output
+
+OpenCrab 想做的是另一条路线：
+
+- `产品表面` 向 ChatGPT 靠近，降低日常使用门槛
+- `执行能力` 向强 agent 产品靠近，不停留在纯问答
+- `协作方式` 不只做单助手，而是让 Team Mode 朝真实数字团队演进
+- `持续工作` 不只靠即时对话，而是通过渠道和定时任务让工作继续发生
+- `可控性` 保留开源、本地优先和可改造的空间
+
+## 4 个关键产品判断
+
+### 1. 对话仍然是主入口，但不是唯一能力
+
+OpenCrab 仍然坚持 `chat-native`。
+
+原因不是“聊天最流行”，而是：
+
+- 用户最容易从一句自然语言开始
+- 页面和心智最容易统一
+- 对话最适合承接后续的执行、渠道消息、任务结果和团队协作
+
+但 OpenCrab 也不把自己限制成“一个对话页”，它要让对话成为统一工作台的入口层。
+
+### 2. Team Mode 不做 subagents，而是朝数字团队走
+
+OpenCrab 的判断不是“多几个 agent 就更强”，而是：
+
+`协作抽象要越来越像组织，而不是越来越像单个助手。`
+
+这意味着 Team Mode 更关注：
+
+- lead / member 关系
+- shared task list
+- handoff 与依赖
+- 阶段推进、质量门、恢复与复盘
+
+而不是只做“主线程临时叫几个分身干活”。
+
+深入阅读：
+
+- [OpenCrab 不做 Subagents，而是要走向比 Agent Teams 更像真实团队的模式](./docs/blogs/opencrab-beyond-agent-teams.md)
+
+### 3. Channels 是工作流的外部参与层
+
+OpenCrab 不把 Channels 定义成“在手机上也能聊天”。
+
+它更像：
+
+- 让外部用户继续参与工作
+- 让远程消息进入正确的对话 / 团队上下文
+- 让系统结果能主动送达到 Telegram / 飞书这类原生环境
+
+所以它更接近 `ingress / egress layer`，而不是“消息平台配置页”。
+
+深入阅读：
+
+- [OpenCrab 对 Channels 的重新思考：它不是移动端聊天入口，而是 Agents 的外部参与层](./docs/blogs/opencrab-what-channels-should-be.md)
+
+### 4. 定时任务是后台执行单元，不是提醒器
+
+OpenCrab 不想把定时任务做成：
+
+- 到点提醒一下
+- 到点发一句 prompt
+- 到点暴露一堆 cron 表达式
+
+它更想做的是：
+
+- 有上下文来源
+- 有执行节奏
+- 有运行记录
+- 有结果出口
+- 能继续把工作往前推
+
+也就是“按时间唤醒某个工作上下文继续运行”。
+
+深入阅读：
+
+- [OpenCrab 对定时任务的重新思考：它不应该只是提醒，也不应该只是调度系统](./docs/blogs/opencrab-what-scheduled-tasks-should-be.md)
+
+## 主要能力
+
+### 对话与执行
+
+- 流式回复、历史对话、文件夹整理
+- 图片 / 文件上传与常见文档文本抽取
+- 浏览器能力接入，支持连接当前浏览器和独立浏览器模式
+- 模型、推理强度、默认语言、权限模式等设置
+
+### 智能体与团队模式
+
+- 系统智能体与自定义智能体
+- 智能体详情、角色设定与直接发起对话
+- Team Room 创建、成员选择、阶段推进与恢复
+- 项目经理式组织协作，而不是只有多 agent 并行
+
+### 渠道与定时任务
+
+- Telegram webhook 接入
+- 飞书长连接接入
+- 远程消息与本地对话绑定
+- 定时任务创建、暂停、恢复、立即执行和结果回流
+
+### 技能与运行治理
+
+- 技能目录浏览、启用 / 禁用 / 卸载、自定义条目
+- 运行时目录隔离
+- 附件 allowlist
+- JSON store 原子写入、CI、测试、隐私与运维文档
 
 ## 相对同类产品的关系
 
 按 `2026-03-23` 的公开资料和当前仓库实现来判断：
 
-- 相比 `OpenClaw`：`OpenCrab` 更像统一产品工作台；`OpenClaw` 在 Gateway、安全边界、审批和自动化控制平面上更硬
-- 相比 `Codex`：`OpenCrab` 更适合做中文优先、chat-native 的统一工作台；`Codex` 在编码深度、worktree、多 agent 和官方生态上更强
-- 相比 `Claude Cowork`：`OpenCrab` 更开源、更本地优先，也更强调渠道 / 任务 / Team Mode 组合；`Cowork` 在桌面知识工作、连接器和 polished output 上更成熟
+- 相比 `OpenClaw`
+  `OpenCrab` 更强调产品表面、中文优先和统一工作台叙事；`OpenClaw` 在 gateway、安全边界、自动化与控制平面上更硬。
+- 相比 `Codex`
+  `OpenCrab` 更适合做 chat-native、中文优先的统一工作台；`Codex` 在编码深度、worktree、多 agent 协调和官方生态上更强。
+- 相比 `Claude Cowork`
+  `OpenCrab` 更开源、更本地优先，也更强调渠道 / 任务 / Team Mode 组合；`Cowork` 在桌面知识工作、连接器和 polished output 上更成熟。
 
-更完整的定位、优势 / 劣势和对比说明见：
+更完整的定位、优劣势和边界判断见：
 
 - [Product Positioning](./docs/product/product-positioning.md)
 
-## 主要能力
+## 深入阅读
 
-- 以聊天为主入口，支持流式回复、历史对话和文件夹整理
-- 支持图片、文件上传，以及常见文档格式的文本提取
-- 支持浏览器工具接入，覆盖 `连接当前浏览器` 与 `使用独立浏览器` 两种模式
-- 支持 Telegram 和飞书渠道接入：Telegram 走 webhook，飞书默认走长连接
-- 支持定时任务创建、暂停、恢复、立即执行，以及从当前对话直接创建定时任务
-- 支持技能目录浏览、详情查看、启用 / 禁用 / 卸载和自定义技能条目
-- 支持智能体管理：可创建自定义角色，并直接发起专属对话
-- 支持团队模式：可把多个智能体拉进同一个 Team Room 持续推进任务
-- 内置“关于我们”页面，用于说明产品定位、原则、迭代历史与路线图
-- 运行时数据和 secret 默认保存在仓库之外
-
-## 当前页面结构
-
-- `对话`：主工作流入口，支持上传文件、流式回复和浏览器能力
-- `智能体`：管理系统智能体与自定义智能体，并可直接发起对话
-- `团队模式`：创建 Team Room，让多个智能体围绕同一目标协作推进
-- `渠道`：管理 Telegram、飞书的接入、状态与连接细节
-- `定时任务`：集中管理计划任务和运行结果
-- `技能`：浏览、启用、禁用、卸载与创建技能
-- `关于我们`：查看产品介绍、原则、路线图与联系入口
-- `设置`：管理模型、推理强度、语言、浏览器模式和连接状态
+- [Product Positioning](./docs/product/product-positioning.md)
+- [Product Scope](./docs/product/product-scope.md)
+- [OpenCrab 不做 Subagents，而是要走向比 Agent Teams 更像真实团队的模式](./docs/blogs/opencrab-beyond-agent-teams.md)
+- [OpenCrab 对 Channels 的重新思考：它不是移动端聊天入口，而是 Agents 的外部参与层](./docs/blogs/opencrab-what-channels-should-be.md)
+- [OpenCrab 对定时任务的重新思考：它不应该只是提醒，也不应该只是调度系统](./docs/blogs/opencrab-what-scheduled-tasks-should-be.md)
 
 ## 零基础安装与启用
 
@@ -368,16 +483,22 @@ $OPENCRAB_HOME/
 
 ## 当前状态
 
-当前最稳定的部分依然是聊天主链路，但产品面已经比最初版本更完整。
+当前最成熟的仍然是聊天主链路，但 OpenCrab 的产品面已经不是“一个对话页”了。
 
-- `对话`：已经支持持久化历史、文件夹、附件、浏览器能力和流式回复
-- `智能体`：已经支持系统智能体、自定义智能体、详情查看和从智能体直接发起对话
-- `团队模式`：已经支持 Team Room 创建、成员选择、运行推进和与定时任务联动
-- `渠道`：Telegram 已支持文本、图片和文件消息；飞书当前以文本闭环为主
-- `定时任务`：已经支持创建、暂停、恢复、立即执行、结果回流和对话内创建
-- `技能`：已经支持目录浏览、详情查看、启用 / 禁用 / 卸载和自定义技能
+- `对话`
+  已支持持久化历史、文件夹、附件、浏览器能力和流式回复。
+- `智能体`
+  已支持系统智能体、自定义智能体、详情查看和从智能体直接发起对话。
+- `团队模式`
+  已支持 Team Room 创建、成员选择、运行推进和与定时任务联动。
+- `渠道`
+  Telegram 已支持文本、图片和文件消息；飞书当前以文本闭环为主。
+- `定时任务`
+  已支持创建、暂停、恢复、立即执行、结果回流和对话内创建。
+- `技能`
+  已支持目录浏览、详情查看、启用 / 禁用 / 卸载和自定义技能。
 
-整体策略仍然是：先把日常最常用的链路做稳，再继续向渠道、调度和协作能力扩展。
+整体策略仍然是：先把最常用链路做稳，再继续向协作、渠道、调度和长期运行能力扩展。
 
 ## 许可证
 

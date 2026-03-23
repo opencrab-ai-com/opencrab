@@ -118,7 +118,7 @@ export function ProjectsOverviewScreen({ projects }: ProjectsOverviewScreenProps
               {projects.map((project) => (
                 <article
                   key={project.id}
-                  className="flex min-h-[360px] flex-col rounded-[24px] border border-line bg-background p-5"
+                  className="flex min-h-[420px] flex-col rounded-[24px] border border-line bg-background p-5"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
@@ -139,9 +139,46 @@ export function ProjectsOverviewScreen({ projects }: ProjectsOverviewScreenProps
 
                   <div className="mt-4 rounded-[18px] border border-line bg-surface-muted/70 px-4 py-4">
                     <div className="text-[11px] uppercase tracking-[0.14em] text-muted">阶段摘要</div>
-                    <p className="mt-2 line-clamp-6 min-h-[9.5rem] text-[14px] leading-7 text-muted-strong">
+                    <p className="mt-2 line-clamp-5 min-h-[8rem] text-[14px] leading-7 text-muted-strong">
                       {buildProjectSummaryPreview(project.summary)}
                     </p>
+                  </div>
+
+                  <div className="mt-4 rounded-[18px] border border-line bg-surface px-4 py-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="text-[11px] uppercase tracking-[0.14em] text-muted">运行联动</div>
+                      <SignalPill tone="neutral">未完成任务 {project.openTaskCount ?? 0}</SignalPill>
+                      {project.pendingReviewCount ? (
+                        <SignalPill tone="info">待复核 {project.pendingReviewCount}</SignalPill>
+                      ) : null}
+                      {project.openGateCount ? (
+                        <SignalPill tone="warning">自治 Gate {project.openGateCount}</SignalPill>
+                      ) : null}
+                      {project.openStuckSignalCount ? (
+                        <SignalPill tone="warning">卡住信号 {project.openStuckSignalCount}</SignalPill>
+                      ) : null}
+                    </div>
+                    <div className="mt-3 space-y-2 text-[13px] leading-6 text-muted-strong">
+                      <p>
+                        当前任务 ·{" "}
+                        {project.activeTaskTitle
+                          ? `${project.activeTaskTitle}${project.activeTaskStatus ? ` · ${formatProjectTaskStatus(project.activeTaskStatus)}` : ""}`
+                          : "当前没有未完成任务"}
+                      </p>
+                      <p>
+                        当前 run · {project.latestRunStepLabel || "最近还没有新的运行记录"}
+                      </p>
+                      <p>
+                        自治预算 · {project.autonomyRoundCount ?? 0}/{project.autonomyRoundBudget ?? 4}
+                        {project.latestGateSummary ? ` · 最近 gate：${project.latestGateSummary}` : ""}
+                      </p>
+                      <p>
+                        最近恢复 ·{" "}
+                        {project.latestRecoverySummary
+                          ? `${formatRecoveryKind(project.latestRecoveryKind)} · ${project.latestRecoverySummary}`
+                          : "最近没有新的恢复动作"}
+                      </p>
+                    </div>
                   </div>
 
                   <div className="mt-5 flex flex-wrap gap-2">
@@ -317,6 +354,28 @@ function StatusPill({
   return <UnifiedStatusPill tone={getStatusTone(status)}>{children}</UnifiedStatusPill>;
 }
 
+function SignalPill({
+  tone,
+  children,
+}: {
+  tone: "neutral" | "info" | "warning";
+  children: React.ReactNode;
+}) {
+  return (
+    <span
+      className={`rounded-full border px-2.5 py-1 text-[11px] font-medium ${
+        tone === "warning"
+          ? "border-[#efd8d6] bg-[#fff2f0] text-[#a54639]"
+          : tone === "info"
+            ? "border-[#d7e4ff] bg-[#eef4ff] text-[#2d56a3]"
+            : "border-line bg-surface-muted text-muted-strong"
+      }`}
+    >
+      {children}
+    </span>
+  );
+}
+
 function formatProjectStatus(status: ProjectRoomRecord["runStatus"]) {
   switch (status) {
     case "running":
@@ -357,6 +416,42 @@ function getStatusTone(status: ProjectRoomRecord["runStatus"]) {
       return "success";
     default:
       return "neutral";
+  }
+}
+
+function formatProjectTaskStatus(status: NonNullable<ProjectRoomRecord["activeTaskStatus"]>) {
+  switch (status) {
+    case "in_progress":
+      return "执行中";
+    case "claimed":
+      return "已认领";
+    case "ready":
+      return "待开工";
+    case "reopened":
+      return "返工中";
+    case "in_review":
+      return "待复核";
+    case "waiting_input":
+      return "等输入";
+    case "blocked":
+      return "被阻塞";
+    default:
+      return "处理中";
+  }
+}
+
+function formatRecoveryKind(kind: ProjectRoomRecord["latestRecoveryKind"]) {
+  switch (kind) {
+    case "retry_same_owner":
+      return "原 owner 重试";
+    case "reassign_to_peer":
+      return "替补接力";
+    case "rollback_to_checkpoint":
+      return "checkpoint 重跑";
+    case "take_over_by_manager":
+      return "PM 接管";
+    default:
+      return "无恢复动作";
   }
 }
 

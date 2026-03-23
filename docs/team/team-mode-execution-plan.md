@@ -75,12 +75,16 @@ OpenCrab Team Mode 不做 `subagents`，也不做“群聊里多人表演”。
 - `Phase 0-4`
   基础骨架已成立，可以视为第一阶段完成。
 - `Phase 5`
-  当前主战场，负责把 Team 从“会跑任务”推进到“会管理交付物”。
+  已完成，Team 已经从“会跑任务”推进到“会管理交付物”。
 - `Phase 6`
-  下一阶段，等交付物闭环更完整后再放开成员协作。
+  已完成第一版，成员之间已经有 mailbox、handoff、review request、self-claim 和 escalation。
 - `Phase 7`
-  属于支撑层，会伴随主战场持续补强，但不单独抢主线。
-- `Phase 8-10`
+  已完成第一版；后续仍会围绕运行恢复、run 视图和前台信息收口继续补强。
+- `Phase 8`
+  已完成第一版；当前重点转向记忆质量、压缩策略和展示收口。
+- `Phase 9`
+  已完成第一版；当前重点转向 suggestion 质量、人审入口与跨项目复用。
+- `Phase 10`
   仍属后续阶段，不进入当前实现主线。
 
 ---
@@ -394,28 +398,42 @@ OpenCrab Team Mode 不做 `subagents`，也不做“群聊里多人表演”。
   - checkpoint task 会自动挂接 `阶段总结 / 待补充事项` artifact
   - Team Room 任务卡已可看到“这条任务已挂接几项交付物”
 
-- [ ] Team Room 可从任务直接跳到交付物
-  最新进展：未开始。
+- [x] Team Room 可从任务直接跳到交付物
+  最新进展：已完成第一版。任务卡现在会显式展示 `输入交付物 / 产出交付物`，并可直接定位到 Team Room 里的对应 artifact 卡片。
 
 ### 10.2 交付物图谱
 
-- [~] artifact 显示来源任务、owner、review 状态
-  最新进展：当前已经实现 task -> artifact 的单向挂接，以及 task 卡上的复核状态显示；artifact 自身仍未携带显式来源任务与 reviewer 元数据。
+- [x] artifact 显示来源任务、owner、review 状态
+  最新进展：已完成第一版。artifact 卡片与详情弹窗现在都可直接看到：
+  - 来源任务
+  - owner
+  - review 状态
+  - reviewer
 
-- [ ] artifact 支持成为后续任务依赖
-  最新进展：未开始。
+- [x] artifact 支持成为后续任务依赖
+  最新进展：已完成第一版主链路：
+  - PM 在派工时已可显式引用已有 artifact
+  - delegation task 创建时会挂接对应 `inputArtifactIds`
+  - 如果引用的 artifact 尚未 ready，任务会进入显式阻塞
+  - artifact ready 后，相关任务会自动解除阻塞继续进入 task flow
+  - 成员执行 prompt 已可直接读取挂接的输入交付物，而不是只靠群聊上下文
 
-- [ ] 建立 artifact graph，而不是 artifact 列表
-  最新进展：未开始。当前只有“挂接了什么”，还没有“谁依赖谁、谁由谁验收、谁进入下一棒”。
+- [x] 建立 artifact graph，而不是 artifact 列表
+  最新进展：已完成第一版 Team Room `Artifact Graph` 视图。当前已经能展示：
+  - 来源任务 -> artifact
+  - artifact -> artifact
+  - artifact -> 下游任务
+  - artifact 来源任务 / owner / reviewer / review 状态
+  这已经足以把 Team Room 从“结果列表”推进到“交付物流向图”。
 
 ### 10.3 当前判断
 
-状态：`进行中`
+状态：`已完成`
 
 说明：
 
-- 这是当前主战场
-- 这一层补完之后，Team 才真正围绕“可交付成果”而不是围绕聊天和状态运转
+- Team 已经可以围绕“可交付成果”而不是只围绕聊天和状态运转
+- 下一阶段主线应正式切换到成员协作层
 
 ---
 
@@ -425,34 +443,34 @@ OpenCrab Team Mode 不做 `subagents`，也不做“群聊里多人表演”。
 
 ### 11.1 Agent-to-Agent 协作
 
-- [ ] 引入 mailbox thread
-  最新进展：未开始。
+- [x] 引入 mailbox thread
+  最新进展：已完成第一版，项目内已经有结构化 mailbox thread 数据对象，并在 Team Room 里作为“协作信号”独立展示。
 
-- [ ] 支持 direct message / broadcast
-  最新进展：未开始。
+- [x] 支持 direct message / broadcast
+  最新进展：已完成第一版，PM 派工时会同步生成 direct message；存在多成员接力时会额外生成 broadcast。
 
-- [ ] 支持成员向上游追问 / 请求补充 / 请求 review
-  最新进展：未开始。
+- [x] 支持成员向上游追问 / 请求补充 / 请求 review
+  最新进展：已完成第一版，下游因上游任务或输入 artifact 阻塞时会生成 request_input；任务交回后会自动生成 review_request。
 
 ### 11.2 自协作能力
 
-- [ ] 支持有限 self-claim
-  最新进展：未开始；当前主要还是 PM 指派。
+- [x] 支持有限 self-claim
+  最新进展：已完成第一版，在没有其他 worker 正在执行时，已解锁的 ready task 会由对应 owner 有边界地自动 claim。
 
-- [ ] 支持成员发起结构化 escalation
-  最新进展：未开始。
+- [x] 支持成员发起结构化 escalation
+  最新进展：已完成第一版，成员执行失败会通过 escalation thread 升级给 PM，并把项目切到 waiting_user checkpoint。
 
-- [ ] 支持成员基于任务图自发建议下一棒
-  最新进展：未开始。
+- [x] 支持成员基于任务图自发建议下一棒
+  最新进展：已完成第一版，成员交回任务后会给 PM 生成 next_step_suggestion，后续 checkpoint 或重新派工会自动收束旧建议。
 
 ### 11.3 当前判断
 
-状态：`未开始`
+状态：`已完成`
 
 说明：
 
-- 这是交付物闭环之后的下一阶段
-- 它不是当前主战场，但会直接建立在交付物图谱之上
+- 第一版目标已经达成，协作信号不再只能靠 PM 在群聊里转述
+- 下一阶段重点不是继续补 mailbox 底层，而是把运行恢复和前台可见性继续做扎实
 
 ---
 
@@ -468,8 +486,8 @@ OpenCrab Team Mode 不做 `subagents`，也不做“群聊里多人表演”。
 - [x] 成员心跳与卡住判断
   最新进展：已完成第一版，PM 能检查成员是否卡住。
 
-- [ ] 统一 Heartbeat / StuckSignal / RecoveryAction 数据对象
-  最新进展：未开始；当前能力散落在 runtime 状态和 store 逻辑里。
+- [x] 统一 Heartbeat / StuckSignal / RecoveryAction 数据对象
+  最新进展：已完成第一版，store 内已经有结构化 heartbeat、stuck signal、recovery action 对象，Team Room 也有对应的 Runtime Health 视图。
 
 - [x] 支持暂停 / 恢复
   最新进展：已完成。
@@ -477,11 +495,11 @@ OpenCrab Team Mode 不做 `subagents`，也不做“群聊里多人表演”。
 - [x] 支持卡住成员重试
   最新进展：已完成第一版。
 
-- [ ] 支持替换成员继续
-  最新进展：未开始；当前只完成了 PM 接管异常任务，还没有正式成员替补链。
+- [x] 支持替换成员继续
+  最新进展：已完成第一版，卡住任务在达到恢复阈值后会优先改派给空闲成员继续；没有可用替补时才回收到 PM。
 
-- [ ] 支持回滚到最近 checkpoint 后重跑
-  最新进展：未开始。
+- [x] 支持回滚到最近 checkpoint 后重跑
+  最新进展：已完成第一版，当前可从最近 checkpoint 直接重跑，并把这次恢复动作沉淀到 run log 与 recovery action。
 
 ### 12.2 Frontstage 产品体验
 
@@ -506,17 +524,17 @@ OpenCrab Team Mode 不做 `subagents`，也不做“群聊里多人表演”。
 - [x] 团队列表页标题与 slogan 已中文化，卡片高度已限制
   最新进展：已完成第一版。
 
-- [ ] 列表页与任务层信息的进一步联动
-  最新进展：未开始。
+- [x] 列表页与任务层信息的进一步联动
+  最新进展：已完成第一版，团队列表卡片现在可以直接看到当前任务、待复核数、卡住信号、最近恢复动作与当前 run 停点。
 
 ### 12.3 当前判断
 
-状态：`进行中`
+状态：`已完成`
 
 说明：
 
-- 这是支撑层，不是当前主战场
-- 后续需要伴随 Phase 5 一起持续补强，而不是单独展开大重构
+- 这一层已经把 runtime health、run log、checkpoint rollback 与列表页联动都补齐到了第一版闭环
+- 后续如果继续打磨，重点会转向体验细节，而不是再补新的 Phase 7 主能力
 
 ---
 
@@ -526,36 +544,36 @@ OpenCrab Team Mode 不做 `subagents`，也不做“群聊里多人表演”。
 
 ### 13.1 项目记忆
 
-- [ ] 引入 Project Memory 结构化对象
-  最新进展：未开始。
+- [x] 引入 Project Memory 结构化对象
+  最新进展：已完成第一版，store 内已经有结构化 project memory 对象，并能在 Team Room 里直接查看。
 
-- [ ] 将关键决策、偏好、风险、历史坑点结构化沉淀
-  最新进展：未开始。
+- [x] 将关键决策、偏好、风险、历史坑点结构化沉淀
+  最新进展：已完成第一版，当前会从 checkpoint、用户补充、复核意见、stuck signal 与 recovery action 自动沉淀这些记忆。
 
 ### 13.2 团队记忆
 
-- [ ] 记录最佳接力顺序、常见卡点、常见 review 问题
-  最新进展：未开始。
+- [x] 记录最佳接力顺序、常见卡点、常见 review 问题
+  最新进展：已完成第一版，当前会从 task dependency、阻塞记录与 review 结果派生 team memory pattern。
 
-- [ ] 让 Team Memory 真正影响后续派工
-  最新进展：未开始。
+- [x] 让 Team Memory 真正影响后续派工
+  最新进展：已完成第一版，manager planning prompt 已注入 team memory，不再只看当前群聊与交付物。
 
 ### 13.3 角色记忆
 
-- [ ] 记录每个成员最擅长的任务类型、常见错误、最优输入格式
-  最新进展：未开始。
+- [x] 记录每个成员最擅长的任务类型、常见错误、最优输入格式
+  最新进展：已完成第一版，角色记忆会根据完成任务、卡点与复核结果自动整理。
 
-- [ ] 让角色记忆影响任务模板、派工和 review
-  最新进展：未开始。
+- [x] 让角色记忆影响任务模板、派工和 review
+  最新进展：已完成第一版，manager / worker prompt 都已注入 role memory，用来影响后续派工与执行方式。
 
 ### 13.4 当前判断
 
-状态：`未开始`
+状态：`已完成`
 
 说明：
 
-- 这是 OpenCrab 超过普通 agent teams 的关键层之一
-- 但必须建立在 Task / Review / Artifact 更完整之后
+- 第一版已经形成“可沉淀、可展示、可反哺 runtime”的闭环
+- 后续再继续做时，重点会转向记忆质量、压缩策略和显式 human review，而不是从零起 memory 结构
 
 ---
 
@@ -565,48 +583,48 @@ OpenCrab Team Mode 不做 `subagents`，也不做“群聊里多人表演”。
 
 ### 14.1 Reflection
 
-- [ ] 任务级微复盘
-  最新进展：未开始。
+- [x] 任务级微复盘
+  最新进展：已完成第一版，会根据任务的完成结果、review、阻塞与恢复动作自动生成结构化 task reflection。
 
-- [ ] 阶段级复盘
-  最新进展：未开始。
+- [x] 阶段级复盘
+  最新进展：已完成第一版，会按 stage 汇总 wins / risks / recommendations，形成结构化 stage reflection。
 
-- [ ] 项目级 run summary
-  最新进展：未开始。
+- [x] 项目级 run summary
+  最新进展：已完成第一版，会围绕每一轮 run 的 trigger、结果、风险和建议生成 run summary。
 
 ### 14.2 Pattern / Policy
 
-- [ ] 常见失败模式沉淀
-  最新进展：未开始。
+- [x] 常见失败模式沉淀
+  最新进展：已完成第一版，会从 team memory / project memory 中提炼 failure pattern suggestion。
 
-- [ ] task template suggestion
-  最新进展：未开始。
+- [x] task template suggestion
+  最新进展：已完成第一版，会根据 task reflection 自动产出输入交付物 / 验收标准相关的任务模板建议。
 
-- [ ] role tuning suggestion
-  最新进展：未开始。
+- [x] role tuning suggestion
+  最新进展：已完成第一版，会把成员长板与常见问题整理成角色调优建议。
 
-- [ ] quality gate suggestion
-  最新进展：未开始。
+- [x] quality gate suggestion
+  最新进展：已完成第一版，会根据 review / 风险模式生成轻量 quality gate 建议。
 
 ### 14.3 落地升级
 
-- [ ] skill suggestion / skill upgrade
-  最新进展：未开始。
+- [x] skill suggestion / skill upgrade
+  最新进展：已完成第一版，会从 reflection / review / recovery 信号中自动生成 skill upgrade suggestion，并在 Team Room 中进入显式落地候选。
 
-- [ ] agent profile update suggestion
-  最新进展：未开始。
+- [x] agent profile update suggestion
+  最新进展：已完成第一版，会根据 role memory 自动生成 agent profile update suggestion，明确指出 profile 应补哪些职责 / 知识 / 输入偏好。
 
-- [ ] 允许部分建议进入 human review 流
-  最新进展：未开始。
+- [x] 允许部分建议进入 human review 流
+  最新进展：已完成第一版，需要人审的 skill / profile suggestion 会自动生成 human review mailbox thread，并支持在 Team Room 里直接采纳或忽略。
 
 ### 14.4 当前判断
 
-状态：`未开始`
+状态：`已完成`
 
 说明：
 
-- 这是最重要的差异化层
-- 但必须等 Task Graph、Governance、Memory 三层更扎实后再进入
+- 第一版已经形成“可复盘、可展示、可反哺 prompt、可进入人审”的 learning loop 闭环
+- 后续继续做时，重点会转向 suggestion 质量、默认采纳边界和跨项目复用，而不是继续补基础对象
 
 ---
 
@@ -648,7 +666,7 @@ OpenCrab Team Mode 不做 `subagents`，也不做“群聊里多人表演”。
 
 截至 2026-03-23，OpenCrab Team Mode 所处位置可以更准确地概括为：
 
-`已经完成 Team Runtime、Team OS、Task Graph 骨架与 Governance 第一版，下一步主战场已经切换为“交付物图谱”。`
+`已经完成 Team Runtime、Team OS、Task Graph 骨架、Governance 第一版、Phase 5 交付物闭环、Phase 6 协作层、Phase 7 运行健康层、Phase 8 Memory Layer，以及 Phase 9 Learning Loop 第一版。`
 
 也就是说，系统已经跨过了最早期的：
 
@@ -668,37 +686,161 @@ OpenCrab Team Mode 不做 `subagents`，也不做“群聊里多人表演”。
 - 当前执行过程公开进展
 - Task Graph 第一版骨架
 - Governance 第一版骨架
+- 成员协作层第一版
+- Runtime Health 第一版
+- Memory Layer 第一版
+- Learning Loop 第一版
 
 ### 16.2 当前仍在进行中的层
 
-- 交付物闭环
-- Runtime 恢复记录与 run 视图
-- Team Room / 团队群聊围绕任务与交付物的信息收口
+- Team Room / 团队群聊围绕 runtime、memory、learning 和回放体验的信息收口
+- suggestion 质量、压缩策略、人审入口、采纳回写与跨项目复用
 
 ### 16.3 当前绝对不该抢跑的层
 
-- mailbox / agent-to-agent coordination
-- self-claim / escalation / direct message
-- memory layer
-- learning loop
 - controlled autonomy
 
-原因不是这些不重要，而是当前如果先做这些，会直接把主链从“任务和交付物闭环”拉散。
+`memory layer` 和 `learning loop` 已经完成第一版主链，但都还应该优先做“可验证的渐进增强”，而不是过早扩成复杂自治系统。
+
+原因不是这些不重要，而是当前如果先跳到更强自治和策略自动改写，会过早拉散当前更关键的稳定性与可控性主链。
 
 ## 17. 当前建议的下一步
 
 如果现在要决定“下一步做什么”，这份文档本身已经足够给出答案：
 
-- 现在该推进的是 `Phase 5：交付物闭环`
-- `Phase 6：成员协作层` 是下一阶段
-- `Phase 7` 只做伴随主线的必要补强
-- `Phase 8-10` 暂时不进入实现主线
+- 现在不应该直接推进 `Phase 10：可控自治`
+- `Phase 7-9` 都已经完成第一版主链，但还处在“收口与质量增强”阶段
+- `Phase 10` 仍然暂时不进入实现主线
 
-所以，当前最合理的选择不是去做 mailbox、self-claim 或更强自治，而是继续把下面这些补完：
+所以，当前最合理的选择不是直接进入可控自治，而是先完成 `Phase 7-9` 的可验证收口：
 
-- artifact 来源任务
-- artifact owner / reviewer
-- artifact 依赖关系
-- task -> artifact 跳转
-- artifact graph
-- Team Room / 群聊里围绕交付物的可见性
+- 先做 Team Room / 团队群聊里 `runtime + memory + learning + replay` 的信息收口
+- 再做 suggestion 的可验证增强：去重、压缩、证据展示、人审与采纳回写
+- 最后再做跨项目复用的最小闭环，但仍保持在“建议 / 采纳”层，不提前升级成自治执行
+
+只有当上述链路已经稳定、可读、可审，并且高风险 gate 边界足够清楚时，才适合进入 `Phase 10` 的最小自治闭环。
+
+### 17.1 接下来一轮的实现主线
+
+这一轮不再按“新 Phase”推进，而是按“收口主线”推进：
+
+- `主线 A：信息收口`
+  目标：把 Team Room / 团队群聊里已经存在的 runtime、memory、learning、replay 信号真正收成一个可读工作台，而不是分散在多个面板里。
+- `主线 B：suggestion 质量增强`
+  目标：把 learning suggestion 从“已经能生成和处理”推进到“能解释为什么出现、是否值得采纳、采纳后到底影响了什么”。
+- `主线 C：跨项目复用最小闭环`
+  目标：让已经被验证过的建议开始具备复用出口，但仍停留在“候选 / 采纳”层，不自动扩成自治执行。
+
+### 17.2 推荐实施顺序
+
+建议按下面顺序推进，而不是并行发散：
+
+1. 先做 `主线 A：信息收口`
+2. 再做 `主线 B：suggestion 质量增强`
+3. 最后做 `主线 C：跨项目复用最小闭环`
+
+原因：
+
+- 如果前台信息仍然分散，就算生成了更多 memory / learning 结果，用户也很难判断这些结果是否可靠
+- 如果 suggestion 还不能解释证据和回写影响，过早做跨项目复用只会放大噪音
+- 只有当单项目内已经“可读、可审、可回写”，跨项目复用才不会退化成另一层黑箱
+
+### 17.3 建议拆成的执行包
+
+#### A. 信息收口包（Phase 7 收口）
+
+- [x] Team Room 建立 `runtime -> recovery -> memory -> learning -> replay` 的更清楚跳转关系
+  最新进展：已完成第一轮。Team Room 顶部已新增 `收口导航`，能直接跳到 `Checkpoint / Runtime Health / Team Memory / Learning Loop / 协作线程 / 最近活动 / 团队群聊`，并先把当前停点、最近恢复、记忆焦点与学习焦点收成统一入口。
+- [x] 团队群聊顶部或关键信息区补足当前 run 停点、待确认事项、待人审建议等摘要
+  最新进展：已完成第一轮。团队群聊 header 现在已直接显示运行状态、当前停点、待人审建议数、待确认复用候选数与待处理线程数，不再要求用户必须先返回 Team Room 才能判断当前停在哪。
+- [x] 活动流、协作线程、Learning Loop 之间建立更明确的互相定位能力，而不是只能靠人工来回翻
+  最新进展：已完成。Learning suggestion 已可直接打开关联 human review thread；协作线程详情也可反向定位关联 suggestion；Activity Dialog 现在也能把单条活动直接送到对应 `checkpoint / runtime recovery / learning suggestion` 的落点，不再需要人工先猜该翻哪块。
+- [x] 把“为什么停在这里 / 为什么生成这条建议 / 最近哪次恢复影响了后续判断”收成更直接的前台文案
+  最新进展：已完成第一轮。Team Room 与团队群聊都已新增 stop summary、recovery summary、memory / learning focus 文案，用户现在可以先看收口结论，再决定要不要继续翻活动流。
+
+完成标志：
+
+- 用户进入 Team Room 后，不需要通读长活动流，也能回答“现在停在哪”“为什么停在这”“接下来该看哪里”
+
+当前判断：
+
+- 状态：`已完成`
+- 这一包已经从“能看到主要入口”推进到“能从活动、线程、suggestion 之间直接来回定位”
+- 后续如果继续打磨，也只属于定位精度和文案 polish，不再阻塞当前主线判断
+
+#### B. Suggestion 质量增强包（Phase 8-9 收口）
+
+- [x] suggestion 去重与压缩，避免同类 failure pattern / quality gate / task template 建议反复堆叠
+  最新进展：已完成。store 侧已按 `kind + target` 做 suggestion 压缩，并在证据标签、证据源、动作项和回写目标层做去重，避免同类建议反复堆叠。
+- [x] suggestion 显式展示证据来源，不只显示标签，还能说明来自哪些 task / review / recovery / run summary
+  最新进展：已完成。前台 suggestion 卡片已新增 `证据来源` 区块，能够直接显示 `任务复盘 / 阶段复盘 / run summary / review / recovery / 项目记忆 / 团队记忆 / 角色记忆` 的来源摘要。
+- [x] suggestion 显式区分 `开放中 / 待人审 / 已采纳 / 已忽略`
+  最新进展：已完成。前台状态已把 `待人审` 单独抬成一档，不再混在泛化的 `开放中` 里。
+- [x] 把 human review thread、review note、reviewedAt 和前台建议卡片打通
+  最新进展：已完成。suggestion 卡片已可直接打开关联人审线程，并显式展示 review note 与 reviewedAt。
+- [x] 把“采纳后已进入默认策略”的回写结果展示得更清楚，而不是只体现在底层 prompt 注入
+  最新进展：已完成。前台 suggestion 卡片现在会直接展示 `已回写到 / 采纳后会回写到` 的目标列表和回写说明，不再只藏在 prompt 注入里。
+
+完成标志：
+
+- 用户看到一条 suggestion 时，能够直接判断：
+  - 它为什么出现
+  - 证据来自哪里
+  - 现在是否还待人审
+  - 如果已经采纳，它已经影响了哪类默认判断
+
+当前判断：
+
+- 状态：`已完成`
+- Suggestion 已经从“抽象结论卡片”升级成“可解释、可回写、可追证”的前台对象
+- 后续如果继续提升，也会偏向建议质量和排序策略，而不是当前这层可读性闭环
+
+#### C. 跨项目复用最小闭环包（Phase 9 收口）
+
+- [x] 只从 `已采纳` 且证据足够稳定的 suggestion 中生成跨项目复用候选
+  最新进展：已完成。只有 `accepted` 且证据数量达到稳定阈值的 suggestion 才会长成复用候选。
+- [x] 复用对象优先限定为：
+  - task template candidate
+  - quality gate candidate
+  - handoff / review checklist candidate
+  最新进展：已完成。当前复用候选只会落在这三类对象里，不会扩散到更激进的自动策略。
+- [x] 复用入口必须显式人工确认，不做默认自动扩散
+  最新进展：已完成。source project 的 Learning Loop 里已新增 `确认进入候选库 / 暂不复用` 人工动作；不确认就不会进入跨项目候选库。
+- [x] 复用记录需要能回看“来自哪个项目、依据哪些证据、何时被采纳”
+  最新进展：已完成。复用候选记录现在会保留 source project、source suggestion、evidence labels / evidence sources、acceptedAt、reviewedAt 与 reviewNote，并在前台直接展示。
+
+完成标志：
+
+- 已采纳建议不只停留在当前项目，而是能以“候选模板 / 候选策略”的方式被下一个项目安全复用
+
+当前判断：
+
+- 状态：`已完成`
+- 当前项目内已经能看到待确认候选与已确认候选库，且确认后的候选会进入后续项目的 runtime prompt，作为可选复用经验继续生效
+- 这条闭环目前仍停留在“候选 / 采纳”层，没有越界成自动扩散或自动执行
+
+#### 17.3 当前判断
+
+- 状态：`已完成`
+- `A 信息收口 / B suggestion 质量增强 / C 跨项目复用最小闭环` 三包都已经落地到 `store + prompt + Team Room / 群聊前台 + 人工确认动作`
+- 当前可以把 `Phase 7-9 第一版主链已完成，并已完成这一轮收口与质量增强闭环` 视为成立判断
+
+### 17.4 这一轮明确不做的事
+
+- [ ] 不做 `Phase 10` 式多轮自治推进
+- [ ] 不做 policy 自动改写
+- [ ] 不做 learning suggestion 默认自动采纳
+- [ ] 不做跨项目自动广播或自动迁移
+
+这些都应等到 Phase 7-9 的收口结果稳定之后，再决定是否开启。
+
+### 17.5 这一轮完成后的验收问题
+
+当下面这些问题都能稳定回答时，才说明这一轮收口基本完成：
+
+- 用户能不能在 10-20 秒内看懂当前 run 停点与最近恢复动作？
+- 用户能不能快速分辨哪些是“开放建议”，哪些是“待人审建议”，哪些已经进入默认策略？
+- 用户能不能从 suggestion 直接追到证据，而不是只看到抽象结论？
+- 用户能不能知道哪些经验已经只属于当前项目，哪些已经成为跨项目复用候选？
+
+如果这些问题还答不上来，就说明当前仍然属于 `收口与质量增强阶段`，不应该提前切去 `Phase 10`。

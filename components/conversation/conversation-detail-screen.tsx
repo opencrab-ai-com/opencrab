@@ -12,6 +12,7 @@ import {
   formatSandboxModeLabel,
 } from "@/lib/opencrab/labels";
 import { usePersistedDraft } from "@/lib/opencrab/use-persisted-draft";
+import type { ProjectDetail } from "@/lib/projects/types";
 import { getProjectDetail as getProjectDetailResource } from "@/lib/resources/opencrab-api";
 import type { UploadedAttachment } from "@/lib/resources/opencrab-api-types";
 import type { ConversationItem } from "@/lib/seed-data";
@@ -59,6 +60,7 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
     projectId: null,
     options: [],
   });
+  const [teamProjectDetail, setTeamProjectDetail] = useState<ProjectDetail | null>(null);
   const [isReplayActive, setIsReplayActive] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const replayFrameRef = useRef<number | null>(null);
@@ -77,6 +79,54 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
     conversationMode === "team" && activeConversation?.projectId === teamMentionState.projectId
       ? teamMentionState.options
       : [];
+  const visibleTeamProjectDetail =
+    teamProjectDetail?.project?.id === activeConversation?.projectId ? teamProjectDetail : null;
+  const teamProject = visibleTeamProjectDetail?.project ?? null;
+  const teamOpenMailboxThreadCount = useMemo(
+    () => visibleTeamProjectDetail?.mailboxThreads.filter((thread) => thread.status === "open").length ?? 0,
+    [visibleTeamProjectDetail?.mailboxThreads],
+  );
+  const teamPendingHumanReviewSuggestionCount = useMemo(
+    () =>
+      visibleTeamProjectDetail?.learningSuggestions.filter(
+        (suggestion) => suggestion.requiresHumanReview && suggestion.status === "open",
+      ).length ?? 0,
+    [visibleTeamProjectDetail?.learningSuggestions],
+  );
+  const teamPendingLearningReuseCandidateCount = useMemo(
+    () =>
+      visibleTeamProjectDetail?.learningReuseCandidates.filter(
+        (candidate) => candidate.sourceProjectId === activeConversation?.projectId && candidate.status === "pending_review",
+      ).length ?? 0,
+    [activeConversation?.projectId, visibleTeamProjectDetail?.learningReuseCandidates],
+  );
+  const teamPrimarySuggestion = useMemo(
+    () =>
+      visibleTeamProjectDetail?.learningSuggestions.find(
+        (suggestion) => suggestion.requiresHumanReview && suggestion.status === "open",
+      ) ??
+      visibleTeamProjectDetail?.learningSuggestions.find((suggestion) => suggestion.status === "open") ??
+      null,
+    [visibleTeamProjectDetail?.learningSuggestions],
+  );
+  const teamConversationSummary = useMemo(() => {
+    if (!teamProject) {
+      return null;
+    }
+
+    return buildTeamConversationSummary(teamProject, {
+      pendingHumanReviewSuggestionCount: teamPendingHumanReviewSuggestionCount,
+      pendingLearningReuseCandidateCount: teamPendingLearningReuseCandidateCount,
+      openMailboxThreadCount: teamOpenMailboxThreadCount,
+      primarySuggestionTitle: teamPrimarySuggestion?.title ?? null,
+    });
+  }, [
+    teamPendingLearningReuseCandidateCount,
+    teamOpenMailboxThreadCount,
+    teamPendingHumanReviewSuggestionCount,
+    teamPrimarySuggestion?.title,
+    teamProject,
+  ]);
 
   useEffect(() => {
     if (!activeConversation?.projectId) {
@@ -91,6 +141,7 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
           return;
         }
 
+        setTeamProjectDetail(detail);
         setTeamMentionState({
           projectId: activeConversation.projectId ?? null,
           options: detail.agents.map((agent) => ({
@@ -102,6 +153,7 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
       })
       .catch(() => {
         if (!cancelled) {
+          setTeamProjectDetail(null);
           setTeamMentionState({
             projectId: activeConversation.projectId ?? null,
             options: [],
@@ -115,10 +167,11 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
   }, [activeConversation?.projectId]);
 
   useEffect(() => {
-    if (conversationMode !== "team") {
+    if (conversationMode !== "team" || !activeConversation?.projectId) {
       return;
     }
 
+    const projectId = activeConversation.projectId;
     let cancelled = false;
 
     const intervalId = window.setInterval(() => {
@@ -131,16 +184,25 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
         return;
       }
 
-      void refreshSnapshot().catch(() => {
-        // Keep team runtime polling quiet; the page already shows the last good state.
-      });
+      void Promise.all([
+        refreshSnapshot(),
+        getProjectDetailResource(projectId),
+      ])
+        .then(([, detail]) => {
+          if (!cancelled) {
+            setTeamProjectDetail(detail);
+          }
+        })
+        .catch(() => {
+          // Keep team runtime polling quiet; the page already shows the last good state.
+        });
     }, TEAM_CONVERSATION_SYNC_INTERVAL_MS);
 
     return () => {
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, [conversationMode, isCurrentConversationSending, refreshSnapshot]);
+  }, [activeConversation?.projectId, conversationMode, isCurrentConversationSending, refreshSnapshot]);
 
   useEffect(() => {
     return () => {
@@ -281,6 +343,25 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
               ) : null}
             </div>
           </div>
+          {conversationMode === "team" && teamProject && teamConversationSummary ? (
+            <div className="mt-3 rounded-[18px] border border-line bg-surface px-4 py-3">
+              <div className="flex flex-wrap gap-1.5 text-[11px] text-muted-strong">
+                <StatusMetaPill>运行状态：{formatTeamProjectStatus(teamProject.runStatus)}</StatusMetaPill>
+                <StatusMetaPill>{teamProject.memberCount} 位成员</StatusMetaPill>
+                <StatusMetaPill>{teamConversationSummary.headline}</StatusMetaPill>
+                {teamPendingHumanReviewSuggestionCount > 0 ? (
+                  <StatusMetaPill>{teamPendingHumanReviewSuggestionCount} 条待人审建议</StatusMetaPill>
+                ) : null}
+                {teamPendingLearningReuseCandidateCount > 0 ? (
+                  <StatusMetaPill>{teamPendingLearningReuseCandidateCount} 条待确认复用候选</StatusMetaPill>
+                ) : null}
+                {teamOpenMailboxThreadCount > 0 ? (
+                  <StatusMetaPill>{teamOpenMailboxThreadCount} 条待处理线程</StatusMetaPill>
+                ) : null}
+              </div>
+              <p className="mt-2 text-[13px] leading-6 text-muted-strong">{teamConversationSummary.summary}</p>
+            </div>
+          ) : null}
         </div>
       </div>
       <div
@@ -409,6 +490,85 @@ function getConversationModeLabel(
   }
 
   return "飞书对话";
+}
+
+function formatTeamProjectStatus(status: NonNullable<ProjectDetail["project"]>["runStatus"]) {
+  switch (status) {
+    case "running":
+      return "运行中";
+    case "paused":
+      return "已暂停";
+    case "waiting_approval":
+      return "待确认";
+    case "waiting_user":
+      return "待补充";
+    case "completed":
+      return "已完成";
+    default:
+      return "准备中";
+  }
+}
+
+function buildTeamConversationSummary(
+  project: NonNullable<ProjectDetail["project"]>,
+  input: {
+    pendingHumanReviewSuggestionCount: number;
+    pendingLearningReuseCandidateCount: number;
+    openMailboxThreadCount: number;
+    primarySuggestionTitle: string | null;
+  },
+) {
+  switch (project.runStatus) {
+    case "waiting_approval":
+      return {
+        headline: project.openGateCount ? "当前停在自治 Gate" : "当前停在确认检查点",
+        summary: project.openGateCount
+          ? project.latestGateSummary ||
+            "团队已经命中当前自治边界，继续前需要你先放行或改方向。"
+          : project.summary || "团队已经交回阶段结果，当前更适合先回 Team Room 处理确认或补充。",
+      };
+    case "waiting_user":
+      return {
+        headline: "当前停在补充检查点",
+        summary:
+          project.latestUserRequest ||
+          "团队正在等待新的方向、边界或验收标准。补充后再继续推进，会比继续翻群聊更高效。",
+      };
+    case "running":
+      return {
+        headline: project.latestRunStepLabel || project.activeTaskTitle || "团队正在推进",
+        summary:
+          project.latestRecoverySummary ||
+          (input.pendingHumanReviewSuggestionCount > 0
+            ? `当前已有 ${input.pendingHumanReviewSuggestionCount} 条建议进入待人审边界，等这一轮稍微收口后就可以回 Team Room 处理。`
+            : input.pendingLearningReuseCandidateCount > 0
+              ? `当前已有 ${input.pendingLearningReuseCandidateCount} 条跨项目复用候选等待确认，回 Team Room 可以直接决定它们是否进入候选库。`
+            : "这里主要作为 frontstage 入口；想判断团队为什么这样推进，回 Team Room 看 Runtime Health 和 Learning Loop 会更清楚。"),
+      };
+    case "completed":
+      return {
+        headline: "本轮已完成收口",
+        summary:
+          input.primarySuggestionTitle
+            ? `这轮已经沉淀出“${input.primarySuggestionTitle}”等后续建议。群聊更适合继续提新目标，回 Team Room 更适合看最终结果和建议收口。`
+            : "这一轮已经完成最终整理。群聊适合开启下一轮，Team Room 更适合回看结果、运行记录和交付物。",
+      };
+    case "paused":
+      return {
+        headline: "团队当前已暂停",
+        summary:
+          project.latestRecoverySummary ||
+          "暂停会保留当前上下文和分工状态。恢复前，建议先回 Team Room 看最近恢复动作和待处理线程。",
+      };
+    default:
+      return {
+        headline: "团队尚未开始运行",
+        summary:
+          input.openMailboxThreadCount > 0
+            ? `当前已有 ${input.openMailboxThreadCount} 条协作线程，但团队还没有正式开始这轮运行。`
+            : "这里已经是团队群聊入口，但还没进入正式推进状态。可以直接发新要求，也可以回 Team Room 先确认分工和目标。",
+      };
+  }
 }
 
 const PILL_BASE_CLASS_NAME =

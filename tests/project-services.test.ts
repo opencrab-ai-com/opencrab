@@ -36,6 +36,19 @@ function createProjectDetail(overrides: Partial<ProjectDetail> = {}): ProjectDet
     agents: [],
     events: [],
     artifacts: [],
+    mailboxThreads: [],
+    projectMemory: null,
+    teamMemory: null,
+    roleMemories: [],
+    taskReflections: [],
+    stageReflections: [],
+    runSummaries: [],
+    learningSuggestions: [],
+    learningReuseCandidates: [],
+    autonomyGates: [],
+    heartbeats: [],
+    stuckSignals: [],
+    recoveryActions: [],
     reviews: [],
     tasks: [],
     runs: [],
@@ -92,7 +105,14 @@ describe("project module services", () => {
     const detail = createProjectDetail();
     const run = vi.fn(async () => detail);
     const updateCheckpoint = vi.fn(async () => detail);
-    const service = createProjectRuntimeService({ run, updateCheckpoint });
+    const reviewLearningSuggestion = vi.fn(() => detail);
+    const reviewLearningReuseCandidate = vi.fn(() => detail);
+    const service = createProjectRuntimeService({
+      run,
+      updateCheckpoint,
+      reviewLearningSuggestion,
+      reviewLearningReuseCandidate,
+    });
 
     await expect(
       service.run("project-1", {
@@ -106,6 +126,18 @@ describe("project module services", () => {
         note: "先停一下",
       }),
     ).resolves.toEqual(detail);
+    expect(
+      service.reviewLearningSuggestion("project-1", {
+        suggestionId: "suggestion-1",
+        action: "accept",
+      }),
+    ).toEqual(detail);
+    expect(
+      service.reviewLearningReuseCandidate("project-1", {
+        candidateId: "candidate-1",
+        action: "confirm",
+      }),
+    ).toEqual(detail);
     expect(run).toHaveBeenCalledWith("project-1", {
       triggerLabel: "手动启动",
       triggerPrompt: "继续推进",
@@ -113,6 +145,14 @@ describe("project module services", () => {
     expect(updateCheckpoint).toHaveBeenCalledWith("project-1", {
       action: "pause",
       note: "先停一下",
+    });
+    expect(reviewLearningSuggestion).toHaveBeenCalledWith("project-1", {
+      suggestionId: "suggestion-1",
+      action: "accept",
+    });
+    expect(reviewLearningReuseCandidate).toHaveBeenCalledWith("project-1", {
+      candidateId: "candidate-1",
+      action: "confirm",
     });
   });
 });

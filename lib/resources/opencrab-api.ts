@@ -269,7 +269,7 @@ export async function replyToProjectConversation(
 export async function updateProjectCheckpoint(
   projectId: string,
   input: {
-    action: "approve" | "request_changes" | "resume";
+    action: "approve" | "request_changes" | "resume" | "rollback";
     note?: string | null;
   } | {
     action: "pause";
@@ -280,6 +280,40 @@ export async function updateProjectCheckpoint(
     method: "PATCH",
     body: JSON.stringify(input),
   });
+}
+
+export async function reviewProjectLearningSuggestion(
+  projectId: string,
+  suggestionId: string,
+  input: {
+    action: "accept" | "dismiss";
+    note?: string | null;
+  },
+) {
+  return request<ProjectDetailResponse>(
+    `/api/projects/${projectId}/learning-suggestions/${suggestionId}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    },
+  );
+}
+
+export async function reviewProjectLearningReuseCandidate(
+  projectId: string,
+  candidateId: string,
+  input: {
+    action: "confirm" | "dismiss";
+    note?: string | null;
+  },
+) {
+  return request<ProjectDetailResponse>(
+    `/api/projects/${projectId}/learning-reuse-candidates/${candidateId}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    },
+  );
 }
 
 export async function getTaskDetail(taskId: string) {

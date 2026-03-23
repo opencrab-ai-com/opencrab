@@ -14,62 +14,119 @@
   <a href="./README.md">中文</a> ｜ English
 </p>
 
-OpenCrab is a local-first workspace for everyday users.
+OpenCrab is a Chinese-first, local-first, chat-native open-source AI workspace.
 
-Chat is still the primary entry, but the current product surface already includes agents, team rooms, channels, scheduled tasks, skills, and settings inside one workspace.
+It does not treat terminals, routing dashboards, cron syntax, or agent graphs as the main entry. Instead, it brings `conversations`, `agents`, `team mode`, `channels`, `scheduled tasks`, and `skills` into one product surface that feels closer to ChatGPT than to a terminal-first agent shell.
 
-More precisely, OpenCrab is trying to become a Chinese-first, open-source, local-first workspace with a ChatGPT-style product surface, rather than another terminal-first agent shell.
+If one sentence has to do the job:
+
+`OpenCrab` is trying to become a unified AI workspace for real ongoing work, not just another agent runtime for engineers.
+
+## What Makes OpenCrab Different
+
+- `Chat-native product surface`
+  Start from one sentence, not from terminal workflows or orchestration setup.
+- `Team Mode that aims beyond subagents`
+  The product direction is closer to a digital team than to temporary delegated workers.
+- `Channels as an external participation layer`
+  Telegram and Feishu are not only extra chat surfaces; they are ingress and egress points for ongoing work.
+- `Scheduled tasks as background execution units`
+  Tasks are meant to wake up context and continue work, not only fire reminders.
+- `Local-first runtime`
+  Conversations, attachments, browser state, and secrets stay in runtime storage outside the repo by default.
 
 ## Screenshots
 
-| Home | Conversation |
+| Conversation | Agents |
 | --- | --- |
-| <img src="./docs/screenshots/homepage.png" alt="OpenCrab home" width="480"> | <img src="./docs/screenshots/conversation-thread.png" alt="OpenCrab conversation" width="480"> |
+| <img src="./docs/screenshots/conversation.png" alt="OpenCrab conversation page" width="480"> | <img src="./docs/screenshots/agents.png" alt="OpenCrab agents page" width="480"> |
 
-| Channels Overview | Telegram Channel |
+| Team Mode | Channels |
 | --- | --- |
-| <img src="./docs/screenshots/channels-overview.png" alt="OpenCrab channels overview" width="480"> | <img src="./docs/screenshots/telegram-channel.png" alt="OpenCrab Telegram channel" width="480"> |
+| <img src="./docs/screenshots/team-mode.png" alt="OpenCrab team mode page" width="480"> | <img src="./docs/screenshots/channels.png" alt="OpenCrab channels page" width="480"> |
 
-| Settings | Scheduled Tasks |
+| Scheduled Tasks | Skills |
 | --- | --- |
-| <img src="./docs/screenshots/settings.png" alt="OpenCrab settings" width="480"> | <img src="./docs/screenshots/tasks.png" alt="OpenCrab scheduled tasks" width="480"> |
+| <img src="./docs/screenshots/tasks.png" alt="OpenCrab scheduled tasks page" width="480"> | <img src="./docs/screenshots/skills.png" alt="OpenCrab skills page" width="480"> |
 
-| Skills | Channels |
-| --- | --- |
-| <img src="./docs/screenshots/skills.png" alt="OpenCrab skills" width="480"> | <img src="./docs/screenshots/channels.png" alt="OpenCrab channels" width="480"> |
+## What OpenCrab Is
 
-## Positioning
+- A chat-first AI workspace
+- A local-first runtime shell with a real product surface
+- A unified place for conversations, execution, teams, channels, recurring work, and skills
+- An open-source project trying to grow toward commercial-grade product quality
 
-- A chat-native workspace instead of a terminal-first shell
-- Chinese-first and local-first by default
-- One surface for conversations, execution, agents, team rooms, channels, scheduled tasks, and skills
-- Open-source and product-oriented, rather than only being an agent runtime
+It is not:
 
-## Why It Exists
+- a terminal-only agent shell
+- a thin model wrapper with a nicer chat UI
+- a multi-agent demo stitched together for research optics
+- a gateway dashboard exposed directly to end users
 
-- Compared with pure chat products, OpenCrab goes deeper on local execution, channels, recurring tasks, and team coordination
-- Compared with CLI-native agent tools, it puts more weight on product surface, lower onboarding friction, and non-terminal users
-- Compared with knowledge-work assistants, it also keeps coding execution, channel ingress, and team-room orchestration in scope
+## Four Product Theses
 
-For a fuller positioning write-up and comparison against OpenClaw, Codex, and Claude Cowork, see:
+### 1. Chat stays the main entry, but not the whole product
 
-- [Product Positioning](./docs/product/product-positioning.md) (Chinese-first)
+OpenCrab keeps the conversation surface as the main entry because it is still the lowest-friction way to start work, carry context forward, and connect later capabilities back into one place.
 
-## Highlights
+### 2. Team Mode should feel more like a digital team than a subagent tree
 
-- Chat-first product flow with streaming replies and persistent conversation history
-- Folder-based conversation organization with a familiar ChatGPT-style layout
-- File and image uploads, plus text extraction for common document formats
-- Browser tool integration for current-browser and managed-browser workflows
-- Channel support for Telegram and Feishu: Telegram uses webhooks, while Feishu uses persistent socket connections by default
-- Simple scheduled task management, with the ability to create a recurring task directly from a conversation
-- Skills catalog browsing, detail pages, local status management, and custom skill entries
-- Agent profiles with direct agent-started conversations
-- Team rooms for multi-agent collaboration and task follow-through
-- A dedicated About page and a settings surface for language, browser mode, model, reasoning, and sandbox defaults
-- Local runtime data and secrets stored outside the repository by default
+The direction is not “spin up more helper agents.”  
+It is closer to:
 
-## Getting Started
+- lead + members
+- shared task lists
+- handoff and dependencies
+- checkpoints, recovery, and review
+
+Read more:
+
+- [OpenCrab 不做 Subagents，而是要走向比 Agent Teams 更像真实团队的模式](./docs/blogs/opencrab-beyond-agent-teams.md)
+
+### 3. Channels should be the external participation layer of the workspace
+
+Channels are not only there so users can “chat from mobile.”  
+They are meant to let users, clients, teammates, and outside systems participate in ongoing work from their native environments.
+
+Read more:
+
+- [OpenCrab 对 Channels 的重新思考：它不是移动端聊天入口，而是 Agents 的外部参与层](./docs/blogs/opencrab-what-channels-should-be.md)
+
+### 4. Scheduled tasks should act like background execution units
+
+OpenCrab does not want tasks to stop at reminders or raw schedulers.  
+They should have context, cadence, logs, and result destinations, so work can continue even when the user is away.
+
+Read more:
+
+- [OpenCrab 对定时任务的重新思考：它不应该只是提醒，也不应该只是调度系统](./docs/blogs/opencrab-what-scheduled-tasks-should-be.md)
+
+## Current Highlights
+
+- Streaming conversations, persistent history, folders, uploads, and browser tools
+- Built-in and custom agents with direct agent-started conversations
+- Team rooms for staged multi-agent collaboration and follow-through
+- Telegram and Feishu channel loops connected back into local conversations
+- Scheduled tasks that can be created, paused, resumed, run now, and routed back into conversations
+- A skills surface for enable / disable / uninstall management and custom entries
+- Local runtime storage, attachment allowlists, atomic JSON writes, CI, tests, and ops/privacy docs
+
+## Relative To Reference Products
+
+As of `2026-03-23`, based on public official materials and the current repo:
+
+- Compared with `OpenClaw`
+  OpenCrab is more product-surface-oriented, Chinese-first, and workspace-driven; OpenClaw is stronger on gateway boundaries, automation, and control-plane rigor.
+- Compared with `Codex`
+  OpenCrab is more suitable as a unified chat-native workspace; Codex is stronger in coding depth, worktrees, multi-agent coordination, and official ecosystem strength.
+- Compared with `Claude Cowork`
+  OpenCrab is more open-source, more local-first, and more explicit about channels / tasks / team mode in one UI; Cowork is more mature for polished desktop knowledge work.
+
+See:
+
+- [Product Positioning](./docs/product/product-positioning.md)
+
+## Quick Start
 
 ### Requirements
 
@@ -78,7 +135,7 @@ For a fuller positioning write-up and comparison against OpenClaw, Codex, and Cl
 - `codex` installed and executable
 - An account with working Codex access
 
-### Quick Start
+### Setup
 
 ```bash
 npm install
@@ -112,27 +169,19 @@ OPENCRAB_PUBLIC_BASE_URL=http://127.0.0.1:3000
 OPENCRAB_UPLOAD_MAX_FILES=8
 OPENCRAB_UPLOAD_MAX_FILE_BYTES=26214400
 OPENCRAB_UPLOAD_MAX_TOTAL_BYTES=41943040
-
-OPENCRAB_TELEGRAM_BOT_TOKEN=
-OPENCRAB_TELEGRAM_WEBHOOK_SECRET=
-OPENCRAB_FEISHU_APP_ID=
-OPENCRAB_FEISHU_APP_SECRET=
-OPENCRAB_FEISHU_VERIFICATION_TOKEN=
-OPENCRAB_FEISHU_ENCRYPT_KEY=
 ```
 
-Channel configuration also works directly from:
+The app surface already covers the most common setup flows through:
 
+- `/settings`
 - `/channels/telegram`
 - `/channels/feishu`
-- `/settings`
 
 Notes:
 
-- Telegram needs a public URL for webhooks, and OpenCrab will try to automate that step
-- Feishu uses persistent socket connections by default and does not need a public callback URL; webhook compatibility mode needs both `OPENCRAB_FEISHU_VERIFICATION_TOKEN` and `OPENCRAB_FEISHU_ENCRYPT_KEY`
 - If you want command execution to inherit the local `OPENAI_API_KEY`, you can explicitly enable it in `/settings`; it stays off by default
 - `.env.example` uses the same default sandbox as the app: `workspace-write`
+- Default language is part of the system prompt path and affects downstream conversations, rewrites, scheduled tasks, and channel replies
 
 Default upload protections:
 
@@ -172,15 +221,10 @@ $OPENCRAB_HOME/
   agents/
 ```
 
-On first launch, OpenCrab automatically migrates the legacy
-`~/Library/Application Support/OpenCrab` layout into this new structure.
-
-This keeps conversations, attachments, browser state, and channel secrets out of the repository by default.
-
 Additional notes:
 
 - If a local JSON store becomes corrupt, OpenCrab backs it up as `*.corrupt.<timestamp>.json` before reseeding
-- API error responses now include a `requestId`, which helps correlate user-facing failures with server logs
+- API error responses include a `requestId`, which helps correlate user-facing failures with server logs
 
 ## Documentation
 
@@ -195,17 +239,6 @@ Additional notes:
 - [Codex Integration](./docs/engineering/codex-sdk-integration.md)
 - [SECURITY](./SECURITY.md)
 - [CONTRIBUTING](./CONTRIBUTING.md)
-
-## Current Status
-
-The conversation workflow is still the most mature part of the product, but the app surface is now broader.
-
-- `Conversations`: persistent history, folders, uploads, browser tools, and streaming replies
-- `Agents`: built-in agents, custom agents, detail pages, and direct agent-started conversations
-- `Team Mode`: team room creation, member selection, staged collaboration flow, and task linkage
-- `Channels`: Telegram already supports text, image, and file loops; Feishu is still focused on text-message loops
-- `Tasks`: create, pause, resume, run-now, result conversations, and conversation-to-task flow
-- `Skills`: catalog browsing, detail pages, local enable / disable / uninstall state, and custom entries
 
 ## License
 

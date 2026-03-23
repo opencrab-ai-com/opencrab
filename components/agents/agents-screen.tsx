@@ -10,6 +10,18 @@ import { Button, buttonClassName } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { MetaPill as UnifiedMetaPill, StatusPill as UnifiedStatusPill } from "@/components/ui/pill";
 
+const HIDDEN_SYSTEM_AGENT_IDS = new Set([
+  "product-strategist",
+  "research-analyst",
+  "writer-editor",
+]);
+
+const PROMOTED_SYSTEM_AGENT_IDS = new Set([
+  "agent-5567fae0-173c-4b15-8d64-db83ffb058ab",
+  "agent-6e418784-be7c-4e6f-9d4e-3b55806f08f0",
+  "agent-7b89ec55-53d2-47c7-affd-58e672d1b226",
+]);
+
 export function AgentsScreen() {
   const router = useRouter();
   const { agents, createConversation } = useOpenCrabApp();
@@ -30,8 +42,11 @@ export function AgentsScreen() {
     );
   }, [agents, query]);
 
-  const systemAgents = filteredAgents.filter((agent) => agent.source === "system");
-  const customAgents = filteredAgents.filter((agent) => agent.source === "custom");
+  const systemAgents = filteredAgents.filter(isSystemAgentForDisplay);
+  const customAgents = filteredAgents.filter(isCustomAgentForDisplay);
+  const systemAgentCount = agents.filter(isSystemAgentForDisplay).length;
+  const customAgentCount = agents.filter(isCustomAgentForDisplay).length;
+  const visibleAgentCount = systemAgentCount + customAgentCount;
 
   async function handleStartConversation(agentId: string, agentName: string) {
     setPendingKey(`chat:${agentId}`);
@@ -55,7 +70,8 @@ export function AgentsScreen() {
       <div className="space-y-8">
         <PageHeader
           title="智能体"
-          description="把身份、职责、语气和长期上下文收成可复用的 teammate，再让它单独工作或加入 Team。新建时会自动生成一套高质量、可继续修改的 markdown 预设。"
+          description="把身份、职责和长期上下文收成可复用智能体，可单聊，也可加入 Team。"
+          descriptionClassName="truncate whitespace-nowrap"
           className="mb-6"
           actions={
             <div className="flex w-full flex-wrap items-center justify-end gap-3 lg:w-[680px] lg:flex-nowrap">
@@ -83,9 +99,9 @@ export function AgentsScreen() {
         />
 
         <section className="grid gap-3 sm:grid-cols-3">
-          <OverviewCard label="全部" value={`${agents.length}`} />
-          <OverviewCard label="系统内置" value={`${agents.filter((agent) => agent.source === "system").length}`} />
-          <OverviewCard label="自定义" value={`${agents.filter((agent) => agent.source === "custom").length}`} />
+          <OverviewCard label="全部" value={`${visibleAgentCount}`} />
+          <OverviewCard label="系统内置" value={`${systemAgentCount}`} />
+          <OverviewCard label="自定义" value={`${customAgentCount}`} />
         </section>
 
         {errorMessage ? (
@@ -100,6 +116,7 @@ export function AgentsScreen() {
           agents={systemAgents}
           pendingKey={pendingKey}
           onStartConversation={handleStartConversation}
+          isSystemSection
         />
 
         <AgentSection
@@ -125,6 +142,7 @@ function AgentSection({
   agents,
   pendingKey,
   onStartConversation,
+  isSystemSection = false,
   emptyLabel = "当前没有智能体",
 }: {
   title: string;
@@ -132,6 +150,7 @@ function AgentSection({
   agents: ReturnType<typeof useOpenCrabApp>["agents"];
   pendingKey: string | null;
   onStartConversation: (agentId: string, agentName: string) => Promise<void>;
+  isSystemSection?: boolean;
   emptyLabel?: string;
 }) {
   return (
@@ -159,10 +178,10 @@ function AgentSection({
                   <AgentAvatar src={agent.avatarDataUrl} name={agent.name} size={52} />
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-[20px] font-semibold tracking-[-0.03em] text-text">{agent.name}</h3>
-                    <Badge tone={agent.source === "system" ? "warm" : "neutral"}>
-                      {agent.source === "system" ? "系统" : "自定义"}
-                    </Badge>
+                      <h3 className="text-[20px] font-semibold tracking-[-0.03em] text-text">{agent.name}</h3>
+                      <Badge tone={isSystemSection ? "warm" : "neutral"}>
+                        {isSystemSection ? "系统" : "自定义"}
+                      </Badge>
                     </div>
                     <div className="mt-2 text-[13px] text-muted-strong">{agent.roleLabel}</div>
                   </div>
@@ -218,6 +237,18 @@ function Badge({ children, tone }: { children: React.ReactNode; tone: "warm" | "
 
 function MetaPill({ children }: { children: React.ReactNode }) {
   return <UnifiedMetaPill>{children}</UnifiedMetaPill>;
+}
+
+function isSystemAgentForDisplay(agent: ReturnType<typeof useOpenCrabApp>["agents"][number]) {
+  if (PROMOTED_SYSTEM_AGENT_IDS.has(agent.id)) {
+    return true;
+  }
+
+  return agent.source === "system" && !HIDDEN_SYSTEM_AGENT_IDS.has(agent.id);
+}
+
+function isCustomAgentForDisplay(agent: ReturnType<typeof useOpenCrabApp>["agents"][number]) {
+  return agent.source === "custom" && !PROMOTED_SYSTEM_AGENT_IDS.has(agent.id);
 }
 
 function formatAvailability(value: "solo" | "team" | "both") {

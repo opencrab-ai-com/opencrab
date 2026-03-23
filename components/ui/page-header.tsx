@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 type PageHeaderProps = {
   title: string;
   description?: string;
+  descriptionClassName?: string;
   hideEyebrow?: boolean;
   className?: string;
   actions?: ReactNode;
@@ -11,6 +12,7 @@ type PageHeaderProps = {
 export function PageHeader({
   title,
   description,
+  descriptionClassName = "",
   hideEyebrow = true,
   className = "",
   actions,
@@ -27,7 +29,11 @@ export function PageHeader({
           {title}
         </h1>
         {description ? (
-          <p className="mt-2 text-[14px] leading-6 text-muted-strong">{description}</p>
+          <p
+            className={`mt-2 text-[14px] leading-6 text-muted-strong ${descriptionClassName}`.trim()}
+          >
+            {description}
+          </p>
         ) : null}
       </div>
       {actions ? <div className="flex shrink-0 justify-start lg:justify-end">{actions}</div> : null}

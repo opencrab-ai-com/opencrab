@@ -8,14 +8,18 @@ import {
   OpenCrabMark,
   OpenCrabWordmark,
 } from "@/components/branding/opencrab-brand";
-import type { NavKey } from "@/lib/seed-data";
+import {
+  DEFAULT_CONVERSATION_MODE,
+  isConversationListMode,
+  resolveConversationListMode,
+  type ConversationListMode,
+} from "@/lib/conversations/list-mode";
+import type { ConversationItem, NavKey } from "@/lib/seed-data";
 
 type AppShellProps = {
   sidebar: React.ReactNode;
   children: React.ReactNode;
 };
-
-type ConversationListMode = "direct" | "agent" | "team" | "channel";
 
 const navItems: Array<{
   key: NavKey;
@@ -68,12 +72,11 @@ const LAST_CONVERSATION_PATH_EVENT = "opencrab:last-conversation-path-change";
 const CONVERSATION_MODE_KEY = "opencrab:conversation-list-mode";
 const CONVERSATION_MODE_EVENT = "opencrab:conversation-list-mode-change";
 const DEFAULT_CONVERSATION_HREF = "/conversations";
-const DEFAULT_CONVERSATION_MODE: ConversationListMode = "direct";
 
 export function AppShell({ sidebar, children }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { chatGptConnectionStatus, codexStatus } = useOpenCrabApp();
+  const { chatGptConnectionStatus, codexStatus, conversations } = useOpenCrabApp();
   const lastConversationHref = useSyncExternalStore(
     subscribeToLastConversationPath,
     getLastConversationHref,
@@ -84,12 +87,24 @@ export function AppShell({ sidebar, children }: AppShellProps) {
     getSelectedConversationMode,
     () => DEFAULT_CONVERSATION_MODE,
   );
+  const activeConversationId = getConversationIdFromPath(pathname);
+  const activeConversation = useMemo(
+    () => conversations.find((item) => item.id === activeConversationId) ?? null,
+    [activeConversationId, conversations],
+  );
+  const activeConversationMode = activeConversation
+    ? resolveConversationListMode(activeConversation)
+    : null;
+  const preferredConversationHref = useMemo(
+    () => resolveDirectConversationHref(lastConversationHref, conversations),
+    [conversations, lastConversationHref],
+  );
 
   useEffect(() => {
-    if (isConversationPath(pathname)) {
+    if (isConversationPath(pathname) && activeConversationMode === "direct") {
       saveLastConversationHref(pathname);
     }
-  }, [pathname]);
+  }, [activeConversationMode, pathname]);
 
   const resolvedNavItems = useMemo(
     () =>
@@ -97,11 +112,14 @@ export function AppShell({ sidebar, children }: AppShellProps) {
         item.key === "conversations"
           ? {
               ...item,
-              href: pathname.startsWith("/conversations/") ? pathname : lastConversationHref,
+              href:
+                activeConversationMode === "direct" && isConversationPath(pathname)
+                  ? pathname
+                  : preferredConversationHref,
             }
           : item,
       ),
-    [lastConversationHref, pathname],
+    [activeConversationMode, pathname, preferredConversationHref],
   );
 
   useEffect(() => {
@@ -352,8 +370,31 @@ function isConversationPath(
   return typeof pathname === "string" && pathname.startsWith("/conversations/");
 }
 
-function isConversationListMode(value: string | null): value is ConversationListMode {
-  return value === "direct" || value === "agent" || value === "team" || value === "channel";
+function getConversationIdFromPath(pathname: string | null | undefined) {
+  if (!isConversationPath(pathname)) {
+    return null;
+  }
+
+  return pathname.split("/")[2] ?? null;
+}
+
+function resolveDirectConversationHref(
+  storedPath: string,
+  conversations: ConversationItem[],
+) {
+  const conversationId = getConversationIdFromPath(storedPath);
+
+  if (!conversationId) {
+    return DEFAULT_CONVERSATION_HREF;
+  }
+
+  const conversation = conversations.find((item) => item.id === conversationId);
+
+  if (!conversation || resolveConversationListMode(conversation) !== "direct") {
+    return DEFAULT_CONVERSATION_HREF;
+  }
+
+  return storedPath;
 }
 
 function ConversationIcon() {
