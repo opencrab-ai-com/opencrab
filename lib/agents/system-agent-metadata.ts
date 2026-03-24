@@ -1,4 +1,5 @@
 import type { AgentTeamRole } from "@/lib/agents/types";
+import { listBuiltInSystemAgents } from "@/lib/agents/system-agent-catalog";
 import type { CodexSandboxMode } from "@/lib/resources/opencrab-api-types";
 
 type BuiltInSystemAgentDefaults = {
@@ -6,38 +7,21 @@ type BuiltInSystemAgentDefaults = {
   defaultSandboxMode: CodexSandboxMode;
 };
 
-const BUILT_IN_SYSTEM_AGENT_DEFAULTS: Record<string, BuiltInSystemAgentDefaults> = {
-  "project-manager": {
-    teamRole: "lead",
-    defaultSandboxMode: "workspace-write",
-  },
-  "user-researcher": {
-    teamRole: "research",
-    defaultSandboxMode: "workspace-write",
-  },
-  "aesthetic-designer": {
-    teamRole: "specialist",
-    defaultSandboxMode: "workspace-write",
-  },
-  "agent-5567fae0-173c-4b15-8d64-db83ffb058ab": {
-    teamRole: "specialist",
-    defaultSandboxMode: "workspace-write",
-  },
-  "agent-6e418784-be7c-4e6f-9d4e-3b55806f08f0": {
-    teamRole: "specialist",
-    defaultSandboxMode: "workspace-write",
-  },
-  "agent-7b89ec55-53d2-47c7-affd-58e672d1b226": {
-    teamRole: "specialist",
-    defaultSandboxMode: "workspace-write",
-  },
-};
+const BUILT_IN_SYSTEM_AGENT_DEFAULTS = Object.fromEntries(
+  listBuiltInSystemAgents().map((agent) => [
+    agent.id,
+    {
+      teamRole: agent.teamRole,
+      defaultSandboxMode: agent.defaultSandboxMode ?? "workspace-write",
+    },
+  ]),
+) as Record<string, BuiltInSystemAgentDefaults>;
 
-export const PROMOTED_SYSTEM_AGENT_IDS = new Set([
-  "agent-5567fae0-173c-4b15-8d64-db83ffb058ab",
-  "agent-6e418784-be7c-4e6f-9d4e-3b55806f08f0",
-  "agent-7b89ec55-53d2-47c7-affd-58e672d1b226",
-]);
+export const PROMOTED_SYSTEM_AGENT_IDS = new Set(
+  listBuiltInSystemAgents()
+    .filter((agent) => agent.promoted)
+    .map((agent) => agent.id),
+);
 
 export function isBuiltInSystemAgentId(agentId: string) {
   return agentId in BUILT_IN_SYSTEM_AGENT_DEFAULTS;

@@ -5,6 +5,7 @@ import { buildUserMessagePreview } from "@/lib/opencrab/messages";
 import {
   addMessage,
   findConversation,
+  upsertMessage,
   updateConversation,
 } from "@/lib/resources/local-store";
 import {
@@ -134,7 +135,7 @@ export function finalizeConversationTurn(
 
   const outputAttachments = registerOutputAttachmentsFromText(result.text);
 
-  const assistantMessageResult = addMessage(prepared.conversationId, {
+  const assistantMessageResult = upsertMessage(prepared.conversationId, {
     id: prepared.assistantMessageId,
     role: "assistant",
     content: result.text,
@@ -172,46 +173,81 @@ export async function runConversationTurn(input: ConversationTurnInput) {
       output_tokens: number;
     } | null = null;
 
-    for await (const event of streamCodexReply({
-      conversationTitle: prepared.conversation.title,
-      threadId: prepared.conversation.codexThreadId,
-      content: prepared.content,
-      agentProfile: prepared.conversation.agentProfileId
-        ? getAgentProfile(prepared.conversation.agentProfileId)
-        : null,
-      model: input.model,
-      reasoningEffort: input.reasoningEffort,
-      sandboxMode: input.sandboxMode,
-      workingDirectory: input.workingDirectory,
-      imagePaths: prepared.imagePaths,
-      textAttachments: prepared.textAttachments,
-    })) {
-      if (event.type === "thread") {
-        latestThreadId = event.threadId;
-        updateConversation(prepared.conversationId, {
-          codexThreadId: event.threadId,
-        });
-        input.onThreadReady?.(event.threadId);
-        continue;
-      }
+    const persistStreamingAssistantMessage = (patch?: {
+      content?: string;
+      thinking?: string[];
+      meta?: string;
+      status?: "pending" | "done" | "stopped";
+    }) => {
+      upsertMessage(prepared.conversationId, {
+        id: prepared.assistantMessageId,
+        role: "assistant",
+        content: patch?.content ?? latestText,
+        thinking: patch?.thinking ?? latestThinking,
+        meta: patch?.meta ?? `OpenCrab 正在回复中... · ${latestModel}`,
+        status: patch?.status ?? "pending",
+      });
+    };
 
-      if (event.type === "thinking") {
-        latestThinking = event.entries;
-        input.onThinking?.(event.entries);
-        continue;
-      }
+    try {
+      for await (const event of streamCodexReply({
+        conversationTitle: prepared.conversation.title,
+        threadId: prepared.conversation.codexThreadId,
+        content: prepared.content,
+        agentProfile: prepared.conversation.agentProfileId
+          ? getAgentProfile(prepared.conversation.agentProfileId)
+          : null,
+        model: input.model,
+        reasoningEffort: input.reasoningEffort,
+        sandboxMode: input.sandboxMode,
+        workingDirectory: input.workingDirectory,
+        imagePaths: prepared.imagePaths,
+        textAttachments: prepared.textAttachments,
+      })) {
+        if (event.type === "thread") {
+          latestThreadId = event.threadId;
+          updateConversation(prepared.conversationId, {
+            codexThreadId: event.threadId,
+          });
+          input.onThreadReady?.(event.threadId);
+          continue;
+        }
 
-      if (event.type === "assistant") {
+        if (event.type === "thinking") {
+          latestThinking = event.entries;
+          persistStreamingAssistantMessage({
+            thinking: event.entries,
+            status: "pending",
+          });
+          input.onThinking?.(event.entries);
+          continue;
+        }
+
+        if (event.type === "assistant") {
+          latestText = event.text;
+          persistStreamingAssistantMessage({
+            content: event.text,
+            status: "pending",
+          });
+          input.onAssistantText?.(event.text);
+          continue;
+        }
+
         latestText = event.text;
-        input.onAssistantText?.(event.text);
-        continue;
+        latestThinking = event.thinking;
+        latestThreadId = event.threadId;
+        latestModel = event.model;
+        latestUsage = event.usage;
       }
-
-      latestText = event.text;
-      latestThinking = event.thinking;
-      latestThreadId = event.threadId;
-      latestModel = event.model;
-      latestUsage = event.usage;
+    } catch (error) {
+      if (latestThinking.length > 0 || latestText.trim().length > 0) {
+        persistStreamingAssistantMessage({
+          content: latestText.trim() || "这次回复失败了，请重试。",
+          meta: `回复失败 · ${latestModel}`,
+          status: "stopped",
+        });
+      }
+      throw error;
     }
 
     const assistantMessageResult = finalizeConversationTurn(prepared, {

@@ -492,16 +492,33 @@ export function deleteProject(projectId: string) {
 
   globalThis.__opencrabProjectRuntimeQueues?.delete(projectId);
 
+  removeProjectCascadeState(state, projectId);
+  writeState(state);
+
+  return true;
+}
+
+function removeProjectCascadeState(state: ProjectStoreState, projectId: string) {
   state.rooms = state.rooms.filter((item) => item.id !== projectId);
   state.agents = state.agents.filter((item) => item.projectId !== projectId);
   state.events = state.events.filter((item) => item.projectId !== projectId);
   state.artifacts = state.artifacts.filter((item) => item.projectId !== projectId);
+  state.mailboxThreads = state.mailboxThreads.filter((item) => item.projectId !== projectId);
+  state.projectMemories = state.projectMemories.filter((item) => item.projectId !== projectId);
+  state.teamMemories = state.teamMemories.filter((item) => item.projectId !== projectId);
+  state.roleMemories = state.roleMemories.filter((item) => item.projectId !== projectId);
+  state.taskReflections = state.taskReflections.filter((item) => item.projectId !== projectId);
+  state.stageReflections = state.stageReflections.filter((item) => item.projectId !== projectId);
+  state.runSummaries = state.runSummaries.filter((item) => item.projectId !== projectId);
+  state.learningSuggestions = state.learningSuggestions.filter((item) => item.projectId !== projectId);
+  state.learningReuseCandidates = state.learningReuseCandidates.filter((item) => item.sourceProjectId !== projectId);
+  state.autonomyGates = state.autonomyGates.filter((item) => item.projectId !== projectId);
+  state.heartbeats = state.heartbeats.filter((item) => item.projectId !== projectId);
+  state.stuckSignals = state.stuckSignals.filter((item) => item.projectId !== projectId);
+  state.recoveryActions = state.recoveryActions.filter((item) => item.projectId !== projectId);
   state.reviews = state.reviews.filter((item) => item.projectId !== projectId);
   state.tasks = state.tasks.filter((item) => item.projectId !== projectId);
   state.runs = state.runs.filter((item) => item.projectId !== projectId);
-  writeState(state);
-
-  return true;
 }
 
 export async function replyToProjectConversation(input: {
@@ -5183,6 +5200,10 @@ function normalizeStoredProjectAgents(
   });
 
   return Array.from(groupedAgents.entries()).flatMap(([projectId, projectAgents]) => {
+    if (!runStatusByProject.has(projectId)) {
+      return [];
+    }
+
     const managerId =
       projectAgents.find((agent) => agent.agentProfileId === "project-manager")?.id ||
       projectAgents.find((agent) => agent.canDelegate)?.id ||
@@ -9267,7 +9288,7 @@ function normalizeProjectStoreState(parsed: Partial<ProjectStoreState>): Project
     : [];
   const agents = normalizeStoredProjectAgents(Array.isArray(parsed.agents) ? parsed.agents : [], rooms);
 
-  return {
+  const normalizedState: ProjectStoreState = {
     rooms,
     agents,
     events: Array.isArray(parsed.events) ? parsed.events : [],
@@ -9452,6 +9473,49 @@ function normalizeProjectStoreState(parsed: Partial<ProjectStoreState>): Project
       : [],
     runs: Array.isArray(parsed.runs) ? parsed.runs : [],
   };
+
+  return pruneOrphanedProjectState(normalizedState);
+}
+
+function pruneOrphanedProjectState(state: ProjectStoreState): ProjectStoreState {
+  const activeProjectIds = new Set(state.rooms.map((room) => room.id));
+
+  return {
+    ...state,
+    agents: normalizeStoredProjectAgents(state.agents, state.rooms),
+    events: filterProjectScopedRecords(state.events, activeProjectIds),
+    artifacts: filterProjectScopedRecords(state.artifacts, activeProjectIds),
+    mailboxThreads: filterProjectScopedRecords(state.mailboxThreads, activeProjectIds),
+    projectMemories: filterProjectScopedRecords(state.projectMemories, activeProjectIds),
+    teamMemories: filterProjectScopedRecords(state.teamMemories, activeProjectIds),
+    roleMemories: filterProjectScopedRecords(state.roleMemories, activeProjectIds),
+    taskReflections: filterProjectScopedRecords(state.taskReflections, activeProjectIds),
+    stageReflections: filterProjectScopedRecords(state.stageReflections, activeProjectIds),
+    runSummaries: filterProjectScopedRecords(state.runSummaries, activeProjectIds),
+    learningSuggestions: filterProjectScopedRecords(state.learningSuggestions, activeProjectIds),
+    learningReuseCandidates: filterSourceProjectScopedRecords(state.learningReuseCandidates, activeProjectIds),
+    autonomyGates: filterProjectScopedRecords(state.autonomyGates, activeProjectIds),
+    heartbeats: filterProjectScopedRecords(state.heartbeats, activeProjectIds),
+    stuckSignals: filterProjectScopedRecords(state.stuckSignals, activeProjectIds),
+    recoveryActions: filterProjectScopedRecords(state.recoveryActions, activeProjectIds),
+    reviews: filterProjectScopedRecords(state.reviews, activeProjectIds),
+    tasks: filterProjectScopedRecords(state.tasks, activeProjectIds),
+    runs: filterProjectScopedRecords(state.runs, activeProjectIds),
+  };
+}
+
+function filterProjectScopedRecords<T extends { projectId: string }>(
+  records: T[],
+  activeProjectIds: Set<string>,
+) {
+  return records.filter((record) => activeProjectIds.has(record.projectId));
+}
+
+function filterSourceProjectScopedRecords<T extends { sourceProjectId: string }>(
+  records: T[],
+  activeProjectIds: Set<string>,
+) {
+  return records.filter((record) => activeProjectIds.has(record.sourceProjectId));
 }
 
 function stripLegacyProjectRoomFields(

@@ -36,16 +36,19 @@ describe("agent store system defaults", () => {
     process.env.OPENCRAB_HOME = tempHome;
 
     const agentStore = await loadAgentStore();
+    const { listBuiltInSystemAgents } = await import("@/lib/agents/system-agent-catalog");
     const systemAgents = agentStore.listAgentProfiles().filter((agent) => agent.source === "system");
+    const builtInSystemAgents = listBuiltInSystemAgents();
 
-    expect(systemAgents).toHaveLength(3);
+    expect(systemAgents).toHaveLength(builtInSystemAgents.length);
     expect(systemAgents.every((agent) => agent.defaultSandboxMode === "workspace-write")).toBe(true);
 
     const systemTeamRoles = new Map(systemAgents.map((agent) => [agent.id, agent.teamRole] as const));
+    const expectedTeamRoles = new Map(
+      builtInSystemAgents.map((agent) => [agent.id, agent.teamRole] as const),
+    );
 
-    expect(systemTeamRoles.get("project-manager")).toBe("lead");
-    expect(systemTeamRoles.get("user-researcher")).toBe("research");
-    expect(systemTeamRoles.get("aesthetic-designer")).toBe("specialist");
+    expect(systemTeamRoles).toEqual(expectedTeamRoles);
   });
 
   it("removes deprecated system agents from local storage during startup", async () => {
@@ -97,10 +100,17 @@ describe("agent store system defaults", () => {
   it("normalizes legacy built-in agent profiles to the enforced team role and sandbox", async () => {
     const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-agent-store-"));
     const userResearcherDir = path.join(tempHome, "agents", "user-researcher");
+    const { listBuiltInSystemAgents } = await import("@/lib/agents/system-agent-catalog");
+    const promotedSystemAgent = listBuiltInSystemAgents().find((agent) => agent.promoted);
+
+    if (!promotedSystemAgent) {
+      throw new Error("需要至少一个 promoted 系统智能体来覆盖兼容测试。");
+    }
+
     const promotedAgentDir = path.join(
       tempHome,
       "agents",
-      "agent-7b89ec55-53d2-47c7-affd-58e672d1b226",
+      promotedSystemAgent.id,
     );
     tempHomes.push(tempHome);
     process.env.OPENCRAB_HOME = tempHome;
@@ -143,8 +153,8 @@ describe("agent store system defaults", () => {
       path.join(promotedAgentDir, "profile.json"),
       JSON.stringify(
         {
-          id: "agent-7b89ec55-53d2-47c7-affd-58e672d1b226",
-          name: "DEV-钢铁侠",
+          id: promotedSystemAgent.id,
+          name: "旧系统智能体",
           summary: "旧数据",
           roleLabel: "Expert",
           description: "旧数据",
@@ -173,7 +183,7 @@ describe("agent store system defaults", () => {
 
     const agentStore = await loadAgentStore();
     const researcher = agentStore.getAgentProfile("user-researcher");
-    const promoted = agentStore.getAgentProfile("agent-7b89ec55-53d2-47c7-affd-58e672d1b226");
+    const promoted = agentStore.getAgentProfile(promotedSystemAgent.id);
 
     expect(researcher?.source).toBe("system");
     expect(researcher?.teamRole).toBe("research");
@@ -182,9 +192,9 @@ describe("agent store system defaults", () => {
     expect(researcher?.defaultSandboxMode).toBe("workspace-write");
 
     expect(promoted?.source).toBe("system");
-    expect(promoted?.teamRole).toBe("specialist");
+    expect(promoted?.teamRole).toBe(promotedSystemAgent.teamRole);
     expect(promoted?.defaultModel).toBeNull();
     expect(promoted?.defaultReasoningEffort).toBeNull();
-    expect(promoted?.defaultSandboxMode).toBe("workspace-write");
+    expect(promoted?.defaultSandboxMode).toBe(promotedSystemAgent.defaultSandboxMode ?? "workspace-write");
   });
 });

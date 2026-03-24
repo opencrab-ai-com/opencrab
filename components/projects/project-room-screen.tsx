@@ -155,9 +155,13 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
 
       try {
         const now = Date.now();
+        const snapshotSyncIntervalMs =
+          projectRunStatus === "running"
+            ? RUNNING_PROJECT_SYNC_INTERVAL_MS
+            : PROJECT_GLOBAL_SNAPSHOT_SYNC_INTERVAL_MS;
         const shouldSyncGlobalSnapshot =
           options.includeGlobalSnapshot === true ||
-          now - lastGlobalSnapshotSyncAt >= PROJECT_GLOBAL_SNAPSHOT_SYNC_INTERVAL_MS;
+          now - lastGlobalSnapshotSyncAt >= snapshotSyncIntervalMs;
         const next = await getProjectDetail(projectId);
 
         if (shouldSyncGlobalSnapshot) {

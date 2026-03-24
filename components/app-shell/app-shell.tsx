@@ -123,7 +123,7 @@ export function AppShell({ sidebar, children }: AppShellProps) {
   );
 
   useEffect(() => {
-    const hrefs = new Set<string>(["/", "/settings"]);
+    const hrefs = new Set<string>(["/conversations", "/settings"]);
 
     resolvedNavItems.forEach((item) => {
       hrefs.add(item.href);
@@ -143,9 +143,9 @@ export function AppShell({ sidebar, children }: AppShellProps) {
       <aside className="flex min-h-0 flex-col gap-1.5 border-b border-line bg-sidebar px-2.5 py-3.5 lg:h-screen lg:border-r lg:border-b-0">
         <div className="flex min-h-9 items-center gap-3">
           <Link
-            href="/"
+            href="/conversations"
             className="group flex items-center gap-3 rounded-xl px-1 py-1 text-muted-strong transition hover:bg-surface"
-            aria-label="OpenCrab 首页"
+            aria-label="OpenCrab 工作台"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-xl transition group-hover:bg-white/70">
               <OpenCrabMark className="h-7 w-7" />
@@ -156,7 +156,7 @@ export function AppShell({ sidebar, children }: AppShellProps) {
 
         <div className="mt-1.5 flex flex-col gap-0.5">
           <SidebarAction
-            href="/"
+            href="/conversations"
             onClick={() => {
               saveSelectedConversationMode("direct");
             }}
@@ -169,10 +169,10 @@ export function AppShell({ sidebar, children }: AppShellProps) {
           {resolvedNavItems.map((item) => {
             const isConversationModeActive =
               item.conversationMode &&
-              (pathname === "/" || pathname.startsWith("/conversations")) &&
+              pathname.startsWith("/conversations") &&
               selectedConversationMode === item.conversationMode;
             const isRouteActive =
-              pathname !== "/" && (pathname === item.href || pathname.startsWith(`${item.href}/`));
+              pathname === item.href || pathname.startsWith(`${item.href}/`);
             const isActive = Boolean(isConversationModeActive || isRouteActive);
 
             return (

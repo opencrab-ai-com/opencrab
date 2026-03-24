@@ -1,12 +1,11 @@
 import type { AgentProfileRecord } from "@/lib/agents/types";
-import { isBuiltInSystemAgentId } from "@/lib/agents/system-agent-metadata";
 
 export function isSystemAgentForDisplay(agent: Pick<AgentProfileRecord, "id" | "source">) {
-  return agent.source === "system" || isBuiltInSystemAgentId(agent.id);
+  return agent.source === "system";
 }
 
 export function isCustomAgentForDisplay(agent: Pick<AgentProfileRecord, "id" | "source">) {
-  return agent.source === "custom" && !isBuiltInSystemAgentId(agent.id);
+  return agent.source === "custom";
 }
 
 export function isSelectableTeamAgent(

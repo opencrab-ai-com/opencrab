@@ -80,6 +80,7 @@ export function Composer({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const textInputRef = useRef<HTMLInputElement | null>(null);
+  const interactionVersionRef = useRef(0);
   const currentValue = value ?? internalValue;
 
   const selectedModelOption = useMemo(
@@ -126,12 +127,21 @@ export function Composer({
     };
   }, []);
 
-  function handleChange(nextValue: string) {
+  function setComposerValue(nextValue: string) {
     if (typeof value !== "string") {
       setInternalValue(nextValue);
     }
 
     onChange?.(nextValue);
+  }
+
+  function markUserInteraction() {
+    interactionVersionRef.current += 1;
+  }
+
+  function handleChange(nextValue: string) {
+    markUserInteraction();
+    setComposerValue(nextValue);
   }
 
   const updateMentionState = useCallback((nextValue: string, caretPosition: number | null) => {
@@ -189,7 +199,8 @@ export function Composer({
     )}`;
     const nextCaret = mentionState.start + option.label.length + 2;
 
-    handleChange(nextValue);
+    markUserInteraction();
+    setComposerValue(nextValue);
     setMentionState(null);
 
     requestAnimationFrame(() => {
@@ -205,21 +216,39 @@ export function Composer({
       return;
     }
 
-    const result = await onSubmit?.({
-      content: trimmedValue,
-      attachments,
-    });
+    const submittedValue = currentValue;
+    const submittedAttachments = attachments;
+    const submittedMentionState = mentionState;
+    const submissionInteractionVersion = interactionVersionRef.current;
+    const shouldRestoreDraft = () =>
+      interactionVersionRef.current === submissionInteractionVersion;
+    const restoreDraft = () => {
+      if (!shouldRestoreDraft()) {
+        return;
+      }
 
-    if (result === false) {
-      return;
-    }
+      setComposerValue(submittedValue);
+      setAttachments(submittedAttachments);
+      setMentionState(submittedMentionState);
+    };
 
-    if (typeof value !== "string") {
-      setInternalValue("");
-    }
-
+    setComposerValue("");
     setAttachments([]);
     setMentionState(null);
+
+    try {
+      const result = await onSubmit?.({
+        content: trimmedValue,
+        attachments: submittedAttachments,
+      });
+
+      if (result === false) {
+        restoreDraft();
+      }
+    } catch (error) {
+      restoreDraft();
+      throw error;
+    }
   }
 
   async function handleFilesSelected(fileList: FileList | null) {
@@ -232,6 +261,7 @@ export function Composer({
     const uploaded = await onUploadFiles(files);
 
     if (uploaded.length > 0) {
+      markUserInteraction();
       setAttachments((current) => [...current, ...uploaded]);
     }
 
@@ -239,6 +269,7 @@ export function Composer({
   }
 
   function removeAttachment(attachmentId: string) {
+    markUserInteraction();
     setAttachments((current) => current.filter((item) => item.id !== attachmentId));
   }
 

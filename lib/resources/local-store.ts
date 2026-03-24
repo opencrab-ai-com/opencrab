@@ -213,44 +213,37 @@ export function addMessage(
   message: Omit<ConversationMessage, "id"> & { id?: string },
 ) {
   const state = readState();
-  const nextMessage: ConversationMessage = {
-    id: message.id ?? createId("message"),
-    role: message.role,
-    actorLabel: message.actorLabel ?? undefined,
-    content: message.content,
-    timestamp: message.timestamp ?? new Date().toISOString(),
-    source: message.source ?? "local",
-    remoteMessageId: message.remoteMessageId ?? null,
-    attachments: message.attachments ? structuredClone(message.attachments) : undefined,
-    usedAttachmentNames: message.usedAttachmentNames
-      ? structuredClone(message.usedAttachmentNames)
-      : undefined,
-    thinking: message.thinking ? structuredClone(message.thinking) : undefined,
-    meta: message.meta,
-    status: message.status,
-  };
+  const nextMessage = buildConversationMessage(message);
 
   const currentMessages = state.conversationMessages[conversationId] ?? [];
   state.conversationMessages[conversationId] = [...currentMessages, nextMessage];
-  state.conversations = state.conversations.map((item) =>
-    item.id === conversationId
-      ? {
-          ...item,
-          preview:
-            message.role === "user"
-              ? message.content
-              : message.actorLabel
-                ? `${message.actorLabel}: ${message.content}`
-                : item.preview,
-          timeLabel: "刚刚",
-          lastActivityAt: nextMessage.timestamp,
-        }
-      : item,
-  );
-  state.conversations = [
-    ...state.conversations.filter((item) => item.id === conversationId),
-    ...state.conversations.filter((item) => item.id !== conversationId),
-  ];
+  touchConversationForMessage(state, conversationId, nextMessage);
+  writeState(state);
+
+  return {
+    snapshot: cloneSnapshot(state),
+    message: structuredClone(nextMessage),
+  };
+}
+
+export function upsertMessage(
+  conversationId: string,
+  message: Omit<ConversationMessage, "id"> & { id: string },
+) {
+  const state = readState();
+  const nextMessage = buildConversationMessage(message);
+  const currentMessages = state.conversationMessages[conversationId] ?? [];
+  const existingIndex = currentMessages.findIndex((item) => item.id === nextMessage.id);
+
+  if (existingIndex >= 0) {
+    state.conversationMessages[conversationId] = currentMessages.map((item, index) =>
+      index === existingIndex ? nextMessage : item,
+    );
+  } else {
+    state.conversationMessages[conversationId] = [...currentMessages, nextMessage];
+  }
+
+  touchConversationForMessage(state, conversationId, nextMessage);
   writeState(state);
 
   return {
@@ -556,4 +549,51 @@ function inferActivityTimestampFromTimeLabel(value: string | undefined) {
 
 function createId(prefix: string) {
   return `${prefix}-${crypto.randomUUID()}`;
+}
+
+function buildConversationMessage(
+  message: Omit<ConversationMessage, "id"> & { id?: string },
+): ConversationMessage {
+  return {
+    id: message.id ?? createId("message"),
+    role: message.role,
+    actorLabel: message.actorLabel ?? undefined,
+    content: message.content,
+    timestamp: message.timestamp ?? new Date().toISOString(),
+    source: message.source ?? "local",
+    remoteMessageId: message.remoteMessageId ?? null,
+    attachments: message.attachments ? structuredClone(message.attachments) : undefined,
+    usedAttachmentNames: message.usedAttachmentNames
+      ? structuredClone(message.usedAttachmentNames)
+      : undefined,
+    thinking: message.thinking ? structuredClone(message.thinking) : undefined,
+    meta: message.meta,
+    status: message.status,
+  };
+}
+
+function touchConversationForMessage(
+  state: ReturnType<typeof readState>,
+  conversationId: string,
+  message: ConversationMessage,
+) {
+  state.conversations = state.conversations.map((item) =>
+    item.id === conversationId
+      ? {
+          ...item,
+          preview:
+            message.role === "user"
+              ? message.content
+              : message.actorLabel
+                ? `${message.actorLabel}: ${message.content}`
+                : item.preview,
+          timeLabel: "刚刚",
+          lastActivityAt: message.timestamp ?? item.lastActivityAt ?? null,
+        }
+      : item,
+  );
+  state.conversations = [
+    ...state.conversations.filter((item) => item.id === conversationId),
+    ...state.conversations.filter((item) => item.id !== conversationId),
+  ];
 }
