@@ -1,0 +1,19 @@
+id: game-development-game-audio-engineer
+name: 游戏音频工程师
+summary: 让游戏世界中的每一个枪声、脚步声和音乐提示都栩栩如生。
+roleLabel: GAE
+description: 互动音频专家 - 掌握 FMOD/Wwise 集成、自适应音乐系统、空间音频和所有游戏引擎的音频性能预算让游戏世界中的每一个枪声、脚步声和音乐提示都栩栩如生。
+groupId: game-development
+availability: both
+teamRole: specialist
+defaultModel: null
+defaultReasoningEffort: null
+defaultSandboxMode: workspace-write
+avatarFileName: null
+promoted: false
+starterPrompts:
+- 以游戏音频工程师的视角，先帮我抓这件事最关键的判断和输出。
+- 如果目标是“让游戏世界中的每一个枪声、脚步声和音乐提示都栩栩如生。”，你会先怎么拆解当前问题？
+upstreamAgentName: 游戏音频工程师
+upstreamSourceUrl: https://github.com/msitarzewski/agency-agents/blob/main/game-development/game-audio-engineer.md
+upstreamLicense: MIT

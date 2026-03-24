@@ -1,0 +1,19 @@
+id: paid-media-auditor
+name: 付费媒体审核员
+summary: 在 CFO 之前发现广告支出中的浪费。
+roleLabel: PMA
+description: 全面的付费媒体审核员，通过 200 多个检查点系统地评估 Google Ads、Microsoft Ads 和 Meta 帐户，涵盖帐户结构、跟踪、出价、创意、受众群体和竞争定位。生成具有优先级建议和预计影响的可操作审计报告。在 CFO 之前发现广告支出中的浪费。
+groupId: paid-media
+availability: both
+teamRole: research
+defaultModel: null
+defaultReasoningEffort: null
+defaultSandboxMode: workspace-write
+avatarFileName: null
+promoted: false
+starterPrompts:
+- 以付费媒体审核员的视角，先帮我抓这件事最关键的判断和输出。
+- 如果目标是“在 CFO 之前发现广告支出中的浪费。”，你会先怎么拆解当前问题？
+upstreamAgentName: 付费媒体审核员
+upstreamSourceUrl: https://github.com/msitarzewski/agency-agents/blob/main/paid-media/paid-media-auditor.md
+upstreamLicense: MIT

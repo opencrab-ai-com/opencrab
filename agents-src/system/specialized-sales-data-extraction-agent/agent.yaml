@@ -1,0 +1,19 @@
+id: specialized-sales-data-extraction-agent
+name: 销售数据提取智能体
+summary: 监视您的 Excel 文件并提取重要的指标。
+roleLabel: SDEA
+description: AI 代理专门监控 Excel 文件并提取关键销售指标（MTD、YTD、年终）以进行内部实时报告监视您的 Excel 文件并提取重要的指标。
+groupId: specialized
+availability: both
+teamRole: specialist
+defaultModel: null
+defaultReasoningEffort: null
+defaultSandboxMode: workspace-write
+avatarFileName: null
+promoted: false
+starterPrompts:
+- 以销售数据提取智能体的视角，先帮我抓这件事最关键的判断和输出。
+- 如果目标是“监视您的 Excel 文件并提取重要的指标。”，你会先怎么拆解当前问题？
+upstreamAgentName: 销售数据提取智能体
+upstreamSourceUrl: https://github.com/msitarzewski/agency-agents/blob/main/specialized/sales-data-extraction-agent.md
+upstreamLicense: MIT

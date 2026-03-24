@@ -1,0 +1,19 @@
+id: specialized-document-generator
+name: 文档生成器
+summary: 来自代码的专业文档 — PDF、幻灯片、电子表格和报告。
+roleLabel: DG
+description: 专业文档创建专家，使用基于代码的方法以及正确的格式、图表和数据可视化来生成专业的 PDF、PPTX、DOCX 和 XLSX 文件。来自代码的专业文档 — PDF、幻灯片、电子表格和报告。
+groupId: specialized
+availability: both
+teamRole: specialist
+defaultModel: null
+defaultReasoningEffort: null
+defaultSandboxMode: workspace-write
+avatarFileName: null
+promoted: false
+starterPrompts:
+- 以文档生成器的视角，先帮我抓这件事最关键的判断和输出。
+- 如果目标是“来自代码的专业文档 — PDF、幻灯片、电子表格和报告。”，你会先怎么拆解当前问题？
+upstreamAgentName: 文档生成器
+upstreamSourceUrl: https://github.com/msitarzewski/agency-agents/blob/main/specialized/specialized-document-generator.md
+upstreamLicense: MIT

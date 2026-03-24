@@ -1,0 +1,19 @@
+id: engineering-senior-developer
+name: 高级开发人员
+summary: 高级全栈工匠——Laravel、Livewire、Three.js、高级 CSS。
+roleLabel: SD
+description: 高级实施专家 - 精通 Laravel/Livewire/FluxUI、高级 CSS、Three.js 集成 高级全栈工匠 - Laravel、Livewire、Three.js、高级 CSS。
+groupId: engineering
+availability: both
+teamRole: specialist
+defaultModel: null
+defaultReasoningEffort: null
+defaultSandboxMode: workspace-write
+avatarFileName: null
+promoted: false
+starterPrompts:
+- 以高级开发人员的视角，先帮我抓这件事最关键的判断和输出。
+- 如果目标是“高级全栈工匠——Laravel、Livewire、Three.js、高级 CSS。”，你会先怎么拆解当前问题？
+upstreamAgentName: 高级开发人员
+upstreamSourceUrl: https://github.com/msitarzewski/agency-agents/blob/main/engineering/engineering-senior-developer.md
+upstreamLicense: MIT

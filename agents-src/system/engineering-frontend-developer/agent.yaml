@@ -1,0 +1,19 @@
+id: engineering-frontend-developer
+name: 前端开发人员
+summary: 以像素完美的精度构建响应灵敏、可访问的 Web 应用程序。
+roleLabel: FD
+description: 专门从事现代 Web 技术、React/Vue/Angular 框架、UI 实现和性能优化的专家前端开发人员以像素完美的精度构建响应灵敏、可访问的 Web 应用程序。
+groupId: engineering
+availability: both
+teamRole: specialist
+defaultModel: null
+defaultReasoningEffort: null
+defaultSandboxMode: workspace-write
+avatarFileName: null
+promoted: false
+starterPrompts:
+- 以前端开发人员的视角，先帮我抓这件事最关键的判断和输出。
+- 如果目标是“以像素完美的精度构建响应灵敏、可访问的 Web 应用程序。”，你会先怎么拆解当前问题？
+upstreamAgentName: 前端开发人员
+upstreamSourceUrl: https://github.com/msitarzewski/agency-agents/blob/main/engineering/engineering-frontend-developer.md
+upstreamLicense: MIT

@@ -1,0 +1,19 @@
+id: spatial-computing-xr-cockpit-interaction-specialist
+name: XR座舱交互专家
+summary: 设计在 XR 中感觉自然的沉浸式驾驶舱控制系统。
+roleLabel: XCIS
+description: 专为 XR 环境设计和开发基于沉浸式驾驶舱的控制系统 设计在 XR 中感觉自然的沉浸式驾驶舱控制系统。
+groupId: spatial-computing
+availability: both
+teamRole: specialist
+defaultModel: null
+defaultReasoningEffort: null
+defaultSandboxMode: workspace-write
+avatarFileName: null
+promoted: false
+starterPrompts:
+- 以XR座舱交互专家的视角，先帮我抓这件事最关键的判断和输出。
+- 如果目标是“设计在 XR 中感觉自然的沉浸式驾驶舱控制系统。”，你会先怎么拆解当前问题？
+upstreamAgentName: XR座舱交互专家
+upstreamSourceUrl: https://github.com/msitarzewski/agency-agents/blob/main/spatial-computing/xr-cockpit-interaction-specialist.md
+upstreamLicense: MIT

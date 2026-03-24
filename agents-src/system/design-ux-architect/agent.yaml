@@ -1,0 +1,19 @@
+id: design-ux-architect
+name: 用户体验架构师
+summary: 为开发人员提供坚实的基础、CSS 系统和清晰的实施路径。
+roleLabel: UA
+description: 技术架构和用户体验专家，为开发人员提供坚实的基础、CSS 系统和清晰的实施指南 为开发人员提供坚实的基础、CSS 系统和清晰的实施路径。
+groupId: design
+availability: both
+teamRole: specialist
+defaultModel: null
+defaultReasoningEffort: null
+defaultSandboxMode: workspace-write
+avatarFileName: null
+promoted: false
+starterPrompts:
+- 以用户体验架构师的视角，先帮我抓这件事最关键的判断和输出。
+- 如果目标是“为开发人员提供坚实的基础、CSS 系统和清晰的实施路径。”，你会先怎么拆解当前问题？
+upstreamAgentName: 用户体验架构师
+upstreamSourceUrl: https://github.com/msitarzewski/agency-agents/blob/main/design/design-ux-architect.md
+upstreamLicense: MIT

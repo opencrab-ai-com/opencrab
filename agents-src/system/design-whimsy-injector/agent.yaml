@@ -1,0 +1,19 @@
+id: design-whimsy-injector
+name: 奇思妙想注射器
+summary: 增添意想不到的欢乐时刻，让品牌令人难忘。
+roleLabel: WI
+description: 专业的创意专家专注于为品牌体验添加个性、愉悦和有趣的元素。创造令人难忘、欢乐的互动，通过意想不到的奇思妙想让品牌脱颖而出 添加意想不到的欢乐时刻，让品牌令人难忘。
+groupId: design
+availability: both
+teamRole: specialist
+defaultModel: null
+defaultReasoningEffort: null
+defaultSandboxMode: workspace-write
+avatarFileName: null
+promoted: false
+starterPrompts:
+- 以奇思妙想注射器的视角，先帮我抓这件事最关键的判断和输出。
+- 如果目标是“增添意想不到的欢乐时刻，让品牌令人难忘。”，你会先怎么拆解当前问题？
+upstreamAgentName: 奇思妙想注射器
+upstreamSourceUrl: https://github.com/msitarzewski/agency-agents/blob/main/design/design-whimsy-injector.md
+upstreamLicense: MIT

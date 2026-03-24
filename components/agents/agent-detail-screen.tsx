@@ -227,9 +227,34 @@ export function AgentDetailScreen({ agentId }: { agentId: string }) {
                 <div className="mt-4 flex flex-wrap gap-2 text-[12px] text-muted-strong">
                   <Pill>{formatAvailability(agent.availability)}</Pill>
                   <Pill>{formatTeamRole(agent.teamRole)}</Pill>
+                  <Pill>{agent.groupLabel}</Pill>
+                  <Pill>{agent.collectionLabel}</Pill>
                   <Pill>{agent.fileCount} 个上下文文件</Pill>
                   <Pill>固定模板结构</Pill>
                 </div>
+
+                {agent.source === "system" ? (
+                  <div className="mt-5 rounded-[18px] border border-[#d7e4ff] bg-[#eef4ff] px-4 py-4 text-[13px] leading-6 text-[#2d56a3]">
+                    <div className="font-medium text-[#20458a]">系统分组</div>
+                    <div className="mt-2">{agent.groupDescription}</div>
+                    {agent.upstreamSourceUrl ? (
+                      <div className="mt-3 break-all">
+                        来源：{agent.collectionLabel}
+                        {agent.upstreamAgentName ? ` · ${agent.upstreamAgentName}` : ""}
+                        {agent.upstreamLicense ? ` · ${agent.upstreamLicense}` : ""}
+                        {" · "}
+                        <a
+                          href={agent.upstreamSourceUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="underline decoration-[#9ab6ef] underline-offset-4"
+                        >
+                          查看上游来源
+                        </a>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
 
               <div className="flex flex-wrap gap-3">
@@ -258,81 +283,95 @@ export function AgentDetailScreen({ agentId }: { agentId: string }) {
 
           <section className="rounded-[28px] border border-line bg-surface p-6 shadow-soft">
             <div className="mb-5 rounded-[18px] border border-[#d7e4ff] bg-[#eef4ff] px-4 py-4 text-[13px] leading-6 text-[#2d56a3]">
-              新建智能体时会自动生成 `soul.md`、`responsibility.md`、`tools.md`、`user.md`、
-              `knowledge.md` 五份文档，并统一采用固定模板结构。下面这版就是可直接编辑的初稿。
+              智能体统一采用 `agent.yaml` + `soul.md`、`responsibility.md`、`tools.md`、`user.md`、
+              `knowledge.md` 的固定结构。自定义智能体可以在这里编辑；系统内置智能体则直接以源码目录为准。
             </div>
-            <Field label="头像" helper="每个智能体都支持独立头像。你可以从自动生成的候选里选，也可以重新生成，或直接上传自己的图片。">
-              <div className="rounded-[22px] border border-line bg-background px-4 py-4">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="flex items-center gap-4">
-                    <AgentAvatar src={agent.avatarDataUrl} name={agent.name} size={72} className="rounded-[24px]" />
-                    <div>
-                      <div className="text-[14px] font-medium text-text">当前头像</div>
-                      <div className="mt-1 text-[12px] leading-6 text-muted-strong">
-                        保存后，这个头像会在智能体列表和对应对话记录里一起展示。
+            {agent.source === "system" ? (
+              <div className="mb-5 rounded-[18px] border border-[#f2dfb4] bg-[#fff8e8] px-4 py-4 text-[13px] leading-6 text-[#8a6116]">
+                系统内置智能体现在直接来自{" "}
+                <code className="rounded bg-white/60 px-1.5 py-0.5 text-[12px] text-[#7c5713]">
+                  agents-src/system/&lt;slug&gt;/
+                </code>{" "}
+                源码目录。这里会展示当前内容，但不再通过页面写回；如需修改，请直接编辑对应的{" "}
+                <code className="rounded bg-white/60 px-1.5 py-0.5 text-[12px] text-[#7c5713]">
+                  agent.yaml
+                </code>{" "}
+                和 5 个 section 文件。
+              </div>
+            ) : null}
+            <fieldset disabled={agent.source === "system"} className="contents">
+              <Field label="头像" helper="每个智能体都支持独立头像。你可以从自动生成的候选里选，也可以重新生成，或直接上传自己的图片。">
+                <div className="rounded-[22px] border border-line bg-background px-4 py-4">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="flex items-center gap-4">
+                      <AgentAvatar src={agent.avatarDataUrl} name={agent.name} size={72} className="rounded-[24px]" />
+                      <div>
+                        <div className="text-[14px] font-medium text-text">当前头像</div>
+                        <div className="mt-1 text-[12px] leading-6 text-muted-strong">
+                          保存后，这个头像会在智能体列表和对应对话记录里一起展示。
+                        </div>
                       </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <Button type="button" variant="secondary" onClick={() => setAvatarSeed(crypto.randomUUID())}>
+                        重新生成
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => avatarInputRef.current?.click()}
+                      >
+                        上传头像
+                      </Button>
+                      <input
+                        ref={avatarInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(event) => void handleAvatarUpload(event)}
+                      />
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <Button type="button" variant="secondary" onClick={() => setAvatarSeed(crypto.randomUUID())}>
-                      重新生成
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => avatarInputRef.current?.click()}
-                    >
-                      上传头像
-                    </Button>
-                    <input
-                      ref={avatarInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(event) => void handleAvatarUpload(event)}
-                    />
+                  <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
+                    {avatarOptions.map((option) => {
+                      const isSelected = agent.avatarDataUrl === option.dataUrl;
+
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() =>
+                            setAgent((current) =>
+                              current ? { ...current, avatarDataUrl: option.dataUrl } : current,
+                            )
+                          }
+                          className={`rounded-[20px] border px-3 py-3 transition ${
+                            isSelected
+                              ? "border-[#1f4fd1] bg-[#eef4ff] shadow-[0_0_0_1px_rgba(31,79,209,0.08)]"
+                              : "border-line bg-surface hover:bg-surface-muted"
+                          }`}
+                        >
+                          <div className="flex flex-col items-center gap-2">
+                            <AgentAvatar src={option.dataUrl} name={agent.name} size={56} className="rounded-[20px]" />
+                            <span className="text-[11px] font-medium text-text">{option.label}</span>
+                            <span className="text-[11px] text-muted-strong">{isSelected ? "当前使用" : "点击选用"}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
-
-                <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
-                  {avatarOptions.map((option) => {
-                    const isSelected = agent.avatarDataUrl === option.dataUrl;
-
-                    return (
-                      <button
-                        key={option.id}
-                        type="button"
-                        onClick={() =>
-                          setAgent((current) =>
-                            current ? { ...current, avatarDataUrl: option.dataUrl } : current,
-                          )
-                        }
-                        className={`rounded-[20px] border px-3 py-3 transition ${
-                          isSelected
-                            ? "border-[#1f4fd1] bg-[#eef4ff] shadow-[0_0_0_1px_rgba(31,79,209,0.08)]"
-                            : "border-line bg-surface hover:bg-surface-muted"
-                        }`}
-                      >
-                        <div className="flex flex-col items-center gap-2">
-                          <AgentAvatar src={option.dataUrl} name={agent.name} size={56} className="rounded-[20px]" />
-                          <span className="text-[11px] font-medium text-text">{option.label}</span>
-                          <span className="text-[11px] text-muted-strong">{isSelected ? "当前使用" : "点击选用"}</span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </Field>
-            <div className="grid gap-5 lg:grid-cols-2">
-              <Field label="名称">
-                <input
-                  value={agent.name}
-                  onChange={(event) => setAgent((current) => (current ? { ...current, name: event.target.value } : current))}
-                  className="w-full rounded-[18px] border border-line bg-background px-4 py-3 text-[14px] text-text outline-none transition focus:border-[#1f4fd1]"
-                />
               </Field>
+              <div className="grid gap-5 lg:grid-cols-2">
+                <Field label="名称">
+                  <input
+                    value={agent.name}
+                    onChange={(event) => setAgent((current) => (current ? { ...current, name: event.target.value } : current))}
+                    className="w-full rounded-[18px] border border-line bg-background px-4 py-3 text-[14px] text-text outline-none transition focus:border-[#1f4fd1]"
+                  />
+                </Field>
 
               <Field label="角色标签">
                 <input
@@ -465,27 +504,28 @@ export function AgentDetailScreen({ agentId }: { agentId: string }) {
                 </select>
               </Field>
 
-              <Field label="推荐开场语" className="lg:col-span-2">
-                <textarea
-                  value={agent.starterPrompts.join("\n")}
-                  onChange={(event) =>
-                    setAgent((current) =>
-                      current
-                        ? {
-                            ...current,
-                            starterPrompts: event.target.value
-                              .split("\n")
-                              .map((item) => item.trim())
-                              .filter(Boolean),
-                          }
-                        : current,
-                    )
-                  }
-                  rows={3}
-                  className="w-full rounded-[20px] border border-line bg-background px-4 py-3 text-[14px] leading-7 text-text outline-none transition focus:border-[#1f4fd1]"
-                />
-              </Field>
-            </div>
+                <Field label="推荐开场语" className="lg:col-span-2">
+                  <textarea
+                    value={agent.starterPrompts.join("\n")}
+                    onChange={(event) =>
+                      setAgent((current) =>
+                        current
+                          ? {
+                              ...current,
+                              starterPrompts: event.target.value
+                                .split("\n")
+                                .map((item) => item.trim())
+                                .filter(Boolean),
+                            }
+                          : current,
+                      )
+                    }
+                    rows={3}
+                    className="w-full rounded-[20px] border border-line bg-background px-4 py-3 text-[14px] leading-7 text-text outline-none transition focus:border-[#1f4fd1]"
+                  />
+                </Field>
+              </div>
+            </fieldset>
           </section>
 
           <section className="rounded-[28px] border border-line bg-surface p-6 shadow-soft">
@@ -496,35 +536,39 @@ export function AgentDetailScreen({ agentId }: { agentId: string }) {
                   这些文件会在每轮对话前作为智能体预设注入，决定它怎么看问题、怎么表达，以及该承担什么职责。
                 </p>
               </div>
-              <Button type="button" onClick={() => void handleSave()} disabled={isSaving}>
-                {isSaving ? "保存中..." : "保存配置"}
-              </Button>
+              {agent.source === "custom" ? (
+                <Button type="button" onClick={() => void handleSave()} disabled={isSaving}>
+                  {isSaving ? "保存中..." : "保存配置"}
+                </Button>
+              ) : null}
             </div>
 
-            <div className="mt-6 space-y-5">
-              {FILE_FIELD_META.map((field) => (
-                <Field key={field.key} label={field.label} helper={field.description}>
-                  <textarea
-                    value={agent.files[field.key]}
-                    onChange={(event) =>
-                      setAgent((current) =>
-                        current
-                          ? {
-                              ...current,
-                              files: {
-                                ...current.files,
-                                [field.key]: event.target.value,
-                              },
-                            }
-                          : current,
-                      )
-                    }
-                    rows={8}
-                    className="w-full rounded-[22px] border border-line bg-background px-4 py-3 text-[14px] leading-7 text-text outline-none transition focus:border-[#1f4fd1]"
-                  />
-                </Field>
-              ))}
-            </div>
+            <fieldset disabled={agent.source === "system"} className="contents">
+              <div className="mt-6 space-y-5">
+                {FILE_FIELD_META.map((field) => (
+                  <Field key={field.key} label={field.label} helper={field.description}>
+                    <textarea
+                      value={agent.files[field.key]}
+                      onChange={(event) =>
+                        setAgent((current) =>
+                          current
+                            ? {
+                                ...current,
+                                files: {
+                                  ...current.files,
+                                  [field.key]: event.target.value,
+                                },
+                              }
+                            : current,
+                        )
+                      }
+                      rows={8}
+                      className="w-full rounded-[22px] border border-line bg-background px-4 py-3 text-[14px] leading-7 text-text outline-none transition focus:border-[#1f4fd1]"
+                    />
+                  </Field>
+                ))}
+              </div>
+            </fieldset>
           </section>
         </>
       )}

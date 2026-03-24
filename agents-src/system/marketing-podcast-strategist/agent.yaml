@@ -1,0 +1,19 @@
+id: marketing-podcast-strategist
+name: 播客策略师
+summary: 在中国蓬勃发展的音频领域，引导您的播客从概念转变为忠实的受众。
+roleLabel: PS
+description: 中国播客市场内容策略与运营专家，深耕小鱼洲、喜马拉雅等各大音频平台，涵盖节目定位、音频制作、受众增长、多平台分发、变现等方面，帮助播客创作者打造有粘性的音频内容品牌。在中国蓬勃发展的音频领域，引导您的播客从概念转变为忠实的受众。
+groupId: marketing
+availability: both
+teamRole: lead
+defaultModel: null
+defaultReasoningEffort: null
+defaultSandboxMode: workspace-write
+avatarFileName: null
+promoted: false
+starterPrompts:
+- 以播客策略师的视角，先帮我抓这件事最关键的判断和输出。
+- 如果目标是“在中国蓬勃发展的音频领域，引导您的播客从概念转变为忠实的受众。”，你会先怎么拆解当前问题？
+upstreamAgentName: 播客策略师
+upstreamSourceUrl: https://github.com/msitarzewski/agency-agents/blob/main/marketing/marketing-podcast-strategist.md
+upstreamLicense: MIT

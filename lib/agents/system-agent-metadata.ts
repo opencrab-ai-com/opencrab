@@ -7,26 +7,23 @@ type BuiltInSystemAgentDefaults = {
   defaultSandboxMode: CodexSandboxMode;
 };
 
-const BUILT_IN_SYSTEM_AGENT_DEFAULTS = Object.fromEntries(
-  listBuiltInSystemAgents().map((agent) => [
-    agent.id,
-    {
-      teamRole: agent.teamRole,
-      defaultSandboxMode: agent.defaultSandboxMode ?? "workspace-write",
-    },
-  ]),
-) as Record<string, BuiltInSystemAgentDefaults>;
-
-export const PROMOTED_SYSTEM_AGENT_IDS = new Set(
-  listBuiltInSystemAgents()
-    .filter((agent) => agent.promoted)
-    .map((agent) => agent.id),
-);
-
 export function isBuiltInSystemAgentId(agentId: string) {
-  return agentId in BUILT_IN_SYSTEM_AGENT_DEFAULTS;
+  return listBuiltInSystemAgents().some((agent) => agent.id === agentId);
 }
 
 export function getBuiltInSystemAgentDefaults(agentId: string) {
-  return BUILT_IN_SYSTEM_AGENT_DEFAULTS[agentId] ?? null;
+  const agent = listBuiltInSystemAgents().find((item) => item.id === agentId);
+
+  if (!agent) {
+    return null;
+  }
+
+  return {
+    teamRole: agent.teamRole,
+    defaultSandboxMode: agent.defaultSandboxMode ?? "workspace-write",
+  } satisfies BuiltInSystemAgentDefaults;
+}
+
+export function getPromotedSystemAgentIds() {
+  return new Set(listBuiltInSystemAgents().filter((agent) => agent.promoted).map((agent) => agent.id));
 }

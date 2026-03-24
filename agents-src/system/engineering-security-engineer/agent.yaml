@@ -1,0 +1,19 @@
+id: engineering-security-engineer
+name: 安全工程师
+summary: 对威胁进行建模、审查代码并设计实际有效的安全架构。
+roleLabel: SE
+description: 专家应用程序安全工程师，专门从事现代 Web 和云原生应用程序的威胁建模、漏洞评估、安全代码审查和安全架构设计。对威胁进行建模、审查代码并设计实际有效的安全架构。
+groupId: engineering
+availability: both
+teamRole: specialist
+defaultModel: null
+defaultReasoningEffort: null
+defaultSandboxMode: workspace-write
+avatarFileName: null
+promoted: false
+starterPrompts:
+- 以安全工程师的视角，先帮我抓这件事最关键的判断和输出。
+- 如果目标是“对威胁进行建模、审查代码并设计实际有效的安全架构。”，你会先怎么拆解当前问题？
+upstreamAgentName: 安全工程师
+upstreamSourceUrl: https://github.com/msitarzewski/agency-agents/blob/main/engineering/engineering-security-engineer.md
+upstreamLicense: MIT

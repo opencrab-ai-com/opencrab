@@ -1,0 +1,19 @@
+id: game-development-narrative-designer
+name: 叙事设计师
+summary: 构建故事系统，使叙事和游戏玩法密不可分。
+roleLabel: ND
+description: 故事系统和对话架构师 - 掌握所有游戏引擎中符合 GDD 的叙事设计、分支对话、背景故事架构和环境故事讲述架构故事系统，使叙事和游戏玩法密不可分。
+groupId: game-development
+availability: both
+teamRole: specialist
+defaultModel: null
+defaultReasoningEffort: null
+defaultSandboxMode: workspace-write
+avatarFileName: null
+promoted: false
+starterPrompts:
+- 以叙事设计师的视角，先帮我抓这件事最关键的判断和输出。
+- 如果目标是“构建故事系统，使叙事和游戏玩法密不可分。”，你会先怎么拆解当前问题？
+upstreamAgentName: 叙事设计师
+upstreamSourceUrl: https://github.com/msitarzewski/agency-agents/blob/main/game-development/narrative-designer.md
+upstreamLicense: MIT

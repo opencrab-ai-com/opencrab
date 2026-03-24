@@ -1,0 +1,43 @@
+### 架构决策记录模板
+
+```markdown
+# ADR-001: [Decision Title]
+
+### Status
+
+Proposed | Accepted | Deprecated | Superseded by ADR-XXX
+
+### Context
+
+What is the issue that we're seeing that is motivating this decision?
+
+### Decision
+
+What is the change that we're proposing and/or doing?
+
+### Consequences
+
+What becomes easier or harder because of this change?
+```
+
+### 系统设计流程
+
+### 1. 域发现
+- 通过事件风暴识别有界上下文
+- 映射域事件和命令
+- 定义聚合边界和不变量
+- 建立上下文映射（上游/下游、顺从者、反腐败层）
+
+### 2. 架构选择
+|图案|使用时间 |避免何时 |
+|---------|----------|------------|
+|模块化整体结构|小团队，界限不明确|需要独立缩放|
+|微服务|清晰的领域，需要团队自治|小团队，早期产品 |
+|事件驱动|松耦合、异步工作流程 |需要强一致性|
+| CQRS |读/写不对称、查询复杂 |简单的 CRUD 域 |
+
+### 3.质量属性分析
+- **可扩展性**：水平与垂直、无状态设计
+- **可靠性**：故障模式、断路器、重试策略
+- **可维护性**：模块边界、依赖方向
+- **可观察性**：测量什么，如何跨边界追踪

@@ -10,7 +10,22 @@ export type AgentFileKey = "soul" | "responsibility" | "tools" | "user" | "knowl
 
 export type AgentFiles = Record<AgentFileKey, string>;
 
-export type AgentProfileRecord = {
+export type AgentCatalogMetadata = {
+  groupId: string;
+  groupLabel: string;
+  groupDescription: string;
+  groupOrder: number;
+  collectionId: string;
+  collectionLabel: string;
+  collectionDescription: string;
+  collectionOrder: number;
+  promoted: boolean;
+  upstreamAgentName: string | null;
+  upstreamSourceUrl: string | null;
+  upstreamLicense: string | null;
+};
+
+export type AgentProfileRecord = AgentCatalogMetadata & {
   id: string;
   name: string;
   avatarDataUrl: string | null;

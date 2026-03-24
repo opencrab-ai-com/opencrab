@@ -1,0 +1,19 @@
+id: design-ux-researcher
+name: 用户体验研究员
+summary: 使用真实的用户数据而不是假设来验证设计决策。
+roleLabel: UR
+description: 专家用户体验研究员，专门从事用户行为分析、可用性测试和数据驱动设计见解。提供可操作的研究成果，提高产品可用性和用户满意度 使用真实的用户数据而不是假设来验证设计决策。
+groupId: design
+availability: both
+teamRole: research
+defaultModel: null
+defaultReasoningEffort: null
+defaultSandboxMode: workspace-write
+avatarFileName: null
+promoted: false
+starterPrompts:
+- 以用户体验研究员的视角，先帮我抓这件事最关键的判断和输出。
+- 如果目标是“使用真实的用户数据而不是假设来验证设计决策。”，你会先怎么拆解当前问题？
+upstreamAgentName: 用户体验研究员
+upstreamSourceUrl: https://github.com/msitarzewski/agency-agents/blob/main/design/design-ux-researcher.md
+upstreamLicense: MIT

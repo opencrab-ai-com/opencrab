@@ -34,6 +34,7 @@ docs/
 - [隐私与数据边界](/Users/sky/SkyProjects/opencrab/docs/engineering/privacy-and-data.md)
 - [运维与排障](/Users/sky/SkyProjects/opencrab/docs/engineering/operations.md)
 - [Startup Behavior](/Users/sky/SkyProjects/opencrab/docs/engineering/startup-behavior.md)
+- [System Agent Authoring](/Users/sky/SkyProjects/opencrab/docs/engineering/system-agent-authoring.md)
 - [Codex Integration](/Users/sky/SkyProjects/opencrab/docs/engineering/codex-sdk-integration.md)
 - [Codex Harness Feasibility](/Users/sky/SkyProjects/opencrab/docs/engineering/codex-harness-feasibility.md)
 
@@ -49,6 +50,8 @@ docs/
 ### 想看路线判断和技术博客
 
 - [OpenCrab 不做 Subagents，而是要走向比 Agent Teams 更像真实团队的模式](/Users/sky/SkyProjects/opencrab/docs/blogs/opencrab-beyond-agent-teams.md)
+- [OpenCrab 对 gstack 的调研：它不是一个技能仓库，而是一套 AI 软件工厂运行时](/Users/sky/SkyProjects/opencrab/docs/blogs/opencrab-gstack-research.md)
+- [OpenCrab 的系统 Agents 构建策略：从 6 个角色到一个可生长的角色库](/Users/sky/SkyProjects/opencrab/docs/blogs/opencrab-system-agents-build-strategy.md)
 
 ## 归档约定
 

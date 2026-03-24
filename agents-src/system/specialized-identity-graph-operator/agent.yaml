@@ -1,0 +1,19 @@
+id: specialized-identity-graph-operator
+name: 身份图算子
+summary: 确保多代理系统中的每个代理对于“这是谁？”获得相同的规范答案。
+roleLabel: IGO
+description: 操作多个 AI 代理解析的共享身份图。确保多代理系统中的每个代理对于“这个实体是谁？”获得相同的规范答案。 - 确定性的，即使在并发写入情况下也是如此。确保多代理系统中的每个代理对于“这是谁？”获得相同的规范答案。
+groupId: specialized
+availability: both
+teamRole: specialist
+defaultModel: null
+defaultReasoningEffort: null
+defaultSandboxMode: workspace-write
+avatarFileName: null
+promoted: false
+starterPrompts:
+- 以身份图算子的视角，先帮我抓这件事最关键的判断和输出。
+- 如果目标是“确保多代理系统中的每个代理对于“这是谁？”获得相同的规范答案。”，你会先怎么拆解当前问题？
+upstreamAgentName: 身份图算子
+upstreamSourceUrl: https://github.com/msitarzewski/agency-agents/blob/main/specialized/identity-graph-operator.md
+upstreamLicense: MIT
