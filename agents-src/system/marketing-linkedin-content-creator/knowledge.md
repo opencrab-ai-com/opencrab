@@ -3,55 +3,55 @@
 **使用 Hook 变体发布草稿**
 每个帖子草稿都包含 3 个挂钩选项：
 ```
-Hook 1 (Curiosity Gap):
-"I almost turned down the job that changed my career."
+钩子 1（好奇心差距）：
+“我差点就拒绝了改变我职业生涯的工作。”
 
-Hook 2 (Bold Claim):
-"Your LinkedIn headline is why you're not getting recruiter messages."
+钩子 2（大胆的主张）：
+“你的LinkedIn标题就是你收不到招聘信息的原因。”
 
-Hook 3 (Specific Story):
-"Tuesday, 9 PM. I'm about to hit send on my resignation email."
+挂钩3（具体故事）：
+“星期二，9 号PM。我即将点击发送我的辞职电子邮件。”
 ```
 
 **30 天内容日历**
 ```
-Week 1: Pillar 1 — Story post (Mon) | Expertise post (Wed) | Data post (Fri)
-Week 2: Pillar 2 — Opinion post (Tue) | Story post (Thu)
-Week 3: Pillar 1 — Carousel (Mon) | Expertise post (Wed) | Opinion post (Fri)
-Week 4: Pillar 3 — Story post (Tue) | Data post (Thu) | Repurpose top post (Sat)
+第 1 周：第一支柱 — 故事帖子（周一）|专业知识岗位（周三）|数据发布（周五）
+第 2 周：支柱 2 — 意见帖（周二）|故事帖子（周四）
+第 3 周：第一支柱 — 轮播（周一）|专业知识岗位（周三）|意见帖（周五）
+第 4 周：第三支柱 — 故事帖子（周二）|数据发布（周四）|重新利用顶帖（周六）
 ```
 
 **轮播脚本模板**
 ```
-Slide 1 (Hook): [Same as best-performing hook variant — creates scroll stop]
-Slide 2: [One insight. One visual. Max 15 words.]
-Slide 3–7: [One insight per slide. Build to the reveal.]
-Slide 8 (CTA): Follow for [specific topic]. Save this for [specific moment].
+幻灯片 1（挂钩）：[与性能最佳的挂钩变体相同 - 创建滚动停止]
+幻灯片 2：[一个见解。一种视觉。最多 15 个字。]
+幻灯片 3-7：[每张幻灯片一个见解。构建揭示。]
+幻灯片 8 (CTA)：关注[特定主题]。将此保存到[特定时刻]。
 ```
 
 **配置文件优化框架**
 ```
-Headline formula: [What you do] + [Who you help] + [What outcome]
-Bad:  "Senior Software Engineer at Acme Corp"
-Good: "I help early-stage startups ship faster — 0 to production in 90 days"
+标题公式：[你做了什么]+[你帮助了谁]+[结果是什么]
+不好：“Acme Corp 的高级软件 Engineer”
+好：“我帮助早期初创公司更快地交付——90 天内从 0 到生产”
 
-About section structure:
-- Line 1: The hook (same rules as post hooks)
-- Para 1: What you do and who you do it for
-- Para 2: The story that proves it — specific, not vague
-- Para 3: Social proof (numbers, names, outcomes)
-- Line last: Clear CTA ("DM me 'READY' / Connect if you're building in [space]")
+关于部分结构：
+- 第 1 行：钩子（与后钩子规则相同）
+- 第 1 段：你做什么以及为谁做
+- 第 2 段：证明这一点的故事 - 具体而不是模糊
+- 第 3 段：社会证明（数字、姓名、结果）
+- 最后一行：清除 CTA（“DM 我‘准备’/如果您正在 [空间] 中构建，请连接”）
 ```
 
 **语音配置文件**
 ```
-On-voice:  "Here's what most engineers get wrong about system design..."
-Off-voice: "Excited to share that I've been thinking about system design!"
+语音：“这是大多数工程师在系统设计方面犯的错误……”
+画外音：“很高兴分享我一直在思考系统设计！”
 
-On-voice:  "I turned down $200K to start a company. It worked. Here's why."
-Off-voice: "Following your passion is so important in today's world."
+语音：“我拒绝了 20 万美元来创办一家公司。它成功了。原因如下。”
+旁白：“在当今世界，追随你的热情非常重要。”
 
-Tone: Direct. Specific. A little contrarian. Never cringe.
+语气：直接。具体的。有点逆反。永远不要畏缩。
 ```
 
 ### 学习与记忆
@@ -66,17 +66,17 @@ Tone: Direct. Specific. A little contrarian. Never cringe.
 
 **观众的挂钩工程**
 ```
-For job seekers:
-"I applied to 94 jobs. 3 responded. Here's what changed everything."
+对于求职者：
+“我申请了 94 份工作。其中 3 份回复了。这就是改变一切的原因。”
 
-For founders:
-"We almost ran out of runway. This LinkedIn post saved us."
+对于创始人：
+“我们差点冲出了跑道。LinkedIn 的帖子救了我们。”
 
-For developers:
-"I posted one thread about system design. 3 recruiters DMed me that week."
+对于开发人员：
+“我发布了一篇关于系统设计的帖子。那周有 3 位招聘人员通过私信联系了我。”
 
-For B2B sellers:
-"I deleted my cold outreach sequence. Replaced it with this. Pipeline doubled."
+对于 B2B 卖家：
+“我删除了我的冷外展序列。用这个替换它。管道增加了一倍。”
 ```
 
 **针对特定受众的剧本**

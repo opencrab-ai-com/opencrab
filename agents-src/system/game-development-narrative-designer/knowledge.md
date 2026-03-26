@@ -5,126 +5,126 @@
 // Scene: First meeting with Commander Reyes
 // Tone: Tense, power imbalance, protagonist is being evaluated
 
-REYES: "You're late."
--> [Choice: How does the player respond?]
-    + "I had complications." [Pragmatic]
-        REYES: "Everyone does. The ones who survive learn to plan for them."
-        -> reyes_neutral
-    + "Your intel was wrong." [Challenging]
-        REYES: "Then you improvised. Good. We need people who can."
-        -> reyes_impressed
-    + [Stay silent.] [Observing]
-        REYES: "(Studies you.) Interesting. Follow me."
-        -> reyes_intrigued
+雷耶斯：“你迟到了。”
+-> [选择：玩家如何反应？]
++“我有并发症。” [务实]
+雷耶斯：“每个人都这样做。幸存下来的人学会为自己制定计划。”
+-> 雷耶斯_中性
++“你的情报是错误的。” [具有挑战性的]
+雷耶斯：“那你就即兴发挥了。很好。我们需要有能力的人。”
+-> 雷耶斯印象深刻
++ [保持沉默。] [观察]
+雷耶斯：“（研究你。）有趣。跟我来。”
+-> 雷耶斯_感兴趣
 
-= reyes_neutral
-REYES: "Let's see if your work is as competent as your excuses."
--> scene_continue
+= 雷耶斯_中性
+雷耶斯：“让我们看看你的工作是否和你的借口一样称职。”
+-> 场景_继续
 
-= reyes_impressed
-REYES: "Don't make a habit of blaming the mission. But today — acceptable."
--> scene_continue
+= 雷耶斯印象深刻
+雷耶斯：“不要养成指责使命的习惯。但今天——可以接受。”
+-> 场景_继续
 
-= reyes_intrigued
-REYES: "Most people fill silences. Remember that."
--> scene_continue
+= 雷耶斯_感兴趣
+雷耶斯：“大多数人都会保持沉默。记住这一点。”
+-> 场景_继续
 ```
 
 ### 角色语音支柱模板
 ```markdown
 
-### Character: [Name]
+### 角色：[姓名]
 
-### Identity
-- **Role in Story**: [Protagonist / Antagonist / Mentor / etc.]
-- **Core Wound**: [What shaped this character's worldview]
-- **Desire**: [What they consciously want]
-- **Need**: [What they actually need, often in tension with desire]
+＃＃＃ 身份
+- **故事中的角色**：[主角/对手/导师/等]
+- **核心伤口**：[是什么塑造了这个角色的世界观]
+- **欲望**：[他们有意识地想要什么]
+- **需要**：[他们实际需要什么，通常与欲望紧张]
 
-### Voice Pillars
-- **Vocabulary**: [Formal/casual, technical/colloquial, regional flavor]
-- **Sentence Rhythm**: [Short/staccato for urgency | Long/complex for thoughtfulness]
-- **Topics They Avoid**: [What this character never talks about directly]
-- **Verbal Tics**: [Specific phrases, hesitations, or patterns]
-- **Subtext Default**: [Does this character say what they mean, or always dance around it?]
+### 语音支柱
+- **词汇**：[正式/休闲、技术/口语、地域风味]
+- **句子节奏**：[短/断奏表示紧急|长/复杂的深思熟虑]
+- **他们回避的话题**：[这个角色从不直接谈论什么]
+- **言语抽搐**：[特定短语、犹豫或模式]
+- **默认潜台词**：[这个角色是否说出他们的意思，或者总是围绕着它跳舞？]
 
-### What They Would Never Say
-[3 example lines that sound wrong for this character, with explanation]
+### 他们永远不会说的话
+[3 个对于这个角色来说听起来错误的示例台词，并附有解释]
 
-### Reference Lines (approved as voice exemplars)
-- "[Line 1]" — demonstrates vocabulary and rhythm
-- "[Line 2]" — demonstrates subtext use
-- "[Line 3]" — demonstrates emotional register under pressure
+### 参考线（批准为语音范例）
+- “[Line 1]” — 演示词汇和节奏
+- “[Line 2]” — 演示潜台词的使用
+- “[第 3 行]”——展示压力下的情绪记录
 ```
 
 ### 传说建筑地图
 ```markdown
-# Lore Tier Structure — [World Name]
+# 传说层级结构 — [世界名称]
 
-### Tier 1: Surface (All Players)
+### 第 1 层：表面（所有玩家）
 
-Content encountered on the critical path — every player receives this.
-- Main story cutscenes
-- Key NPC mandatory dialogue
-- Environmental landmarks that define the world visually
-- [List Tier 1 lore beats here]
+在关键路径上遇到的内容——每个玩家都会收到这个。
+- 主要故事过场动画
+- 关键NPC强制对话
+- 视觉上定义世界的环境地标
+- [在此列出第 1 层传说节拍]
 
-### Tier 2: Engaged (Explorers)
+### 第 2 层：Eng老年（探索者）
 
-Content found by players who talk to all NPCs, read notes, explore areas.
-- Side quest dialogue
-- Collectible notes and journals
-- Optional NPC conversations
-- Discoverable environmental tableaux
-- [List Tier 2 lore beats here]
+玩家与所有 NPC 交谈、阅读笔记、探索区域时发现的内容。
+- 支线任务对话
+- 收藏笔记和日记
+- 可选的NPC对话
+- 可发现的环境场景
+- [在此列出第 2 层传说节拍]
 
-### Tier 3: Deep (Lore Hunters)
+### 第 3 层：深度（传说猎人）
 
-Content for players who seek hidden rooms, secret items, meta-narrative threads.
-- Hidden documents and encrypted logs
-- Environmental details requiring inference to understand
-- Connections between seemingly unrelated Tier 1 and Tier 2 beats
-- [List Tier 3 lore beats here]
+适合寻求隐藏房间、秘密物品、元叙事线索的玩家的内容。
+- 隐藏文档和加密日志
+- 需要推理才能理解的环境细节
+- 看似无关的第 1 层和第 2 层节拍之间的联系
+- [在此列出第 3 级绝杀节拍]
 
-### World Bible Quick Reference
+### 世界圣经快速参考
 
-- **Timeline**: [Key historical events and dates]
-- **Factions**: [Name, goal, philosophy, relationship to player]
-- **Rules of the World**: [What is and isn't possible — physics, magic, tech]
-- **Banned Retcons**: [Facts established in Tier 1 that can never be contradicted]
+- **时间表**：[关键历史事件和日期]
+- **派别**：[名称、目标、理念、与玩家的关系]
+- **世界规则**：[什么是可能的，什么是不可能的——物理、魔法、科技]
+- **被禁止的侦察员**：[在第 1 层中确立的事实，永远无法反驳]
 ```
 
 ### 叙事-游戏集成矩阵
 ```markdown
-# Story-Gameplay Beat Alignment
+# 故事-游戏节拍对齐
 
-| Story Beat          | Gameplay Consequence                  | Player Feels         |
+|故事节奏|游戏后果|玩家感受|
 |---------------------|---------------------------------------|----------------------|
-| Ally betrayal       | Lose access to upgrade vendor          | Loss, recalibration  |
-| Truth revealed      | New area unlocked, enemies recontexted | Realization, urgency |
-| Character death     | Mechanic they taught is lost           | Grief, stakes        |
-| Player choice: spare| Faction reputation shift + side quest  | Agency, consequence  |
-| World event         | Ambient NPC dialogue changes globally  | World is alive       |
+|盟友背叛|失去升级供应商的访问权限 |损失，重新校准|
+|真相揭晓 |新区域解锁，敌人重新定位 |实现，紧迫性|
+|角色死亡|他们教的机械师失踪了 |悲伤，赌注|
+|玩家选择：备用|派系声望转变+支线任务 |代理，后果|
+|世界盛事|环境 NPC 对话在全球范围内发生变化 |世界还活着 |
 ```
 
 ### 环境故事简介
 ```markdown
 
-### Environmental Story Beat: [Room/Area Name]
+### 环境故事节拍：[房间/区域名称]
 
-**What Happened Here**: [The backstory — written as a paragraph]
-**What the Player Should Infer**: [The intended player takeaway]
-**What Remains to Be Mysterious**: [Intentionally unanswered — reward for imagination]
+**这里发生了什么**：[背景故事——以段落形式写]
+**玩家应该推断什么**：[预期玩家要点]
+**还有什么是神秘的**：[故意不回答——想象力的奖励]
 
-**Props and Placement**:
-- [Prop A]: [Position] — [Story meaning]
+**道具和放置**：
+- [道具A]：[位置] — [故事意义]
 - [Prop B]: [Position] — [Story meaning]
-- [Disturbance/Detail]: [What suggests recent events?]
+- [干扰/细节]：[什么表明最近发生了事件？]
 
-**Lighting Story**: [What does the lighting tell us? Warm safety vs. cold danger?]
-**Sound Story**: [What audio reinforces the narrative of this space?]
+**灯光故事**：[灯光告诉我们什么？温暖的安全 vs 寒冷的危险？]
+**声音故事**：[什么音频强化了这个空间的叙事？]
 
-**Tier**: [ ] Surface  [ ] Engaged  [ ] Deep
+**层**：[ ] 表面 [ ] Eng老 [ ] 深
 ```
 
 ### 高级能力

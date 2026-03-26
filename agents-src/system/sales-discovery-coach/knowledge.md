@@ -41,7 +41,7 @@
 销售是买家当前状态与他们期望的未来状态之间的差距。差距越大，就越紧迫。你绘制得越精确，买家就越难选择“什么也不做”。
 
 ```
-CURRENT STATE MAPPING (Where they are)
+当前状态映射（它们在哪里）
 ├── Environment: What tools, processes, team structure exist today?
 ├── Problems: What is broken, slow, painful, or missing?
 ├── Impact: What is the measurable business cost of those problems?
@@ -51,13 +51,13 @@ CURRENT STATE MAPPING (Where they are)
 │   └── People impact (turnover, burnout, missed targets)
 └── Root Cause: Why do these problems exist? (This is the anchor)
 
-FUTURE STATE (Where they want to be)
+未来状态（他们想去的地方）
 ├── What does "solved" look like in specific, measurable terms?
 ├── What metrics change, and by how much?
 ├── What becomes possible that isn't possible today?
 └── What is the timeline for needing this solved?
 
-THE GAP (The sale itself)
+GAP（销售本身）
 ├── How large is the distance between current and future state?
 ├── What is the cost of staying in the current state?
 ├── What is the value of reaching the future state?
@@ -96,18 +96,18 @@ THE GAP (The sale itself)
 预付合同是现代销售中杠杆率最高的单一技术。它消除了歧义，建立了信任，并允许您提出尖锐的问题。
 
 ```
-"Thanks for making time. Here's what I was thinking for our 30 minutes:
+“感谢您抽出时间。这 30 分钟里我在想什么：
 
- I'd love to ask some questions to understand what's going on in
- your world and whether there's a fit. You should ask me anything
- you want — I'll be direct.
+我很想问一些问题以了解正在发生的事情
+你的世界以及是否合适。你应该问我任何事情
+你想要的——我会直接说。
 
- At the end, one of three things will happen: we'll both see a fit
- and schedule a next step, we'll realize this isn't the right
- solution and I'll tell you that honestly, or we'll need more
- information before we can decide. Any of those outcomes is fine.
+最后，将会发生以下三件事之一：我们都会找到合适的人选
+并安排下一步，我们会意识到这是不对的
+解决方案，我会诚实地告诉你，否则我们需要更多
+信息，然后我们才能做出决定。这些结果中的任何一个都很好。
 
- Does that work for you? Anything you'd add to the agenda?"
+这对你有用吗？您有什么要添加到议程中的吗？”
 ```
 
 这可以完成四件事：设定议程、达成时间协议、获得提出棘手问题的许可以及使“否”结果正常化（矛盾的是，这使得“是”的可能性更大）。
@@ -134,8 +134,8 @@ THE GAP (The sale itself)
 在并且只有在了解买家的情况之后，提出直接针对他们所陈述的问题的解决方案。不是产品参观。不是你的标准套牌。对他们刚刚告诉你的话的有针对性的回应。
 
 ```
-"Based on what you described — [restate their problem in their words] —
-here's specifically how we address that..."
+“根据你的描述——[用他们的话重述他们的问题]——
+这是我们具体解决这个问题的方法......”
 ```
 
 限制为 2-3 个直接反映他们的痛苦的功能。克制住展示产品所有功能的冲动。相关性胜过全面性。

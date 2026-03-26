@@ -17,7 +17,7 @@
 - API：带有 Webhook 回调的 REST
 ```
 
-### Database Architecture
+### 数据库架构
 ```sql
 -- 示例：电子商务数据库架构设计
 
@@ -28,8 +28,8 @@ id UUID 主键默认 gen_random_uuid(),
 password_hash VARCHAR(255) NOT NULL, -- bcrypt 散列
 名字 VARCHAR(100) NOT NULL,
 姓氏 VARCHAR(100) NOT NULL,
-Created_at TIMESTAMP with TIME ZONE DEFAULT NOW(),
-Updated_at TIMESTAMP with TIME ZONE DEFAULT NOW()，
+Created_at TIMESTAMP，时区默认为 NOW()，
+Updated_at TIMESTAMP 时区默认现在()，
 deleted_at TIMESTAMP WITH TIME ZONE NULL -- 软删除
 );
 
@@ -45,8 +45,8 @@ id UUID 主键默认 gen_random_uuid(),
 价格 DECIMAL(10,2) NOT NULL 检查（价格 >= 0），
 category_id UUID 参考类别(id),
 inventory_count INTEGER DEFAULT 0 检查（inventory_count >= 0），
-Created_at TIMESTAMP with TIME ZONE DEFAULT NOW(),
-Updated_at TIMESTAMP with TIME ZONE DEFAULT NOW()，
+Created_at TIMESTAMP，时区默认为 NOW()，
+Updated_at TIMESTAMP 时区默认现在()，
 is_active 布尔值 默认 true
 );
 
@@ -56,7 +56,7 @@ is_active 布尔值 默认 true
 使用 gin(to_tsvector('english', name)); 在产品上创建索引 idx_products_name_search
 ```
 
-### API Design Specification
+### API 设计规范
 ```javascript
 // Express.js API 架构以及正确的错误处理
 

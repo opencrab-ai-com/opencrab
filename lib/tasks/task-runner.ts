@@ -226,7 +226,6 @@ async function runTaskAgainstConversation(input: {
     content: input.prompt,
     model: input.snapshot.settings.defaultModel,
     reasoningEffort: input.snapshot.settings.defaultReasoningEffort,
-    sandboxMode: input.snapshot.settings.defaultSandboxMode,
     userMessageSource: "task",
   });
 

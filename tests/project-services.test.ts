@@ -11,6 +11,7 @@ function createProjectRoom(overrides: Partial<ProjectRoomRecord> = {}): ProjectR
     teamName: "Team Alpha",
     goal: "Ship a feature",
     workspaceDir: "/tmp/team-alpha",
+    sandboxMode: "workspace-write",
     teamConversationId: "conversation-1",
     summary: "Running",
     status: "active",
@@ -72,9 +73,13 @@ describe("project module services", () => {
     const detail = createProjectDetail();
     const create = vi.fn(() => detail);
     const remove = vi.fn(() => true);
+    const updateWorkspaceDir = vi.fn(() => detail);
+    const updateSandboxMode = vi.fn(() => detail);
     const service = createProjectManagementService({
       create,
       remove,
+      updateWorkspaceDir,
+      updateSandboxMode,
     });
 
     expect(
@@ -88,6 +93,8 @@ describe("project module services", () => {
       }),
     ).toEqual(detail);
     expect(service.remove("project-1")).toBe(true);
+    expect(service.updateWorkspaceDir("project-1", "/tmp/team-beta")).toEqual(detail);
+    expect(service.updateSandboxMode("project-1", "read-only")).toEqual(detail);
     expect(create).toHaveBeenCalledWith({
       goal: "Ship a feature",
       workspaceDir: "/tmp/team-alpha",
@@ -97,6 +104,8 @@ describe("project module services", () => {
       sandboxMode: "workspace-write",
     });
     expect(remove).toHaveBeenCalledWith("project-1");
+    expect(updateWorkspaceDir).toHaveBeenCalledWith("project-1", "/tmp/team-beta");
+    expect(updateSandboxMode).toHaveBeenCalledWith("project-1", "read-only");
   });
 
   it("delegates run and checkpoint actions through the runtime service", async () => {

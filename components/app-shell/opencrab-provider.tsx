@@ -115,9 +115,19 @@ type OpenCrabContextValue = {
     conversationId: string,
     folderId: string | null,
   ) => Promise<void>;
+  setConversationWorkspaceDir: (
+    conversationId: string,
+    workspaceDir: string | null,
+  ) => Promise<void>;
+  setConversationSandboxMode: (
+    conversationId: string,
+    sandboxMode: CodexSandboxMode | null,
+  ) => Promise<void>;
   createConversation: (input?: {
     title?: string;
     folderId?: string | null;
+    workspaceDir?: string | null;
+    sandboxMode?: CodexSandboxMode | null;
     agentProfileId?: string | null;
   }) => Promise<string>;
   createAgent: (input: {
@@ -606,10 +616,32 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     [applySnapshot, runMutation],
   );
 
+  const setConversationWorkspaceDir = useCallback(
+    async (conversationId: string, workspaceDir: string | null) => {
+      await runMutation(async () => {
+        const result = await updateConversation(conversationId, { workspaceDir });
+        applySnapshot(result.snapshot);
+      });
+    },
+    [applySnapshot, runMutation],
+  );
+
+  const setConversationSandboxMode = useCallback(
+    async (conversationId: string, sandboxMode: CodexSandboxMode | null) => {
+      await runMutation(async () => {
+        const result = await updateConversation(conversationId, { sandboxMode });
+        applySnapshot(result.snapshot);
+      });
+    },
+    [applySnapshot, runMutation],
+  );
+
   const createConversation = useCallback(
     async (input?: {
       title?: string;
       folderId?: string | null;
+      workspaceDir?: string | null;
+      sandboxMode?: CodexSandboxMode | null;
       agentProfileId?: string | null;
     }) => {
       return runMutation(async () => {
@@ -726,7 +758,6 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     conversations,
     selectedModel,
     selectedReasoningEffort,
-    selectedSandboxMode,
     createConversation,
     applySnapshot,
     patchConversation,
@@ -840,6 +871,8 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       setConversationAgentProfile,
       deleteConversation,
       moveConversation,
+      setConversationWorkspaceDir,
+      setConversationSandboxMode,
       createConversation,
       createAgent,
       updateAgent,
@@ -900,6 +933,8 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       setConversationAgentProfile,
       deleteConversation,
       moveConversation,
+      setConversationWorkspaceDir,
+      setConversationSandboxMode,
       createConversation,
       createAgent,
       updateAgent,
@@ -957,6 +992,8 @@ function areConversationsEqual(
         conversation.timeLabel === target.timeLabel &&
         conversation.preview === target.preview &&
         conversation.folderId === target.folderId &&
+        conversation.workspaceDir === target.workspaceDir &&
+        conversation.sandboxMode === target.sandboxMode &&
         conversation.hidden === target.hidden &&
         conversation.projectId === target.projectId &&
         conversation.source === target.source &&

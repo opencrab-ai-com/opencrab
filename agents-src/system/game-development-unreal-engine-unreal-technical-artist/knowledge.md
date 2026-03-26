@@ -2,138 +2,138 @@
 
 ### 材质函数 - 三平面映射
 ```
-Material Function: MF_TriplanarMapping
-Inputs:
-  - Texture (Texture2D) — the texture to project
-  - BlendSharpness (Scalar, default 4.0) — controls projection blend softness
-  - Scale (Scalar, default 1.0) — world-space tile size
+材质函数：MF_TriplanarMapping
+输入：
+- 纹理 (Texture2D) — 要投影的纹理
+- BlendSharpness（标量，默认 4.0）— 控制投影混合柔和度
+- Scale（标量，默认 1.0）— 世界空间图块大小
 
-Implementation:
-  WorldPosition → multiply by Scale
-  AbsoluteWorldNormal → Power(BlendSharpness) → Normalize → BlendWeights (X, Y, Z)
-  SampleTexture(XY plane) * BlendWeights.Z +
-  SampleTexture(XZ plane) * BlendWeights.Y +
-  SampleTexture(YZ plane) * BlendWeights.X
-  → Output: Blended Color, Blended Normal
+执行：
+世界位置 → 乘以比例
+AbsoluteWorldNormal → 功率(BlendSharpness) → 标准化 → BlendWeights (X, Y, Z)
+SampleTexture(XY 平面) * BlendWeights.Z +
+SampleTexture(XZ 平面) * BlendWeights.Y +
+SampleTexture(YZ 平面) * BlendWeights.X
+→ 输出：混合颜色、混合法线
 
-Usage: Drag into any world material. Set on rocks, cliffs, terrain blends.
-Note: Costs 3x texture samples vs. UV mapping — use only where UV seams are visible.
+用法：拖入任何世界材质中。坐落在岩石、悬崖上，地形交融。
+注意：与 UV 贴图相比，纹理样本的成本是 3 倍 — 仅在 UV 接缝可见的地方使用。
 ```
 
 ### 尼亚加拉系统 — 地面冲击爆发
 ```
-System Type: CPU Simulation (< 50 particles)
-Emitter: Burst — 15–25 particles on spawn, 0 looping
+系统类型：CPU 模拟（< 50 个粒子）
+发射器：爆发 — 生成时有 15–25 个粒子，0 个循环
 
-Modules:
-  Initialize Particle:
-    Lifetime: Uniform(0.3, 0.6)
-    Scale: Uniform(0.5, 1.5)
-    Color: From Surface Material parameter (dirt/stone/grass driven by Material ID)
+模块：
+初始化粒子：
+寿命：均匀(0.3, 0.6)
+比例：均匀（0.5，1.5）
+颜色：来自表面材质参数（由材质 ID 驱动的泥土/石头/草）
 
-  Initial Velocity:
-    Cone direction upward, 45° spread
-    Speed: Uniform(150, 350) cm/s
+初始速度：
+锥体方向向上，45°展开
+速度：均匀（150、350）厘米/秒
 
-  Gravity Force: -980 cm/s²
+重力：-980 cm/s²
 
-  Drag: 0.8 (friction to slow horizontal spread)
+阻力：0.8（通过摩擦减缓水平扩散）
 
-  Scale Color/Opacity:
-    Fade out curve: linear 1.0 → 0.0 over lifetime
+标尺颜色/不透明度：
+淡出曲线：整个生命周期线性 1.0 → 0.0
 
-Renderer:
-  Sprite Renderer
-  Texture: T_Particle_Dirt_Atlas (4×4 frame animation)
-  Blend Mode: Translucent — budget: max 3 overdraw layers at peak burst
+渲染器：
+精灵渲染器
+纹理：T_Particle_Dirt_Atlas（4×4 帧动画）
+混合模式：半透明 — 预算：峰值突发时最多 3 个过度绘制层
 
-Scalability:
-  High: 25 particles, full texture animation
-  Medium: 15 particles, static sprite
-  Low: 5 particles, no texture animation
+可扩展性：
+高：25 个粒子，全纹理动画
+介质：15 个粒子，静态精灵
+低：5 个粒子，无纹理动画
 ```
 
 ### PCG 图 — 森林人口
 ```
-PCG Graph: PCG_ForestPopulation
+PCG 图：PCG_ForestPopulation
 
-Input: Landscape Surface Sampler
-  → Density: 0.8 per 10m²
-  → Normal filter: slope < 25° (exclude steep terrain)
+输入：景观表面采样器
+→ 密度：0.8/10m²
+→ 普通过滤器：坡度 < 25°（不包括陡峭地形）
 
-Transform Points:
-  → Jitter position: ±1.5m XY, 0 Z
-  → Random rotation: 0–360° Yaw only
-  → Scale variation: Uniform(0.8, 1.3)
+变换点：
+→ 抖动位置：±1.5m XY，0 Z
+→ 随机旋转：0–360° 仅偏航
+→ 比例变化：均匀(0.8, 1.3)
 
-Density Filter:
-  → Poisson Disk minimum separation: 2.0m (prevents overlap)
-  → Biome density remap: multiply by Biome density texture sample
+密度过滤器：
+→ 泊松盘最小间距：2.0m（防止重叠）
+→ 生物群落密度重映射：乘以生物群落密度纹理样本
 
-Exclusion Zones:
-  → Road spline buffer: 5m exclusion
-  → Player path buffer: 3m exclusion
-  → Hand-placed actor exclusion radius: 10m
+禁区：
+→ 道路样条缓冲区：5m排除
+→ 玩家路径缓冲区：3m排除
+→ 手动放置演员排除半径：10m
 
-Static Mesh Spawner:
-  → Weights: Oak (40%), Pine (35%), Birch (20%), Dead tree (5%)
-  → All meshes: Nanite enabled
-  → Cull distance: 60,000 cm
+静态网格体生成器：
+→ 重量：橡木 (40%)、松木 (35%)、桦木 (20%)、死树 (5%)
+→ 所有网格物体：启用 Nanite
+→ 剔除距离：60,000 cm
 
-Parameters exposed to level:
-  - GlobalDensityMultiplier (0.0–2.0)
-  - MinSeparationDistance (1.0–5.0m)
-  - EnableRoadExclusion (bool)
+暴露于级别的参数：
+- 全局密度乘数 (0.0–2.0)
+- 最小分离距离（1.0–5.0m）
+- 启用道路排除（布尔）
 ```
 
 ### 着色器复杂性审核（虚幻）
 ```markdown
 
-### Material Review: [Material Name]
+### 材料审查：[材料名称]
 
-**Shader Model**: [ ] DefaultLit  [ ] Unlit  [ ] Subsurface  [ ] Custom
-**Domain**: [ ] Surface  [ ] Post Process  [ ] Decal
+**着色器模型**： [ ] DefaultLit [ ] Unlit [ ] Subsurface [ ] Custom
+**领域**：[ ] 表面 [ ] 后处理 [ ] 贴花
 
 Instruction Count (from Stats window in Material Editor)
-  Base Pass Instructions: ___
-  Budget: < 200 (mobile), < 400 (console), < 800 (PC)
+基本通行证说明：___
+预算：< 200（移动设备）、< 400（主机）、< 800（PC）
 
-Texture Samples
-  Total samples: ___
-  Budget: < 8 (mobile), < 16 (console)
+纹理样本
+样本总数：___
+预算：< 8（移动），< 16（主机）
 
-Static Switches
-  Count: ___ (each doubles permutation count — approve every addition)
+静态开关
+计数：___（每个排列计数加倍 - 批准每个添加）
 
-Material Functions Used: ___
-Material Instances: [ ] All variation via MI  [ ] Master modified directly — BLOCKED
+使用的材质函数：___
+材质实例： [ ] 通过 MI 进行的所有变化 [ ] 直接修改主控 — 已阻止
 
-Quality Switch Tiers Defined: [ ] High  [ ] Medium  [ ] Low
+质量切换等级定义： [ ] 高 [ ] 中 [ ] 低
 ```
 
 ### Niagara 可扩展性配置
 ```
-Niagara Scalability Asset: NS_ImpactDust_Scalability
+Niagara 可扩展性资产：NS_ImpactDust_Scalability
 
-Effect Type → Impact (triggers cull distance evaluation)
+效果类型 → 影响（触发剔除距离评估）
 
-High Quality (PC/Console high-end):
-  Max Active Systems: 10
-  Max Particles per System: 50
+高品质（PC/主机高端）：
+最大活跃系统：10
+每个系统的最大粒子数：50
 
-Medium Quality (Console base / mid-range PC):
-  Max Active Systems: 6
-  Max Particles per System: 25
+中等质量（控制台底座/中档 PC）：
+最大活跃系统：6
+每个系统的最大粒子数：25
   → Cull: systems > 30m from camera
 
-Low Quality (Mobile / console performance mode):
-  Max Active Systems: 3
-  Max Particles per System: 10
+低质量（移动/主机性能模式）：
+最大活跃系统数：3
+每个系统的最大粒子数：10
   → Cull: systems > 15m from camera
-  → Disable texture animation
+→ 禁用纹理动画
 
-Significance Handler: NiagaraSignificanceHandlerDistance
-  (closer = higher significance = maintained at higher quality)
+重要性处理程序：NiagaraSignificanceHandlerDistance
+（更接近=更高的重要性=保持更高的质量）
 ```
 
 ### 高级能力

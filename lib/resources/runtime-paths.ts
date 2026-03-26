@@ -22,6 +22,15 @@ export const OPENCRAB_LOGS_DIR = path.join(OPENCRAB_RUNTIME_DIR, "logs");
 export const OPENCRAB_BROWSER_DIR = path.join(OPENCRAB_RUNTIME_DIR, "browser");
 export const OPENCRAB_SKILLS_DIR = path.join(OPENCRAB_RUNTIME_DIR, "skills");
 export const OPENCRAB_AGENTS_DIR = path.join(OPENCRAB_RUNTIME_DIR, "agents");
+export const OPENCRAB_WORKSPACES_DIR = path.join(OPENCRAB_RUNTIME_DIR, "workspaces");
+export const OPENCRAB_CONVERSATION_WORKSPACES_DIR = path.join(
+  OPENCRAB_WORKSPACES_DIR,
+  "conversations",
+);
+export const OPENCRAB_DEFAULT_WORKSPACE_DIR = path.join(
+  OPENCRAB_WORKSPACES_DIR,
+  "default",
+);
 export const OPENCRAB_LOCAL_STORE_PATH = path.join(OPENCRAB_STATE_DIR, "local-store.json");
 export const OPENCRAB_CHANNEL_STORE_PATH = path.join(OPENCRAB_STATE_DIR, "channels.json");
 export const OPENCRAB_RUNTIME_CONFIG_PATH = path.join(OPENCRAB_STATE_DIR, "runtime-config.json");
@@ -64,6 +73,9 @@ function prepareRuntimeLayout() {
     OPENCRAB_BROWSER_DIR,
     OPENCRAB_SKILLS_DIR,
     OPENCRAB_AGENTS_DIR,
+    OPENCRAB_WORKSPACES_DIR,
+    OPENCRAB_CONVERSATION_WORKSPACES_DIR,
+    OPENCRAB_DEFAULT_WORKSPACE_DIR,
   ].forEach((dir) => {
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true });

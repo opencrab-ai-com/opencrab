@@ -62,7 +62,7 @@ export default async function ChannelDetailPage({
 
       {isTelegram ? (
         <div className="grid gap-6 xl:grid-cols-2">
-          <section className="rounded-[28px] border border-line bg-[linear-gradient(135deg,#fffdf8_0%,#ffffff_58%,#f8f8f4_100%)] p-5 shadow-soft">
+          <section className="rounded-[28px] border border-line bg-[linear-gradient(135deg,#ffffff_0%,#ffffff_58%,#f7f7f8_100%)] p-5 shadow-soft">
             <div className="max-w-[720px]">
               <div className="flex flex-wrap items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-[16px] border border-line bg-white text-[16px] font-semibold text-text">
@@ -113,7 +113,7 @@ export default async function ChannelDetailPage({
         </div>
       ) : (
         <div className="grid gap-6 xl:grid-cols-2">
-          <section className="rounded-[28px] border border-line bg-[linear-gradient(135deg,#fffdf8_0%,#ffffff_58%,#f8f8f4_100%)] p-5 shadow-soft">
+          <section className="rounded-[28px] border border-line bg-[linear-gradient(135deg,#ffffff_0%,#ffffff_58%,#f7f7f8_100%)] p-5 shadow-soft">
             <div className="max-w-[720px]">
               <div className="flex flex-wrap items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-[16px] border border-line bg-white text-[16px] font-semibold text-text">

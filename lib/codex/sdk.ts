@@ -13,6 +13,7 @@ import {
 import { getAppLanguagePromptInstruction } from "@/lib/opencrab/languages";
 import { listSkills } from "@/lib/skills/skill-store";
 import { getSnapshot } from "@/lib/resources/local-store";
+import { OPENCRAB_DEFAULT_WORKSPACE_DIR } from "@/lib/resources/runtime-paths";
 import type { CodexReasoningEffort, CodexSandboxMode } from "@/lib/resources/opencrab-api-types";
 
 const execFileAsync = promisify(execFile);
@@ -343,7 +344,7 @@ function buildThreadOptions(input?: {
   return {
     model: modelConfig.model,
     sandboxMode: input?.sandboxMode || DEFAULT_SANDBOX_MODE,
-    workingDirectory: input?.workingDirectory || process.cwd(),
+    workingDirectory: input?.workingDirectory || OPENCRAB_DEFAULT_WORKSPACE_DIR,
     skipGitRepoCheck: true,
     modelReasoningEffort: modelConfig.reasoningEffort,
     networkAccessEnabled: DEFAULT_NETWORK_ACCESS,

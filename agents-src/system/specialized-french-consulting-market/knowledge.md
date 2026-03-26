@@ -1,22 +1,22 @@
 ### ESN 保证金架构
 
 ```
-Client pays:         1,000 EUR/day (sell rate)
+客户支付：1,000 欧元/天（卖出价）
                           │
                     ┌─────┴─────┐
                     │  ESN Margin │
                     │  25-40%     │
                     └─────┬─────┘
                           │
-ESN pays consultant: 600-750 EUR/day (buy rate / TJM brut)
+ESN 支付顾问费用：600-750 欧元/天（购买率/TJM brut）
                           │
               ┌───────────┼───────────┐
               │           │           │
-         Portage      Micro-       SASU/
-         Salarial     Entreprise   EURL
+Portage Micro-SASU/
+薪资企业EURL
               │           │           │
-         Net: ~50%    Net: ~70%   Net: ~55-65%
-         of TJM       of TJM      of TJM
+净值：~50% 净值：~70% 净值：~55-65%
+TJM TJM TJM 的 TJM
          (~300-375)   (~420-525)  (~330-490)
 ```
 
@@ -41,18 +41,18 @@ ESN pays consultant: 600-750 EUR/day (buy rate / TJM brut)
 ### 费率谈判手册
 
 ```
-Step 1: Know your floor
+第 1 步：了解您所在的楼层
   └─ Calculate minimum viable TJM: (monthly expenses × 1.5) ÷ 18 billable days
 
-Step 2: Research the sell rate
+第 2 步：研究卖出率
   └─ ESN sells you at TJM × 1.4-1.7 to the client
   └─ If you know the client budget, work backward
 
-Step 3: Anchor high, concede strategically
+第三步：高位抛锚，战略性让步
   └─ Quote 15-20% above target to leave negotiation room
   └─ Concede on TJM only in exchange for: longer duration, remote days, renewal terms
 
-Step 4: Frame specialization premium
+第 4 步：框架专业化高级
   └─ Generic "Salesforce Architect" = commodity (550-650)
   └─ "Data Cloud + Agentforce Specialist" = premium (700-850)
   └─ Lead with the niche, not the platform
@@ -61,22 +61,22 @@ Step 4: Frame specialization premium
 ### Portage 薪资成本明细
 
 ```
-TJM Brut: 700 EUR/day
-Monthly (18 days): 12,600 EUR
+TJM Brut：700 欧元/天
+每月（18 天）：12,600 欧元
 
-Portage company fee:     5-10%     → -1,260 EUR (at 10%)
-Employer charges:        ~45%      → -5,103 EUR
-Employee charges:        ~22%      → -2,495 EUR
+搬运公司费用：5-10% → -1,260 欧元（10%）
+雇主费用：~45% → -5,103 欧元
+员工费用：~22% → -2,495 欧元
                                    ─────────────
-Net before tax:                      3,742 EUR/month
-Effective daily rate:                 208 EUR/day
+税前净额：3,742 欧元/月
+每日有效价格：208 欧元/天
 
-Compare micro-entreprise at same TJM:
-Monthly: 12,600 EUR
-URSSAF (22%):            -2,772 EUR
+比较同一 TJM 的微型企业：
+每月：12,600 欧元
+俄罗斯空军 (22%)：-2,772 欧元
                          ─────────
-Net before tax:           9,828 EUR/month
-Effective daily rate:      546 EUR/day
+税前净额：9,828 欧元/月
+每日有效价格：546 欧元/天
 ```
 
 *注：Portage 提供失业权利 (ARE)、退休金和互助。微型企业不提供这些。 338 欧元/天的缺口是社会保障的价格。*

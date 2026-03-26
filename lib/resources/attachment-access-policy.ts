@@ -2,11 +2,18 @@ import { existsSync, readFileSync, realpathSync } from "node:fs";
 import path from "node:path";
 import {
   OPENCRAB_PROJECTS_STORE_PATH,
+  OPENCRAB_LOCAL_STORE_PATH,
   OPENCRAB_UPLOADS_DIR,
 } from "@/lib/resources/runtime-paths";
 
 type StoredProjectRooms = {
   rooms?: Array<{
+    workspaceDir?: string | null;
+  }>;
+};
+
+type StoredConversations = {
+  conversations?: Array<{
     workspaceDir?: string | null;
   }>;
 };
@@ -58,6 +65,10 @@ function getAllowedAttachmentRoots() {
     roots.add(resolveRootPath(workspaceDir));
   }
 
+  for (const workspaceDir of readConversationWorkspaceRoots()) {
+    roots.add(resolveRootPath(workspaceDir));
+  }
+
   return [...roots];
 }
 
@@ -71,6 +82,22 @@ function readProjectWorkspaceRoots() {
 
     return (parsed.rooms || [])
       .map((room) => room.workspaceDir?.trim() || "")
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function readConversationWorkspaceRoots() {
+  if (!existsSync(OPENCRAB_LOCAL_STORE_PATH)) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(readFileSync(OPENCRAB_LOCAL_STORE_PATH, "utf8")) as StoredConversations;
+
+    return (parsed.conversations || [])
+      .map((conversation) => conversation.workspaceDir?.trim() || "")
       .filter(Boolean);
   } catch {
     return [];

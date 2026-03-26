@@ -36,13 +36,13 @@
 
 ### 进度表
 ```
-Time    | Activity Type  | Tension Level | Notes
+时间 |活动类型 |张力水平|笔记
 --------|---------------|---------------|---------------------------
-0:00    | Exploration    | Low           | Environmental story intro
-1:30    | Combat (small) | Medium        | Teach mechanic X
-3:00    | Exploration    | Low           | Reward + world-building
-4:30    | Combat (large) | High          | Apply mechanic X under pressure
-6:00    | Resolution     | Low           | Breathing room + exit
+0:00 | 0:00探索|低|环保故事简介
+1:30 |战斗（小）|中等|教导机械师 X
+3:00 |探索|低|奖励+世界建设
+4:30 |战斗（大）|高|在压力下应用机械 X
+6:00 |分辨率|低|呼吸空间+出口
 ```
 
 ### 封锁规范

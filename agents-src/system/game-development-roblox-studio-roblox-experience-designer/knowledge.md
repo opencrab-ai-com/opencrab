@@ -126,40 +126,40 @@ return DailyRewardSystem
 ### 入职流程设计文档
 ```markdown
 
-### Roblox Experience Onboarding Flow
+### Roblox 体验入门流程
 
-### Phase 1: First 60 Seconds (Retention Critical)
-Goal: Player performs the core verb and succeeds once
+### 第 1 阶段：前 60 秒（保留至关重要）
+目标：玩家执行核心动词并成功一次
 
-Steps:
-1. Spawn into a visually distinct "starter zone" — not the main world
-2. Immediate controllable moment: no cutscene, no long tutorial dialogue
-3. First success is guaranteed — no failure possible in this phase
-4. Visual reward (sparkle/confetti) + audio feedback on first success
-5. Arrow or highlight guides to "first mission" NPC or objective
+步骤：
+1. 生成一个视觉上独特的“起始区”——而不是主世界
+2.即时可控时刻：无过场，无长教程对话
+3. 保证首次成功——此阶段不可能失败
+4.第一次成功时的视觉奖励（闪光/五彩纸屑）+音频反馈
+5. 箭头或突出显示“第一个任务”NPC 或目标
 
-### Phase 2: First 5 Minutes (Core Loop Introduction)
-Goal: Player completes one full core loop and earns their first reward
+### 第 2 阶段：前 5 分钟（核心循环介绍）
+目标：玩家完成一个完整的核心循环并获得第一个奖励
 
-Steps:
-1. Simple quest: clear objective, obvious location, single mechanic required
-2. Reward: enough starter currency to feel meaningful
-3. Unlock one additional feature or area — creates forward momentum
-4. Soft social prompt: "Invite a friend for double rewards" (not blocking)
+步骤：
+1.任务简单：目标明确，地点明显，机械师单一
+2.奖励：足够的起始币，让自己感觉有意义
+3.解锁一项额外功能或领域——创造前进动力
+4.社交软提示：“邀请好友双倍奖励”（不屏蔽）
 
-### Phase 3: First 15 Minutes (Investment Hook)
-Goal: Player has enough invested that quitting feels like a loss
+### 第 3 阶段：前 15 分钟（投资挂钩）
+目标：玩家有足够的投入，退出感觉就像是一种损失
 
-Steps:
-1. First level-up or rank advancement
-2. Personalization moment: choose a cosmetic or name a character
-3. Preview a locked feature: "Reach level 5 to unlock [X]"
-4. Natural favorite prompt: "Enjoying the experience? Add it to your favorites!"
+步骤：
+1. 首次升级或等级提升
+2. 个性化时刻：选择化妆品或命名角色
+3.预览锁定功能：“达到5级解锁[X]”
+4.自然收藏提示：“享受这次体验吗？将其添加到您的收藏夹！”
 
-### Drop-off Recovery Points
-- Players who leave before 2 min: onboarding too slow — cut first 30s
-- Players who leave at 5–7 min: first reward not compelling enough — increase
-- Players who leave after 15 min: core loop is fun but no hook to return — add daily reward prompt
+### 下车恢复点
+- 2 分钟前离开的玩家：入职太慢 - 削减前 30 秒
+- 5-7分钟后离开的玩家：第一个奖励不够引人注目——增加
+- 15分钟后离开的玩家：核心循环很有趣，但没有返回的钩子——添加每日奖励提示
 ```
 
 ### 保留指标跟踪（通过 DataStore + Analytics）

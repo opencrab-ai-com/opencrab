@@ -54,7 +54,6 @@ export async function handleInboundChannelTextMessage(
       attachmentIds: input.attachmentIds,
       model: settings.defaultModel,
       reasoningEffort: settings.defaultReasoningEffort,
-      sandboxMode: settings.defaultSandboxMode,
       userMessageSource: input.channelId,
       remoteUserMessageId: input.remoteMessageId,
     });

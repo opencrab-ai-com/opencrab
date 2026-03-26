@@ -724,8 +724,8 @@ function RowActionMenu({ label, kind, isOpen, onToggle, onRename, onDelete }: Ro
         }}
         className={`flex h-7 w-7 items-center justify-center rounded-lg transition ${
           isOpen
-            ? "bg-surface text-[#6f6f68] opacity-100"
-            : "bg-transparent text-[#8a8a84] opacity-0 group-hover/folder:bg-surface group-hover/folder:text-[#6f6f68] group-hover/folder:opacity-100 group-focus-within/folder:bg-surface group-focus-within/folder:text-[#6f6f68] group-focus-within/folder:opacity-100 group-hover/row:bg-surface group-hover/row:text-[#6f6f68] group-hover/row:opacity-100 group-focus-within/row:bg-surface group-focus-within/row:text-[#6f6f68] group-focus-within/row:opacity-100"
+            ? "bg-surface text-[#737387] opacity-100"
+            : "bg-transparent text-[#9898a8] opacity-0 group-hover/folder:bg-surface group-hover/folder:text-[#737387] group-hover/folder:opacity-100 group-focus-within/folder:bg-surface group-focus-within/folder:text-[#737387] group-focus-within/folder:opacity-100 group-hover/row:bg-surface group-hover/row:text-[#737387] group-hover/row:opacity-100 group-focus-within/row:bg-surface group-focus-within/row:text-[#737387] group-focus-within/row:opacity-100"
         }`}
         style={{ visibility: "visible" }}
         aria-label={`${kind === "folder" ? "文件夹" : "对话"} ${label} 更多操作`}
@@ -858,7 +858,7 @@ function CreateFolderDialog({
             }
           }}
           placeholder="例如：产品讨论"
-          className="h-12 w-full rounded-2xl border border-line bg-surface-muted px-4 text-[14px] text-text outline-none transition placeholder:text-[#a0a097] focus:border-[#d8d7d1] focus:bg-surface"
+          className="h-12 w-full rounded-2xl border border-line bg-surface-muted px-4 text-[14px] text-text outline-none transition placeholder:text-[#9b9ba7] focus:border-[#d3d3da] focus:bg-surface"
         />
       </div>
 
@@ -908,7 +908,7 @@ function RenameDialog({
               void onConfirm();
             }
           }}
-          className="h-12 w-full rounded-2xl border border-line bg-surface-muted px-4 text-[14px] text-text outline-none transition placeholder:text-[#a0a097] focus:border-[#d8d7d1] focus:bg-surface"
+          className="h-12 w-full rounded-2xl border border-line bg-surface-muted px-4 text-[14px] text-text outline-none transition placeholder:text-[#9b9ba7] focus:border-[#d3d3da] focus:bg-surface"
         />
       </div>
 

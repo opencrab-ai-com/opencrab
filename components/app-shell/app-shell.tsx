@@ -65,7 +65,16 @@ const secondaryNavItems: Array<{
   label: string;
   href: string;
   icon: React.ReactNode;
-}> = [{ key: "about", label: "关于我们", href: "/about", icon: <CompassIcon /> }];
+  external?: boolean;
+}> = [
+  {
+    key: "about",
+    label: "关于我们",
+    href: "https://opencrab-ai.com/",
+    icon: <CompassIcon />,
+    external: true,
+  },
+];
 
 const LAST_CONVERSATION_PATH_KEY = "opencrab:last-conversation-path";
 const LAST_CONVERSATION_PATH_EVENT = "opencrab:last-conversation-path-change";
@@ -130,7 +139,9 @@ export function AppShell({ sidebar, children }: AppShellProps) {
     });
 
     secondaryNavItems.forEach((item) => {
-      hrefs.add(item.href);
+      if (!item.external) {
+        hrefs.add(item.href);
+      }
     });
 
     hrefs.forEach((href) => {
@@ -207,18 +218,32 @@ export function AppShell({ sidebar, children }: AppShellProps) {
 
         <nav className="mt-2 flex shrink-0 flex-col gap-0.5 border-t border-line pt-2" aria-label="品牌信息">
           {secondaryNavItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const isActive = item.external
+              ? false
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const className = `flex min-h-9 items-center gap-3 rounded-xl px-3 text-[14px] transition ${
+              isActive
+                ? "bg-surface font-medium text-text"
+                : "text-text hover:bg-surface-muted"
+            }`;
+
+            if (item.external) {
+              return (
+                <a
+                  key={item.key}
+                  href={item.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={className}
+                >
+                  <span className="text-muted-strong">{item.icon}</span>
+                  <span>{item.label}</span>
+                </a>
+              );
+            }
 
             return (
-              <Link
-                key={item.key}
-                href={item.href}
-                className={`flex min-h-9 items-center gap-3 rounded-xl px-3 text-[14px] transition ${
-                  isActive
-                    ? "bg-surface font-medium text-text"
-                    : "text-text hover:bg-surface-muted"
-                }`}
-              >
+              <Link key={item.key} href={item.href} className={className}>
                 <span className="text-muted-strong">{item.icon}</span>
                 <span>{item.label}</span>
               </Link>

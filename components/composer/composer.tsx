@@ -4,8 +4,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   CodexModelOption,
   CodexReasoningEffort,
+  CodexSandboxMode,
   UploadedAttachment,
 } from "@/lib/resources/opencrab-api-types";
+import {
+  formatSandboxModeDescription,
+  formatSandboxModeLabel,
+} from "@/lib/opencrab/labels";
 
 export type ComposerSubmitInput = {
   content: string;
@@ -38,6 +43,11 @@ type ComposerProps = {
   selectedReasoningEffort: CodexReasoningEffort;
   onModelChange: (model: string) => Promise<void>;
   onReasoningEffortChange: (effort: CodexReasoningEffort) => Promise<void>;
+  workspaceLabel?: string;
+  workspaceTitle?: string;
+  onWorkspaceClick?: () => void;
+  selectedSandboxMode?: CodexSandboxMode;
+  onSandboxModeChange?: (mode: CodexSandboxMode) => Promise<void> | void;
   mentionOptions?: ComposerMentionOption[];
   compact?: boolean;
 };
@@ -62,13 +72,18 @@ export function Composer({
   selectedReasoningEffort,
   onModelChange,
   onReasoningEffortChange,
+  workspaceLabel,
+  workspaceTitle,
+  onWorkspaceClick,
+  selectedSandboxMode,
+  onSandboxModeChange,
   mentionOptions = [],
   compact = false,
 }: ComposerProps) {
   const [internalValue, setInternalValue] = useState(value ?? "");
   const [attachments, setAttachments] = useState<UploadedAttachment[]>([]);
   const [isUploadMenuOpen, setIsUploadMenuOpen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState<null | "model" | "reasoning">(null);
+  const [activeMenu, setActiveMenu] = useState<null | "model" | "reasoning" | "sandbox">(null);
   const [isComposing, setIsComposing] = useState(false);
   const [mentionState, setMentionState] = useState<{
     start: number;
@@ -287,7 +302,7 @@ export function Composer({
               key={attachment.id}
               type="button"
               onClick={() => removeAttachment(attachment.id)}
-              className="flex items-center gap-2 rounded-full border border-line bg-surface-muted px-3 py-1.5 text-[12px] text-text transition hover:bg-[#f0efe9]"
+              className="flex items-center gap-2 rounded-full border border-line bg-surface-muted px-3 py-1.5 text-[12px] text-text transition hover:bg-[#efeff1]"
             >
               <AttachmentKindIcon kind={attachment.kind} />
               <span>{attachment.name}</span>
@@ -332,7 +347,7 @@ export function Composer({
           ref={textareaRef}
           id="opencrab-composer"
           name="opencrab_composer"
-          className={`w-full resize-none border-0 bg-transparent text-text outline-none placeholder:text-[#a0a097] disabled:cursor-not-allowed ${
+          className={`w-full resize-none border-0 bg-transparent text-text outline-none placeholder:text-[#9b9ba7] disabled:cursor-not-allowed ${
             compact ? "min-h-[96px] text-[14px] leading-6" : "min-h-[88px] text-[16px] leading-6"
           }`}
           placeholder={placeholder}
@@ -441,7 +456,7 @@ export function Composer({
               className={`flex items-center justify-center rounded-full border text-[#0b66da] transition hover:bg-[#eef5ff] disabled:opacity-50 ${
                 compact ? "border-[#8db6ff]" : "border-[#0b66da]"
               } ${
-                compact ? "h-7 w-7" : "h-11 w-11"
+                compact ? "h-7 w-7" : "h-9 w-9"
               }`}
               disabled={disableUploads || isUploading || isStreaming}
               aria-label="添加文件"
@@ -547,6 +562,55 @@ export function Composer({
               />
             ))}
           </DropdownChip>
+
+          {onWorkspaceClick ? (
+            <button
+              type="button"
+              onClick={() => {
+                setIsUploadMenuOpen(false);
+                setActiveMenu(null);
+                setMentionState(null);
+                onWorkspaceClick();
+              }}
+              disabled={disabled || isStreaming}
+              title={workspaceTitle || workspaceLabel || "工作区"}
+              className={`flex items-center gap-1.5 rounded-full border bg-surface text-muted-strong transition hover:bg-[#eef5ff] hover:text-[#315f9b] disabled:opacity-50 ${
+                compact
+                  ? "min-h-7 max-w-[220px] border-[#8db6ff] px-2.5 py-1 text-[9px]"
+                  : "min-h-9 max-w-[280px] border-line px-3 py-1.5 text-[13px]"
+              }`}
+            >
+              <WorkspaceIcon />
+              <span className="truncate">{workspaceLabel || "工作区"}</span>
+            </button>
+          ) : null}
+
+          {onSandboxModeChange && selectedSandboxMode ? (
+            <DropdownChip
+              label={formatSandboxModeLabel(selectedSandboxMode)}
+              isOpen={activeMenu === "sandbox"}
+              compact={compact}
+              onToggle={() => {
+                setActiveMenu((current) => (current === "sandbox" ? null : "sandbox"));
+                setIsUploadMenuOpen(false);
+                setMentionState(null);
+              }}
+              disabled={disabled || isStreaming}
+            >
+              {(["workspace-write", "read-only", "danger-full-access"] as const).map((mode) => (
+                <MenuItem
+                  key={mode}
+                  title={formatSandboxModeLabel(mode)}
+                  description={formatSandboxModeDescription(mode)}
+                  isActive={mode === selectedSandboxMode}
+                  onClick={async () => {
+                    await onSandboxModeChange(mode);
+                    setActiveMenu(null);
+                  }}
+                />
+              ))}
+            </DropdownChip>
+          ) : null}
 
           {isUploading ? <p className="text-[12px] text-muted-strong">正在上传附件...</p> : null}
         </div>
@@ -699,6 +763,15 @@ function TextFileIcon() {
       <path d="M6 2.5h5l3 3V16a1.5 1.5 0 0 1-1.5 1.5h-6A1.5 1.5 0 0 1 5 16V4A1.5 1.5 0 0 1 6.5 2.5" />
       <path d="M11 2.5V6h3.5" />
       <path d="M7.5 9h5M7.5 12h5M7.5 15H11" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function WorkspaceIcon() {
+  return (
+    <svg viewBox="0 0 20 20" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.8">
+      <path d="M2.5 6.5A2.5 2.5 0 0 1 5 4h3l1.4 1.7c.28.34.69.55 1.13.55H15A2.5 2.5 0 0 1 17.5 8.75v5.75A2.5 2.5 0 0 1 15 17H5a2.5 2.5 0 0 1-2.5-2.5z" />
+      <path d="M2.5 8h15" strokeLinecap="round" />
     </svg>
   );
 }

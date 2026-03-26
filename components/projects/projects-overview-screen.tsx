@@ -8,7 +8,10 @@ import { isSelectableTeamAgent } from "@/lib/agents/display";
 import { Button, buttonClassName } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { MetaPill as UnifiedMetaPill, StatusPill as UnifiedStatusPill } from "@/components/ui/pill";
-import { createProject as createProjectResource } from "@/lib/resources/opencrab-api";
+import {
+  createProject as createProjectResource,
+  pickLocalDirectory,
+} from "@/lib/resources/opencrab-api";
 import type { ProjectRoomRecord } from "@/lib/projects/types";
 
 type ProjectsOverviewScreenProps = {
@@ -21,7 +24,6 @@ export function ProjectsOverviewScreen({ projects }: ProjectsOverviewScreenProps
     agents,
     selectedModel,
     selectedReasoningEffort,
-    selectedSandboxMode,
   } = useOpenCrabApp();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [goal, setGoal] = useState("");
@@ -29,6 +31,7 @@ export function ProjectsOverviewScreen({ projects }: ProjectsOverviewScreenProps
   const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPickingWorkspace, setIsPickingWorkspace] = useState(false);
 
   const teamAgents = useMemo(
     () => agents.filter(isSelectableTeamAgent),
@@ -82,7 +85,6 @@ export function ProjectsOverviewScreen({ projects }: ProjectsOverviewScreenProps
         agentProfileIds: normalizedSelectedAgentIds,
         model: selectedModel,
         reasoningEffort: selectedReasoningEffort,
-        sandboxMode: selectedSandboxMode,
       });
       const nextProjectId = response.project?.id;
 
@@ -100,6 +102,26 @@ export function ProjectsOverviewScreen({ projects }: ProjectsOverviewScreenProps
       setErrorMessage(error instanceof Error ? error.message : "创建团队失败。");
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handlePickWorkspace() {
+    setIsPickingWorkspace(true);
+    setErrorMessage(null);
+
+    try {
+      const result = await pickLocalDirectory({
+        title: "为 Team 选择工作区目录",
+        defaultPath: workspaceDir || undefined,
+      });
+
+      if (result.path) {
+        setWorkspaceDir(result.path);
+      }
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "打开目录选择器失败。");
+    } finally {
+      setIsPickingWorkspace(false);
     }
   }
 
@@ -272,14 +294,27 @@ export function ProjectsOverviewScreen({ projects }: ProjectsOverviewScreenProps
 
                 <label className="mt-5 block">
                   <span className="text-[13px] font-medium text-text">工作空间目录</span>
-                  <input
-                    value={workspaceDir}
-                    onChange={(event) => setWorkspaceDir(event.target.value)}
-                    placeholder="/Users/sky/SkyProjects/opencrab/workspaces/team-alpha"
-                    className="mt-3 w-full rounded-[18px] border border-line bg-surface px-4 py-3 text-[14px] text-text outline-none transition focus:border-text"
-                  />
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                    <input
+                      value={workspaceDir}
+                      onChange={(event) => setWorkspaceDir(event.target.value)}
+                      placeholder="/Users/sky/SkyProjects/opencrab/workspaces/team-alpha"
+                      className="min-w-0 flex-1 rounded-[18px] border border-line bg-surface px-4 py-3 text-[14px] text-text outline-none transition focus:border-text"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void handlePickWorkspace()}
+                      disabled={isSubmitting || isPickingWorkspace}
+                      className={buttonClassName({
+                        variant: "secondary",
+                        className: "rounded-[18px] bg-surface-muted hover:bg-[#efeff1]",
+                      })}
+                    >
+                      {isPickingWorkspace ? "打开中..." : "选择目录"}
+                    </button>
+                  </div>
                   <p className="mt-2 text-[12px] leading-6 text-muted-strong">
-                    这个团队的默认产出目录会创建在这里。后续实际读写权限仍然遵循系统当前的 sandbox 设置。
+                    这里是 Team 的默认写入目录。即使目标里提到了别的代码路径，也默认只把它们当参考输入；新 Team 会先使用“可写工作区”，后续你也可以在 Team 群聊输入框右侧继续修改权限模式。
                   </p>
                 </label>
               </section>

@@ -5,6 +5,8 @@ export async function POST(request: Request) {
   const body = await readJsonBody<{
     title?: string;
     folderId?: string | null;
+    workspaceDir?: string | null;
+    sandboxMode?: "read-only" | "workspace-write" | "danger-full-access" | null;
     projectId?: string | null;
     agentProfileId?: string | null;
   }>(
@@ -14,6 +16,8 @@ export async function POST(request: Request) {
   const result = createConversation({
     title: body.title,
     folderId: body.folderId ?? null,
+    workspaceDir: body.workspaceDir ?? null,
+    sandboxMode: body.sandboxMode ?? null,
     projectId: body.projectId ?? null,
     agentProfileId: body.agentProfileId ?? null,
   });

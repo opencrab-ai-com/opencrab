@@ -7,13 +7,17 @@ import {
 import {
   OPENCRAB_LOCAL_STORE_PATH,
 } from "@/lib/resources/runtime-paths";
+import { normalizeConversationWorkspaceDir } from "@/lib/resources/workspace-directories";
 import type {
   AppSettings,
   ConversationItem,
   ConversationMessage,
   ConversationSource,
 } from "@/lib/seed-data";
-import type { AppSnapshot } from "@/lib/resources/opencrab-api-types";
+import type {
+  AppSnapshot,
+  CodexSandboxMode,
+} from "@/lib/resources/opencrab-api-types";
 import { createSyncJsonFileStore } from "@/lib/infrastructure/json-store/sync-json-file-store";
 
 export function getSnapshot(): AppSnapshot {
@@ -120,6 +124,8 @@ export function updateFolder(folderId: string, name: string) {
 export function createConversation(input?: {
   title?: string;
   folderId?: string | null;
+  workspaceDir?: string | null;
+  sandboxMode?: CodexSandboxMode | null;
   hidden?: boolean;
   projectId?: string | null;
   agentProfileId?: string | null;
@@ -138,6 +144,11 @@ export function createConversation(input?: {
     lastActivityAt: now,
     preview: "新的对话",
     folderId: input?.folderId ?? null,
+    workspaceDir: normalizeConversationWorkspaceDir(
+      input?.workspaceDir,
+      conversationId,
+    ),
+    sandboxMode: normalizeConversationSandboxMode(input?.sandboxMode),
     hidden: input?.hidden ?? false,
     projectId: input?.projectId ?? null,
     source: input?.source ?? "local",
@@ -168,6 +179,8 @@ export function updateConversation(
       | "preview"
       | "timeLabel"
       | "folderId"
+      | "workspaceDir"
+      | "sandboxMode"
       | "hidden"
       | "projectId"
       | "source"
@@ -184,7 +197,20 @@ export function updateConversation(
   const state = readState();
 
   state.conversations = state.conversations.map((item) =>
-    item.id === conversationId ? { ...item, ...patch } : item,
+    item.id === conversationId
+      ? {
+          ...item,
+          ...patch,
+          workspaceDir:
+            Object.prototype.hasOwnProperty.call(patch, "workspaceDir")
+              ? normalizeConversationWorkspaceDir(patch.workspaceDir, item.id)
+              : item.workspaceDir,
+          sandboxMode:
+            Object.prototype.hasOwnProperty.call(patch, "sandboxMode")
+              ? normalizeConversationSandboxMode(patch.sandboxMode)
+              : item.sandboxMode,
+        }
+      : item,
   );
   writeState(state);
 
@@ -356,6 +382,11 @@ function normalizeSnapshot(snapshot: Partial<AppSnapshot>): AppSnapshot {
     conversations: structuredClone(snapshot.conversations || seedConversations).map((conversation) => ({
       ...conversation,
       projectId: conversation.projectId ?? null,
+      workspaceDir: normalizeConversationWorkspaceDir(
+        conversation.workspaceDir,
+        conversation.id,
+      ),
+      sandboxMode: normalizeConversationSandboxMode(conversation.sandboxMode),
       hidden: conversation.hidden ?? false,
       source: conversation.source ?? "local",
       channelLabel: conversation.channelLabel ?? null,
@@ -421,6 +452,20 @@ function inferMessageTimestamp(meta: string | undefined) {
   }
 
   return undefined;
+}
+
+function normalizeConversationSandboxMode(
+  value: CodexSandboxMode | null | undefined,
+): CodexSandboxMode {
+  if (
+    value === "read-only" ||
+    value === "workspace-write" ||
+    value === "danger-full-access"
+  ) {
+    return value;
+  }
+
+  return "workspace-write";
 }
 
 function normalizeMessages(messages: ConversationMessage[]) {

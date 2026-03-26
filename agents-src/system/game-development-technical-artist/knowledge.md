@@ -2,39 +2,39 @@
 
 ### 资产预算规格表
 ```markdown
-# Asset Technical Budgets — [Project Name]
+# 资产技术预算 — [项目名称]
 
-### Characters
+＃＃＃ 人物
 
-| LOD  | Max Tris | Texture Res | Draw Calls |
+|详细程度|马克斯·特里斯 |纹理分辨率 |抽奖电话 |
 |------|----------|-------------|------------|
-| LOD0 | 15,000   | 2048×2048   | 2–3        |
-| LOD1 | 8,000    | 1024×1024   | 2          |
-| LOD2 | 3,000    | 512×512     | 1          |
-| LOD3 | 800      | 256×256     | 1          |
+|详细程度0 | 15,000 | 2048×2048 | 2048×2048 2-3 | 2-3
+|详细程度1 | 8,000 | 1024×1024 | 2 |
+|详细程度2 | 3,000 | 512×512 | 1 |
+|细节层次3 | 800 | 256×256 | 256×256 1 |
 
-### Environment — Hero Props
+### 环境 — 英雄道具
 
-| LOD  | Max Tris | Texture Res |
+|详细程度|马克斯·特里斯 |纹理分辨率 |
 |------|----------|-------------|
-| LOD0 | 4,000    | 1024×1024   |
-| LOD1 | 1,500    | 512×512     |
-| LOD2 | 400      | 256×256     |
+|详细程度0 | 4,000 | 1024×1024 |
+|详细程度1 | 1,500 | 1,500 512×512 |
+|详细程度2 | 400 | 256×256 | 256×256
 
-### VFX Particles
+### 视觉特效粒子
 
-- Max simultaneous particles on screen: 500 (mobile) / 2000 (PC)
-- Max overdraw layers per effect: 3 (mobile) / 6 (PC)
-- All additive effects: alpha clip where possible, additive blending only with budget approval
+- 屏幕上最大同时粒子数：500（移动设备）/2000（PC）
+- 每个效果的最大透支层数：3（移动设备）/6（PC）
+- 所有附加效果：尽可能进行 alpha 剪辑，仅在预算批准的情况下进行附加混合
 
-### Texture Compression
+### 纹理压缩
 
-| Type          | PC     | Mobile      | Console  |
+|类型 |电脑|手机 |控制台 |
 |---------------|--------|-------------|----------|
-| Albedo        | BC7    | ASTC 6×6    | BC7      |
-| Normal Map    | BC5    | ASTC 6×6    | BC5      |
-| Roughness/AO  | BC4    | ASTC 8×8    | BC4      |
-| UI Sprites    | BC7    | ASTC 4×4    | BC7      |
+|反照率| BC7 | ASTC 6×6 | BC7 |
+|法线贴图| BC5 | ASTC 6×6 | BC5 |
+|粗糙度/AO | BC4 | ASTC 8×8 | BC4 |
+| UI 精灵 | BC7 | ASTC 4×4 | BC7 |
 ```
 
 ### 自定义着色器 - 溶解效果 (HLSL/ShaderLab)
@@ -68,29 +68,29 @@ Shader "Custom/Dissolve"
 ### 视觉特效性能审核清单
 ```markdown
 
-### VFX Effect Review: [Effect Name]
+### VFX 效果回顾：[效果名称]
 
-**Platform Target**: [ ] PC  [ ] Console  [ ] Mobile
+**平台目标**： [ ] PC [ ] 控制台 [ ] 移动设备
 
-Particle Count
-- [ ] Max particles measured in worst-case scenario: ___
-- [ ] Within budget for target platform: ___
+粒子计数
+- [ ] 最坏情况下测量的最大粒子数：___
+- [ ] 在目标平台的预算范围内：___
 
-Overdraw
-- [ ] Overdraw visualizer checked — layers: ___
-- [ ] Within limit (mobile ≤ 3, PC ≤ 6): ___
+透支
+- [ ] Overdraw 可视化工具已选中 — 图层：___
+- [ ] 限制内（移动设备 ≤ 3，PC ≤ 6）：___
 
-Shader Complexity
-- [ ] Shader complexity map checked (green/yellow OK, red = revise)
-- [ ] Mobile: no per-pixel lighting on particles
+着色器复杂性
+- [ ] 着色器复杂度图已选中（绿色/黄色确定，红色 = 修改）
+- [ ] 移动设备：粒子上没有每像素照明
 
-Texture
-- [ ] Particle textures in shared atlas: Y/N
-- [ ] Texture size: ___ (max 256×256 per particle type on mobile)
+质地
+- [ ] 共享图集中的粒子纹理：是/否
+- [ ] 纹理大小：___（移动设备上每个粒子类型最大 256×256）
 
-GPU Cost
-- [ ] Profiled with engine GPU profiler at worst-case density
-- [ ] Frame time contribution: ___ms (budget: ___ms)
+GPU 成本
+- [ ] 在最坏情况密度下使用引擎 GPU 分析器进行分析
+- [ ] 帧时间贡献：___ms（预算：___ms）
 ```
 
 ### LOD 链验证脚本（Python — DCC 不可知）

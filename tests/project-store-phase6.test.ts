@@ -17,6 +17,7 @@ vi.mock("@/lib/conversations/run-conversation-turn", () => ({
 }));
 
 type ProjectStoreModule = Awaited<typeof import("@/lib/projects/project-store")>;
+type LocalStoreModule = Awaited<typeof import("@/lib/resources/local-store")>;
 
 function queueConversationReplies(replies: Array<string | Error>) {
   let index = 0;
@@ -54,6 +55,10 @@ function clearRuntimeQueues() {
 async function loadProjectStore(): Promise<ProjectStoreModule> {
   vi.resetModules();
   return import("@/lib/projects/project-store");
+}
+
+async function loadLocalStore(): Promise<LocalStoreModule> {
+  return import("@/lib/resources/local-store");
 }
 
 async function waitForProjectRuntime(projectId: string) {
@@ -142,6 +147,68 @@ describe("project store phase 6 coordination", () => {
     ]);
   });
 
+  it("updates the Team sandbox mode and syncs the team chat plus runtime conversations", async () => {
+    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase6-"));
+    const workspaceDir = path.join(tempHome, "workspace");
+    tempHomes.push(tempHome);
+    process.env.OPENCRAB_HOME = tempHome;
+
+    queueConversationReplies([
+      JSON.stringify({
+        decision: "waiting_approval",
+        group_reply: "已经整理出一版阶段结果，等待你确认是否继续推进。",
+        checkpoint_summary: "项目经理已经完成第一轮收束。",
+        delegations: [],
+      }),
+    ]);
+
+    const projectStore = await loadProjectStore();
+    const localStore = await loadLocalStore();
+    const created = projectStore.createProject({
+      goal: "验证 Team 权限模式同步",
+      workspaceDir,
+      agentProfileIds: ["project-manager"],
+    });
+    const projectId = created?.project?.id ?? null;
+
+    if (!projectId) {
+      throw new Error("projectId should exist after createProject");
+    }
+
+    await projectStore.runProject(projectId, {
+      triggerLabel: "启动权限同步测试",
+      triggerPrompt: "先跑通一轮，让 Team 群聊和经理 runtime 都创建出来。",
+    });
+    await waitForProjectRuntime(projectId);
+
+    const beforeUpdate = projectStore.getProjectDetail(projectId);
+    const managerConversationId =
+      beforeUpdate?.agents.find((agent) => agent.canDelegate)?.runtimeConversationId ?? null;
+    const teamConversationId = beforeUpdate?.project?.teamConversationId ?? null;
+
+    expect(teamConversationId).toBeTruthy();
+    expect(managerConversationId).toBeTruthy();
+
+    const updated = projectStore.updateProjectSandboxMode(
+      projectId,
+      "danger-full-access",
+    );
+    const snapshot = localStore.getSnapshot();
+
+    expect(updated?.project?.sandboxMode).toBe("danger-full-access");
+    expect(updated?.agents.every((agent) => agent.sandboxMode === "danger-full-access")).toBe(true);
+    expect(
+      teamConversationId
+        ? snapshot.conversations.find((conversation) => conversation.id === teamConversationId)?.sandboxMode
+        : null,
+    ).toBe("danger-full-access");
+    expect(
+      managerConversationId
+        ? snapshot.conversations.find((conversation) => conversation.id === managerConversationId)?.sandboxMode
+        : null,
+    ).toBe("danger-full-access");
+  });
+
   it("creates mailbox coordination threads across delegation, handoff, review, and self-claim", async () => {
     const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase6-"));
     const workspaceDir = path.join(tempHome, "workspace");
@@ -212,6 +279,16 @@ describe("project store phase 6 coordination", () => {
         ([input]) => input && typeof input === "object" && input.workingDirectory === workspaceDir,
       ),
     ).toBe(true);
+    const managerPrompt = String(runConversationTurnMock.mock.calls[0]?.[0]?.content ?? "");
+    const workerPrompt = String(runConversationTurnMock.mock.calls[1]?.[0]?.content ?? "");
+
+    expect(managerPrompt).toContain("目录边界");
+    expect(managerPrompt).toContain("工作空间目录");
+    expect(managerPrompt).toContain("默认所有新建文件、草稿、截图、方案文档和阶段产物都应写到这里");
+    expect(managerPrompt).toContain("外部路径写成默认落地产出目录");
+    expect(workerPrompt).toContain("目录边界");
+    expect(workerPrompt).toContain("默认把工作空间目录当成唯一的产出落点");
+    expect(workerPrompt).toContain("不自动等于“去那里写结果”");
 
     const mailboxKinds = new Set(detail.mailboxThreads.map((thread) => thread.kind));
 

@@ -177,30 +177,30 @@ return CombatSystem
 
 ### 模块文件夹结构
 ```
-ServerStorage/
-  Modules/
-    DataManager.lua        -- Player data persistence
-    CombatSystem.lua       -- Combat validation and application
-    PlayerManager.lua      -- Player lifecycle management
-    InventorySystem.lua    -- Item ownership and management
-    EconomySystem.lua      -- Currency sources and sinks
+服务器存储/
+模块/
+DataManager.lua -- 玩家数据持久化
+CombatSystem.lua -- 战斗验证与应用
+PlayerManager.lua -- 玩家生命周期管理
+InventorySystem.lua -- 物品所有权和管理
+EconomySystem.lua——货币来源和汇
 
-ReplicatedStorage/
-  Modules/
-    Constants.lua          -- Shared constants (item IDs, config values)
-    NetworkEvents.lua      -- RemoteEvent references (single source of truth)
-  Remotes/
-    RequestAttack          -- RemoteEvent
-    RequestPurchase        -- RemoteEvent
-    SyncPlayerState        -- RemoteEvent (server → client)
+复制存储/
+模块/
+Constants.lua -- 共享常量（项目 ID、配置值）
+NetworkEvents.lua——RemoteEvent 参考（单一事实来源）
+遥控器/
+请求攻击——远程事件
+请求购买——RemoteEvent
+SyncPlayerState -- RemoteEvent（服务器 → 客户端）
 
 StarterPlayerScripts/
-  LocalScripts/
-    GameClient.client.lua  -- Client bootstrap only
-  Modules/
-    UIManager.lua          -- HUD, menus, visual feedback
-    InputHandler.lua       -- Reads input, fires RemoteEvents
-    EffectsManager.lua     -- Visual/audio feedback on confirmed events
+本地脚本/
+GameClient.client.lua -- 仅客户端引导程序
+模块/
+UIManager.lua -- HUD、菜单、视觉反馈
+InputHandler.lua -- 读取输入，触发 RemoteEvents
+EffectsManager.lua——已确认事件的视觉/音频反馈
 ```
 
 ### 高级能力

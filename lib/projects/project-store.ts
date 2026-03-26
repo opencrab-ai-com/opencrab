@@ -1,4 +1,3 @@
-import { existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { getAgentProfile } from "@/lib/agents/agent-store";
 import { runConversationTurn } from "@/lib/conversations/run-conversation-turn";
@@ -14,6 +13,7 @@ import {
 import {
   OPENCRAB_PROJECTS_STORE_PATH,
 } from "@/lib/resources/runtime-paths";
+import { normalizeProjectWorkspaceDir } from "@/lib/resources/workspace-directories";
 import { createSyncJsonFileStore } from "@/lib/infrastructure/json-store/sync-json-file-store";
 import {
   buildManagerArtifactCatalogLines,
@@ -430,7 +430,7 @@ export function createProject(input: {
   const snapshot = getSnapshot();
   const model = input.model?.trim() || snapshot.settings.defaultModel;
   const reasoningEffort = input.reasoningEffort ?? snapshot.settings.defaultReasoningEffort;
-  const sandboxMode = input.sandboxMode ?? snapshot.settings.defaultSandboxMode;
+  const sandboxMode = input.sandboxMode ?? "workspace-write";
   const now = new Date().toISOString();
   const projectId = `project-${crypto.randomUUID()}`;
   const room = buildManualRoom({
@@ -546,6 +546,8 @@ export async function replyToProjectConversation(input: {
   if (conversationId !== input.conversationId) {
     updateStoredConversation(input.conversationId, {
       projectId: room.id,
+      workspaceDir: room.workspaceDir,
+      sandboxMode: room.sandboxMode,
     });
   }
 
@@ -1083,6 +1085,11 @@ function buildManagerPlanningPrompt(
   );
   const learningLines = buildLearningSuggestionPromptSection(learningSuggestions);
   const reuseCandidateLines = buildLearningReuseCandidatePromptSection(learningReuseCandidates, room.id);
+  const workspaceGuardrails = buildWorkspaceExecutionGuardrails({
+    workspaceDir: room.workspaceDir ?? null,
+    textSources: [room.goal, content, ...recentMessages.map((message) => message.content)],
+    mode: "manager",
+  });
 
   return `你正在 OpenCrab 的 Team Runtime 中担任项目经理。你需要判断这条群聊消息是否需要委派给其他成员，并给出面向群聊的回应。
 
@@ -1109,6 +1116,9 @@ ${learningLines}
 
 跨项目复用候选：
 ${reuseCandidateLines}
+
+目录边界：
+${workspaceGuardrails}
 
 本轮用户消息：
 ${content}
@@ -1140,7 +1150,9 @@ ${content}
 10. 不要编造不存在的成员名字。
 11. “跨项目复用候选”只是一组可选经验，不是默认必须套用的模板。只有当它和当前项目明确匹配时才采用。
 12. 如果某条任务必须基于已有交付物继续推进，必须把这些交付物标题写进 artifactTitles，而不是只在 task 里模糊提一句。
-13. artifactTitles 只能使用“当前可复用交付物”里已经出现过的标题。`;
+13. artifactTitles 只能使用“当前可复用交付物”里已经出现过的标题。
+14. 工作空间目录是这个 Team 的默认产出目录。即使目标、群聊或上游结果里提到了别的代码目录，也默认只把那些路径当作参考输入，不要直接把它们写成默认落地产出目录。
+15. 只有当用户这一轮明确要求“直接修改某个外部目录 / 仓库”时，你才允许把那个路径写进 delegation task；否则任务描述里应该明确要求成员把草稿、方案、截图、报告和新产出沉淀到工作空间目录。`;
 }
 
 function parseManagerPlan(
@@ -1555,6 +1567,11 @@ function buildWorkerExecutionPrompt(
   const memoryLines = buildWorkerMemoryPromptSection(projectMemory, roleMemory);
   const learningLines = buildLearningSuggestionPromptSection(learningSuggestions);
   const reuseCandidateLines = buildLearningReuseCandidatePromptSection(learningReuseCandidates, room.id);
+  const workspaceGuardrails = buildWorkspaceExecutionGuardrails({
+    workspaceDir: room.workspaceDir ?? null,
+    textSources: [room.goal, task, ...recentMessages.map((message) => message.content)],
+    mode: "worker",
+  });
 
   return `你正在 OpenCrab 的 Team Runtime 中以成员身份执行一个子任务。请直接完成任务，不要只回复“收到”。
 
@@ -1582,6 +1599,9 @@ ${learningLines}
 跨项目复用候选：
 ${reuseCandidateLines}
 
+目录边界：
+${workspaceGuardrails}
+
 项目经理分配给你的任务：
 ${task}
 
@@ -1590,7 +1610,184 @@ ${task}
 2. 优先提供具体判断、方案、步骤、结构或内容，而不是承诺。
 3. 如果信息不够，也先给最有价值的初版，并明确缺口。
 4. “跨项目复用候选”只是一组可选经验，不是默认必须照搬的模板；只有明确匹配当前任务时才采用。
-5. 不要说“收到”“我会先”“稍后回传”这类过程性空话。`;
+5. 不要说“收到”“我会先”“稍后回传”这类过程性空话。
+6. 默认把工作空间目录当成唯一的产出落点；除非用户本轮明确要求直接修改别的目录，否则不要在工作空间目录之外新建或改写文件。
+7. 如果团队目标或任务里提到了别的代码目录，那默认表示“可读取、可参考”，不自动等于“去那里写结果”。
+8. 如果确实需要参考外部代码库，也优先把分析、草稿、截图、报告和阶段交付物写回工作空间目录，并在回复里说明你参考了哪个路径。`;
+}
+
+function buildWorkspaceExecutionGuardrails(input: {
+  workspaceDir: string | null;
+  textSources: string[];
+  mode: "manager" | "worker";
+}) {
+  const workspaceDir = input.workspaceDir?.trim() || null;
+  const referencedPaths = extractAbsolutePathsFromTexts(input.textSources);
+  const externalPaths = referencedPaths.filter((candidate) => {
+    if (!workspaceDir) {
+      return true;
+    }
+
+    const normalizedWorkspaceDir = path.normalize(workspaceDir);
+    const normalizedCandidate = path.normalize(candidate);
+    return (
+      normalizedCandidate !== normalizedWorkspaceDir &&
+      !normalizedCandidate.startsWith(`${normalizedWorkspaceDir}${path.sep}`)
+    );
+  });
+
+  const lines = [
+    workspaceDir
+      ? `- 工作空间目录：${workspaceDir}。默认所有新建文件、草稿、截图、方案文档和阶段产物都应写到这里。`
+      : "- 当前没有工作空间目录，请优先用自然语言交付，不要假设别的目录就是默认产出位置。",
+  ];
+
+  if (externalPaths.length > 0) {
+    lines.push("- 目标或上下文里还提到了这些外部路径，请默认只把它们当作参考输入，而不是默认写入目标：");
+    lines.push(...externalPaths.slice(0, 6).map((candidate) => `  - ${candidate}`));
+  }
+
+  lines.push(
+    input.mode === "manager"
+      ? "- 给成员派工时，除非用户这一轮明确要求直接修改某个外部目录，否则不要把外部路径写成默认落地产出目录。"
+      : "- 执行任务时，除非用户这一轮明确要求直接修改某个外部目录，否则不要跨目录写文件。",
+  );
+
+  lines.push("- 如果需要读取外部代码库，请把它视为参考源；读取后产出的分析、计划、截图和交付说明仍应回写到工作空间目录。");
+
+  return lines.join("\n");
+}
+
+function extractAbsolutePathsFromTexts(textSources: string[]) {
+  const candidates = new Set<string>();
+
+  for (const source of textSources) {
+    if (!source) {
+      continue;
+    }
+
+    for (const match of source.matchAll(/(?:\/Users\/[^\s，。；、"'`()]+|\/[A-Za-z0-9._~/-]+)/g)) {
+      const value = match[0]?.trim();
+
+      if (!value || !path.isAbsolute(value)) {
+        continue;
+      }
+
+      candidates.add(value.replace(/[),.，。；;！？!]+$/u, ""));
+    }
+  }
+
+  return [...candidates];
+}
+
+export function updateProjectWorkspaceDir(projectId: string, workspaceDir: string) {
+  const state = readState();
+  const room = state.rooms.find((item) => item.id === projectId) ?? null;
+
+  if (!room) {
+    return null;
+  }
+
+  const normalizedWorkspaceDir = normalizeProjectWorkspaceDir(workspaceDir);
+  const now = new Date().toISOString();
+
+  state.rooms = state.rooms.map((item) =>
+    item.id === projectId
+      ? {
+          ...item,
+          workspaceDir: normalizedWorkspaceDir,
+          updatedAt: now,
+        }
+      : item,
+  );
+
+  if (room.teamConversationId) {
+    updateStoredConversation(room.teamConversationId, {
+      projectId: room.id,
+      workspaceDir: normalizedWorkspaceDir,
+      sandboxMode: room.sandboxMode,
+    });
+  }
+
+  state.agents
+    .filter((agent) => agent.projectId === projectId && agent.runtimeConversationId)
+    .forEach((agent) => {
+      if (!agent.runtimeConversationId) {
+        return;
+      }
+
+      updateStoredConversation(agent.runtimeConversationId, {
+        workspaceDir: normalizedWorkspaceDir,
+        sandboxMode: agent.sandboxMode,
+      });
+    });
+
+  writeState(state);
+
+  return getProjectDetail(projectId);
+}
+
+export function updateProjectSandboxMode(
+  projectId: string,
+  sandboxMode: ProjectRoomRecord["sandboxMode"],
+) {
+  const state = readState();
+  const room = state.rooms.find((item) => item.id === projectId) ?? null;
+
+  if (!room) {
+    return null;
+  }
+
+  const normalizedSandboxMode =
+    sandboxMode === "read-only" ||
+    sandboxMode === "workspace-write" ||
+    sandboxMode === "danger-full-access"
+      ? sandboxMode
+      : "workspace-write";
+  const now = new Date().toISOString();
+
+  state.rooms = state.rooms.map((item) =>
+    item.id === projectId
+      ? {
+          ...item,
+          sandboxMode: normalizedSandboxMode,
+          updatedAt: now,
+        }
+      : item,
+  );
+  state.agents = state.agents.map((agent) =>
+    agent.projectId === projectId
+      ? {
+          ...agent,
+          sandboxMode: normalizedSandboxMode,
+        }
+      : agent,
+  );
+
+  if (room.teamConversationId) {
+    updateStoredConversation(room.teamConversationId, {
+      projectId: room.id,
+      workspaceDir: room.workspaceDir,
+      sandboxMode: normalizedSandboxMode,
+    });
+  }
+
+  state.agents
+    .filter((agent) => agent.projectId === projectId && agent.runtimeConversationId)
+    .forEach((agent) => {
+      if (!agent.runtimeConversationId) {
+        return;
+      }
+
+      updateStoredConversation(agent.runtimeConversationId, {
+        workspaceDir: room.workspaceDir,
+        sandboxMode: normalizedSandboxMode,
+      });
+    });
+
+  writeState(state);
+
+  return getProjectDetail(projectId);
 }
 
 function ensureAgentRuntimeConversation(
@@ -1604,6 +1801,10 @@ function ensureAgentRuntimeConversation(
     const totalChars = runtimeMessages.reduce((sum, message) => sum + message.content.length, 0);
 
     if (runtimeMessages.length <= 8 && totalChars <= 16_000) {
+      updateStoredConversation(agent.runtimeConversationId, {
+        workspaceDir: room.workspaceDir,
+        sandboxMode: agent.sandboxMode,
+      });
       return agent.runtimeConversationId;
     }
 
@@ -1621,6 +1822,10 @@ function ensureAgentRuntimeConversation(
   );
 
   if (existing) {
+    updateStoredConversation(existing.id, {
+      workspaceDir: room.workspaceDir,
+      sandboxMode: agent.sandboxMode,
+    });
     updateProjectAgent(state, agent.id, {
       runtimeConversationId: existing.id,
     });
@@ -1631,6 +1836,8 @@ function ensureAgentRuntimeConversation(
   const created = createConversation({
     title: `${room.teamName} · ${agent.name} runtime`,
     hidden: true,
+    workspaceDir: room.workspaceDir,
+    sandboxMode: agent.sandboxMode,
     agentProfileId: agent.agentProfileId ?? null,
   });
 
@@ -4832,6 +5039,7 @@ function buildManualRoom(input: {
     teamName,
     goal: input.goal,
     workspaceDir: input.workspaceDir,
+    sandboxMode: input.sandboxMode,
     teamConversationId: null,
     summary: `围绕“${stripTrailingSentencePunctuation(shortLabel)}”启动的新团队，已装配 ${normalizedAgents.length} 位智能体，默认产出目录已设置完成。`,
     status: "active",
@@ -5282,22 +5490,6 @@ function resolveVisibility(teamRole: string, isLead: boolean): ProjectAgentRecor
   return "backstage";
 }
 
-function normalizeProjectWorkspaceDir(value: string) {
-  const raw = value.trim();
-
-  if (!raw) {
-    throw new Error("请先指定这个团队的工作空间目录。");
-  }
-
-  const resolved = path.resolve(process.cwd(), raw);
-
-  if (!existsSync(resolved)) {
-    mkdirSync(resolved, { recursive: true });
-  }
-
-  return resolved;
-}
-
 function ensureProjectManagerAgentId(agentIds: string[]) {
   return agentIds.includes("project-manager") ? agentIds : ["project-manager", ...agentIds];
 }
@@ -5306,6 +5498,8 @@ function ensureTeamConversation(state: ProjectStoreState, room: ProjectRoomRecor
   if (room.teamConversationId) {
     updateStoredConversation(room.teamConversationId, {
       projectId: room.id,
+      workspaceDir: room.workspaceDir,
+      sandboxMode: room.sandboxMode,
     });
     return room.teamConversationId;
   }
@@ -5314,6 +5508,8 @@ function ensureTeamConversation(state: ProjectStoreState, room: ProjectRoomRecor
   const created = createConversation({
     title: `${room.teamName} · 群聊`,
     folderId: folder?.id ?? null,
+    workspaceDir: room.workspaceDir,
+    sandboxMode: room.sandboxMode,
     projectId: room.id,
   });
 
@@ -9271,7 +9467,15 @@ function normalizeProjectStoreState(parsed: Partial<ProjectStoreState>): Project
 
         return {
         ...room,
-        workspaceDir: room.workspaceDir ?? null,
+        workspaceDir: room.workspaceDir
+          ? normalizeProjectWorkspaceDir(room.workspaceDir)
+          : null,
+        sandboxMode:
+          room.sandboxMode === "read-only" ||
+          room.sandboxMode === "workspace-write" ||
+          room.sandboxMode === "danger-full-access"
+            ? room.sandboxMode
+            : "workspace-write",
         teamConversationId: room.teamConversationId ?? null,
         currentStageLabel: room.currentStageLabel ?? null,
         activeAgentId: room.activeAgentId ?? null,

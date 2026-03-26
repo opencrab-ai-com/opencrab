@@ -193,6 +193,7 @@ export type ProjectRoomRecord = {
   teamName: string;
   goal: string;
   workspaceDir: string | null;
+  sandboxMode: CodexSandboxMode;
   teamConversationId: string | null;
   summary: string;
   status: ProjectRoomStatus;

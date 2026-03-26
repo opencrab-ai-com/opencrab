@@ -83,7 +83,7 @@ export function DialogSecondaryButton({ children, onClick, disabled }: DialogBut
       disabled={disabled}
       className={buttonClassName({
         variant: "secondary",
-        className: "bg-surface-muted hover:bg-[#ecece7]",
+        className: "bg-surface-muted hover:bg-[#efeff1]",
       })}
     >
       {children}
@@ -99,7 +99,7 @@ export function DialogPrimaryButton({ children, onClick, disabled }: DialogButto
       disabled={disabled}
       className={buttonClassName({
         variant: "primary",
-        className: "hover:bg-[#262626] disabled:bg-[#c9c9c5]",
+        className: "hover:bg-[#2b2b2f] disabled:bg-[#d4d4db]",
       })}
     >
       {children}

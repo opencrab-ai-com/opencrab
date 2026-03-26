@@ -14,7 +14,6 @@ export default function SettingsPage() {
     selectedBrowserConnectionMode,
     selectedModel,
     selectedReasoningEffort,
-    selectedSandboxMode,
     selectedLanguage,
     selectedUserDisplayName,
     selectedUserAvatarDataUrl,
@@ -23,7 +22,6 @@ export default function SettingsPage() {
     setSelectedBrowserConnectionMode,
     setSelectedModel,
     setSelectedReasoningEffort,
-    setSelectedSandboxMode,
     setSelectedLanguage,
     setSelectedUserDisplayName,
     setSelectedUserAvatarDataUrl,
@@ -123,7 +121,7 @@ export default function SettingsPage() {
                   value={selectedUserDisplayName}
                   onChange={(event) => void setSelectedUserDisplayName(event.target.value)}
                   placeholder="我"
-                  className="h-11 w-full rounded-[14px] border border-line bg-surface px-4 text-[13px] text-text outline-none transition placeholder:text-[#a0a097]"
+                  className="h-11 w-full rounded-[14px] border border-line bg-surface px-4 text-[13px] text-text outline-none transition placeholder:text-[#9b9ba7]"
                 />
                 <p className="text-[12px] text-muted-strong">
                   例如：Sky、阿蟹、产品负责人。未填写时会回退为“我”。
@@ -198,25 +196,6 @@ export default function SettingsPage() {
             </SelectField>
             <p className="text-[12px] text-muted-strong">
               这个语言会写入 OpenCrab 的系统提示里。后续对话、总结、改写、定时任务和渠道回复都会优先按这个语言处理，除非用户明确要求其他语言。
-            </p>
-          </label>
-
-          <label className="space-y-2 md:col-span-2">
-            <span className="text-[13px] font-medium text-text">默认权限模式</span>
-            <SelectField
-              value={selectedSandboxMode}
-              onChange={(event) =>
-                void setSelectedSandboxMode(
-                  event.target.value as typeof selectedSandboxMode,
-                )
-              }
-            >
-              <option value="workspace-write">可写工作区</option>
-              <option value="read-only">只读</option>
-              <option value="danger-full-access">完全访问</option>
-            </SelectField>
-            <p className="text-[12px] text-muted-strong">
-              推荐使用“可写工作区”。它允许 OpenCrab 创建和修改项目文件，但不会把权限放得过宽。
             </p>
           </label>
 

@@ -48,6 +48,8 @@ type ConversationTurnInput = {
 type PreparedConversationTurn = {
   conversationId: string;
   conversation: NonNullable<ReturnType<typeof findConversation>>;
+  workingDirectory?: string;
+  sandboxMode: CodexSandboxMode;
   content: string | undefined;
   attachments: ReturnType<typeof getUploadsByIds>;
   imagePaths: string[];
@@ -95,6 +97,8 @@ export function prepareConversationTurn(input: ConversationTurnInput): PreparedC
   return {
     conversationId: input.conversationId,
     conversation,
+    workingDirectory: conversation.workspaceDir?.trim() || undefined,
+    sandboxMode: conversation.sandboxMode ?? "workspace-write",
     content: buildCodexInputContent(content, attachments.map((attachment) => ({
       name: attachment.name,
       kind: attachment.kind,
@@ -199,8 +203,8 @@ export async function runConversationTurn(input: ConversationTurnInput) {
           : null,
         model: input.model,
         reasoningEffort: input.reasoningEffort,
-        sandboxMode: input.sandboxMode,
-        workingDirectory: input.workingDirectory,
+        sandboxMode: input.sandboxMode ?? prepared.sandboxMode,
+        workingDirectory: input.workingDirectory ?? prepared.workingDirectory,
         imagePaths: prepared.imagePaths,
         textAttachments: prepared.textAttachments,
       })) {
@@ -281,8 +285,8 @@ export async function runConversationTurn(input: ConversationTurnInput) {
       : null,
     model: input.model,
     reasoningEffort: input.reasoningEffort,
-    sandboxMode: input.sandboxMode,
-    workingDirectory: input.workingDirectory,
+    sandboxMode: input.sandboxMode ?? prepared.sandboxMode,
+    workingDirectory: input.workingDirectory ?? prepared.workingDirectory,
     imagePaths: prepared.imagePaths,
     textAttachments: prepared.textAttachments,
     onThreadReady: (threadId) => {

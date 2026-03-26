@@ -3,32 +3,32 @@
 ### 配件出口清单（DCC → Roblox Studio）
 ```markdown
 
-### Accessory Export Checklist
+### 配件出口清单
 
-### Mesh
-- [ ] Triangle count: ___ (limit: 4,000 for accessories, 10,000 for bundle parts)
-- [ ] Single mesh object: Y/N
-- [ ] Single UV channel in [0,1] space: Y/N
-- [ ] No overlapping UVs outside [0,1]: Y/N
-- [ ] All transforms applied (scale=1, rot=0): Y/N
-- [ ] Pivot point at attachment location: Y/N
-- [ ] No zero-area faces or non-manifold geometry: Y/N
+＃＃＃ 网
+- [ ] 三角形数量：___（限制：配件 4,000 个，捆绑零件 10,000 个）
+- [ ] 单个网格对象：是/否
+- [ ] [0,1] 空间中的单个 UV 通道：是/否
+- [ ] [0,1] 之外没有重叠 UV：是/否
+- [ ] 应用所有变换（scale=1，rot=0）：Y/N
+- [ ] 连接位置处的枢轴点：是/否
+- [ ] 无零面积面或非流形几何体：是/否
 
-### Texture
-- [ ] Resolution: ___ × ___ (max 1024×1024)
-- [ ] Format: PNG
-- [ ] UV islands have 2px+ padding: Y/N
-- [ ] No copyrighted content: Y/N
-- [ ] Transparency handled in alpha channel: Y/N
+＃＃＃ 质地
+- [ ] 分辨率：___ × ___（最大 1024×1024）
+- [ ] 格式：PNG
+- [ ] UV 岛有 2px+ 填充：是/否
+- [ ] 没有受版权保护的内容：是/否
+- [ ] 在 Alpha 通道中处理透明度：Y/N
 
-### Attachment
-- [ ] Attachment object present with correct name: ___
-- [ ] Tested on: [ ] Classic  [ ] R15 Normal  [ ] R15 Rthro
-- [ ] No clipping through default avatar meshes in any test body type: Y/N
+＃＃＃ 依恋
+- [ ] 附件对象具有正确的名称：___
+- [ ] 测试环境： [ ] 经典 [ ] R15 正常 [ ] R15 Rthro
+- [ ] 任何测试身体类型中的默认头像网格都不会被剪切：是/否
 
-### File
-- [ ] Format: FBX (rigged) / OBJ (static)
-- [ ] File name follows naming convention: [CreatorName]_[ItemName]_[Type]
+＃＃＃ 文件
+- [ ] 格式：FBX（操纵）/OBJ（静态）
+- [ ] 文件名遵循命名约定：[CreatorName]_[ItemName]_[Type]
 ```
 
 ### HumanoidDescription — 体验中的头像定制
@@ -87,65 +87,65 @@ return AvatarManager
 ### 分层服装笼设置（搅拌机）
 ```markdown
 
-### Layered Clothing Rig Requirements
+### 分层服装装备要求
 
-### Outer Mesh
-- The clothing visible in-game
-- UV mapped, textured to spec
-- Rigged to R15 rig bones (matches Roblox's public R15 rig exactly)
-- Export name: [ItemName]
+### 外网
+- 游戏中可见的服装
+- UV 映射，纹理符合规格
+- 装备到 R15 装备骨骼（与 Roblox 的公共 R15 装备完全匹配）
+- 导出名称：[项目名称]
 
-### Inner Cage Mesh (_InnerCage)
-- Same topology as outer mesh but shrunk inward by ~0.01 units
-- Defines how clothing wraps around the avatar body
-- NOT textured — cages are invisible in-game
-- Export name: [ItemName]_InnerCage
+### 内笼网 (_InnerCage)
+- 与外部网格相同的拓扑，但向内收缩约 0.01 个单位
+- 定义服装如何包裹角色身体
+- 没有纹理——笼子在游戏中是不可见的
+- 导出名称：[ItemName]_InnerCage
 
-### Outer Cage Mesh (_OuterCage)
+### 外笼网 (_OuterCage)
 - Used to let other layered items stack on top of this item
 - Slightly expanded outward from outer mesh
-- Export name: [ItemName]_OuterCage
+- 导出名称：[ItemName]_OuterCage
 
-### Bone Weights
-- All vertices weighted to the correct R15 bones
-- No unweighted vertices (causes mesh tearing at seams)
-- Weight transfers: use Roblox's provided reference rig for correct bone names
+### 骨骼重量
+- 所有顶点都加权到正确的 R15 骨骼
+- 没有未加权的顶点（导致接缝处的网格撕裂）
+- 重量转移：使用 Roblox 提供的参考装备来获取正确的骨骼名称
 
-### Test Requirement
-Apply to all provided test bodies in Roblox Studio before submission:
-- Young, Classic, Normal, Rthro Narrow, Rthro Broad
-- Verify no clipping at extreme animation poses: idle, run, jump, sit
+### 测试要求
+提交前适用于 Roblox Studio 中提供的所有测试机构：
+- 年轻、经典、正常、窄型、宽型
+- 验证极端动画姿势时没有剪辑：闲置、跑步、跳跃、坐下
 ```
 
 ### 创作者市场提交准备
 ```markdown
 
-### Item Submission Package: [Item Name]
+### 物品提交包：[物品名称]
 
-### Metadata
-- **Item Name**: [Accurate, searchable, not misleading]
-- **Description**: [Clear description of item + what body part it goes on]
-- **Category**: [Hat / Face Accessory / Shoulder Accessory / Shirt / Pants / etc.]
-- **Price**: [In Robux — research comparable items for market positioning]
-- **Limited**: [ ] Yes (requires eligibility)  [ ] No
+### 元数据
+- **物品名称**：[准确、可搜索、不误导]
+- **描述**：[物品的清晰描述+它所在的身体部位]
+- **类别**：[帽子/脸部配饰/肩部配饰/衬衫/裤子/等]
+- **价格**：[在 Robux 中 — 研究可比商品以进行市场定位]
+- **有限**：[ ] 是（需要资格） [ ] 否
 
-### Asset Files
-- [ ] Mesh: [filename].fbx / .obj
-- [ ] Texture: [filename].png (max 1024×1024)
-- [ ] Icon thumbnail: 420×420 PNG — item shown clearly on neutral background
+### 资产文件
+- [ ] 网格：[文件名].fbx / .obj
+- [ ] 纹理：[文件名].png（最大 1024×1024）
+- [ ] 图标缩略图：420×420 PNG — 项目在中性背景上清晰显示
 
-### Pre-Submission Validation
-- [ ] In-Studio test: item renders correctly on all avatar body types
-- [ ] In-Studio test: no clipping in idle, walk, run, jump, sit animations
-- [ ] Texture: no copyright, brand logos, or inappropriate content
-- [ ] Mesh: triangle count within limits
-- [ ] All transforms applied in DCC tool
+### 提交前验证
+- [ ] Studio 内测试：项目在所有头像身体类型上正确渲染
+- [ ] 工作室测试：闲置、行走、跑步、跳跃、坐下动画中没有剪辑
+- [ ] 纹理：无版权、品牌徽标或不当内容
+- [ ] 网格：三角形数量在限制范围内
+- [ ] DCC 工具中应用的所有变换
 
-### Moderation Risk Flags (pre-check)
-- [ ] Any text on item? (May require text moderation review)
-- [ ] Any reference to real-world brands? → REMOVE
-- [ ] Any face coverings? (Moderation scrutiny is higher)
-- [ ] Any weapon-shaped accessories? → Review Roblox weapon policy first
+### 审核风险标记（预检查）
+- [ ] 项目上有文字吗？ （可能需要文字审核审核）
+- [ ] 是否参考了现实世界的品牌？ → 删除
+- [ ] 有面罩吗？ （审核审查更高）
+- [ ] 有武器形状的配件吗？ → 首先回顾 Roblox 武器政策
 ```
 
 ### 体验-内部UGC商店UI流程

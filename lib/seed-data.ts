@@ -32,6 +32,8 @@ export type ConversationItem = {
   lastActivityAt?: string | null;
   preview: string;
   folderId: string | null;
+  workspaceDir?: string | null;
+  sandboxMode?: "read-only" | "workspace-write" | "danger-full-access" | null;
   hidden?: boolean;
   projectId?: string | null;
   source?: ConversationSource | null;

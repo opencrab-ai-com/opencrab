@@ -157,7 +157,7 @@ ZXTToken0ZX
 ### 启动命令
 
 ```text
-Use the Automation Governance Architect to evaluate this process for automation.
-Apply mandatory scoring for time savings, data criticality, dependency risk, and scalability.
-Return a verdict, rationale, architecture recommendation, implementation standard, and rollout preconditions.
+使用自动化治理架构师来评估此自动化流程。
+应用强制评分以节省时间、数据关键性、依赖性风险和可扩展性。
+返回结论、理由、架构建议、实施标准和推出前提条件。
 ```

@@ -1,15 +1,15 @@
 ### 审批流程）时间表
 
 ```
-Foreign consultant's mental model:
-  Meeting → Proposal → Decision → Contract
-  Timeline: 2-4 weeks
+外籍顾问心智模型：
+会议→提案→决定→合同
+时间表：2-4周
 
-Korean reality:
-  소개 (Introduction) → 미팅 (Meeting) → 내부검토 (Internal review)
-  → 품의서 작성 (Approval document drafted) → 결재 라인 (Approval chain)
-  → 예산확인 (Budget confirmation) → 계약 (Contract)
-  Timeline: 6-16 weeks (SME: 6-10, Mid-cap: 8-12, Chaebol: 12-16)
+韩国现实：
+소개（介绍）→ 미팅（会议）→ 내부검토（内部审查）
+→ 품의서 작성 (审批文件起草) → 결재 라인 (审批链)
+→ 예산확인 (预算确认) → 계약 (合同)
+时间表：6-16周（中小企业：6-10周，中型股：8-12周，财阀：12-16周）
 ```
 
 ### 품의 阶段和你可以影响什么
@@ -42,25 +42,25 @@ Korean reality:
 
 **第一次接触（正式）：**
 ```
-안녕하세요, [Name]님.
-[Introducer Name]님 소개로 연락드립니다.
-[One sentence about yourself]
+안녕하세요，[姓名]님。
+[介绍人姓名]님 소개로 연락드립니다.
+[一句话介绍自己]
 혹시 시간 되실 때 커피 한 잔 하시겠어요?
 ```
 
 **建立关系（半正式）：**
 ```
-[Name]님, 안녕하세요!
-[Context/reason for message]
-[Request or information]
+[名字]님，안녕하세요！
+[消息背景/原因]
+[请求或信息]
 감사합니다 :)
 ```
 
 **建立信任后：**
 ```
-[Name]님~
-[Direct message]
-[Emoji OK — 👍, 😊, 🙏 — but not excessive]
+[名字]님~
+[直接留言]
+[表情符号可以 - 👍、😊、🙏 - 但不要过多]
 ```
 
 ### KakaoTalk 规则
@@ -131,14 +131,14 @@ Korean reality:
 
 ```
 Seating:    Furthest from door = most senior (상석)
-Pouring:    Always pour for others (use two hands for seniors)
-Receiving:  Accept with two hands. Take at least one sip before setting down.
-Toast:      "건배" or "위하여" — clink glass lower than senior's glass
-Soju pace:  First round: accept. Second round: you can moderate.
-             Saying "한 잔만 더" (just one more) is more graceful than flat refusal.
-Paying:     Senior typically pays. Offering to pay as the junior can be awkward.
-             Instead, offer to pay for the 2차 (second round) or coffee the next day.
-Food:       Wait for the most senior person to start eating before you begin.
+倒水：总是为别人倒水（老年人用两只手）
+接：用两只手接。坐下前至少喝一小口。
+敬酒：“건배”或“위하여”——碰杯比老年人的杯子低
+烧酒节奏： 第一轮：接受。第二轮：你可以适度。
+说“한잔만더”（再说一句）比断然拒绝更优雅。
+付费：高级通常付费。作为初级人员提出付费可能会很尴尬。
+相反，可以主动提出支付第二天的 2차（第二轮）或咖啡费用。
+食物：等待最年长的人开始吃饭后再开始。
 ```
 
 ### 季节性商务日历

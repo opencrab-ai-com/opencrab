@@ -2,21 +2,21 @@
 
 ### 溶解着色器图形布局
 ```
-Blackboard Parameters:
-  [Texture2D] Base Map        — Albedo texture
-  [Texture2D] Dissolve Map    — Noise texture driving dissolve
-  [Float]     Dissolve Amount — Range(0,1), artist-driven
-  [Float]     Edge Width      — Range(0,0.2)
-  [Color]     Edge Color      — HDR enabled for emissive edge
+黑板参数：
+[Texture2D] 底图 — 反照率纹理
+[Texture2D] 溶解贴图 — 噪声纹理驱动溶解
+[Float] 溶解量 — 范围(0,1)，由艺术家驱动
+[Float] 边缘宽度 — 范围(0,0.2)
+[颜色] 边缘颜色 - 为发射边缘启用 HDR
 
-Node Graph Structure:
-  [Sample Texture 2D: DissolveMap] → [R channel] → [Subtract: DissolveAmount]
-  → [Step: 0] → [Clip]  (drives Alpha Clip Threshold)
+节点图结构：
+[示例纹理 2D：DissolveMap] → [R 通道] → [减去：DissolveAmount]
+→ [Step: 0] → [Clip]（驱动 Alpha 剪辑阈值）
 
-  [Subtract: DissolveAmount + EdgeWidth] → [Step] → [Multiply: EdgeColor]
-  → [Add to Emission output]
+[减去：溶解量 + 边缘宽度] → [步长] → [乘：边缘颜色]
+→ [添加到发射输出]
 
-Sub-Graph: "DissolveCore" encapsulates above for reuse across character materials
+子图：“DissolveCore”封装了上面的内容，以便在角色材料中重复使用
 ```
 
 ### 自定义 URP 渲染器功能 — Outline Pass
@@ -127,26 +127,26 @@ half4 Frag(Varyings IN) : SV_Target
 ### 着色器复杂性审核
 ```markdown
 
-### Shader Review: [Shader Name]
+### 着色器评论：[着色器名称]
 
-**Pipeline**: [ ] URP  [ ] HDRP  [ ] Built-in
-**Target Platform**: [ ] PC  [ ] Console  [ ] Mobile
+**管道**： [ ] URP [ ] HDRP [ ] 内置
+**目标平台**： [ ] PC [ ] 主机 [ ] 移动设备
 
-Texture Samples
-- Fragment texture samples: ___ (mobile limit: 8 for opaque, 4 for transparent)
+纹理样本
+- 片段纹理样本：___（移动限制：不透明 8 个，透明 4 个）
 
-ALU Instructions
+算术运算器指令
 - Estimated ALU (from Shader Graph stats or compiled inspection): ___
-- Mobile budget: ≤ 60 opaque / ≤ 40 transparent
+- 移动预算：≤ 60 不透明/≤ 40 透明
 
-Render State
-- Blend Mode: [ ] Opaque  [ ] Alpha Clip  [ ] Alpha Blend
-- Depth Write: [ ] On  [ ] Off
-- Two-Sided: [ ] Yes (adds overdraw risk)
+渲染状态
+- 混合模式：[ ] 不透明 [ ] Alpha 剪辑 [ ] Alpha 混合
+- 深度写入： [ ] 开 [ ] 关
+- 双面：[ ] 是（增加透支风险）
 
-Sub-Graphs Used: ___
-Exposed Parameters Documented: [ ] Yes  [ ] No — BLOCKED until yes
-Mobile Fallback Variant Exists: [ ] Yes  [ ] No  [ ] Not required (PC/console only)
+使用的子图：___
+已记录的公开参数： [ ] 是 [ ] 否 — 被阻止，直到是
+存在移动后备变体： [ ] 是 [ ] 否 [ ] 不需要（仅限 PC/主机）
 ```
 
 ### 高级能力

@@ -68,27 +68,27 @@ npx 创建您的平台应用程序 my-tracker
 cd 我的追踪器
 ```
 
-Expected output:
+预期输出：
 ```
 ✔ 项目已创建
 ✔ 已安装依赖项
 ℹ 运行`npm run dev`启动
 ```
 
-> **Windows users**: Use PowerShell or Git Bash. CMD may not handle the `&&` syntax.
+> **Windows 用户**：使用 PowerShell 或 Git Bash。 CMD 可能无法处理“&&”语法。
 
-<!-- Continue with atomic, tested steps... -->
+<!-- 继续原子的、经过测试的步骤... -->
 
-### What You Built (and What's Next)
+### 您构建了什么（以及下一步）
 
-You built a real-time dashboard using [Platform]'s [feature]. Key concepts you applied:
-- **Concept A**: [Brief explanation of the lesson]
-- **Concept B**: [Brief explanation of the lesson]
+您使用[平台]的[功能]构建了实时仪表板。您应用的关键概念：
+- **概念A**：[课程简要解释]
+- **概念B**：[课程简要解释]
 
-Ready to go further?
-- → [Add authentication to your dashboard](link)
-- → [Deploy to production on Vercel](link)
-- → [Explore the full API reference](link)
+准备好更进一步了吗？
+- → [将身份验证添加到您的仪表板]（链接）
+- → [在 Vercel 上部署到生产环境]（链接）
+- → [探索完整的API 参考]（链接）
 ```
 
 ### 会议演讲提案模板
@@ -117,7 +117,7 @@ Ready to go further?
 2. 开发人员将留下可以复制的工作代码模式
 3. 开发人员将了解要避免的 2-3 种故障模式
 
-### Speaker Bio
+### 演讲者简介
 
 [两句话。你建造了什么，而不是你的职位。]
 
@@ -138,21 +138,21 @@ Ready to go further?
 解决方法代码在这里
 ```
 
-**Fix**: This is tracked in #[issue-number]. I've bumped its priority given the number
-of reports. Target: [version/milestone]. Subscribe to that issue for updates.
+**修复**：此问题在 #[issue-number] 中进行跟踪。考虑到数字，我已经提高了它的优先级
+的报告。目标：[版本/里程碑]。订阅该问题以获取更新。
 
-Let me know if the workaround doesn't work for your case.
+如果解决方法不适用于您的情况，请告诉我。
 
 ---
-<!-- For feature requests -->
-This is a great use case, and you're not the first to ask — #[related-issue] and
-#[related-issue] are related.
+<!-- 对于功能请求 -->
+这是一个很好的用例，而且您不是第一个提出这个问题的人 — #[相关问题] 和
+#[相关问题]是相关的。
 
 I've added this to our [public roadmap board / backlog] with the context from this thread.
-I can't commit to a timeline, but I want to be transparent: [honest assessment of
-likelihood/priority].
+我不能承诺一个时间表，但我想保持透明：[诚实的评估
+可能性/优先级]。
 
-In the meantime, here's how some community members work around this today: [link or snippet].
+与此同时，以下是一些社区成员今天解决此问题的方法：[链接或片段]。
 
 ```
 

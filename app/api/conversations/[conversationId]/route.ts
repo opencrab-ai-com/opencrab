@@ -19,6 +19,8 @@ export async function PATCH(
     preview?: string;
     timeLabel?: string;
     folderId?: string | null;
+    workspaceDir?: string | null;
+    sandboxMode?: "read-only" | "workspace-write" | "danger-full-access" | null;
     projectId?: string | null;
     agentProfileId?: string | null;
     codexThreadId?: string | null;

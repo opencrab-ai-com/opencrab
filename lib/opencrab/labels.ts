@@ -54,6 +54,19 @@ export function formatSandboxModeLabel(value: CodexSandboxMode | string) {
   }
 }
 
+export function formatSandboxModeDescription(value: CodexSandboxMode) {
+  switch (value) {
+    case "read-only":
+      return "只读取当前工作区和上下文，不改动文件。";
+    case "workspace-write":
+      return "只在当前工作区内读写，适合大多数日常开发。";
+    case "danger-full-access":
+      return "允许跨目录完全访问，需要你明确知道边界风险。";
+    default:
+      return "";
+  }
+}
+
 export function formatBrowserConnectionModeLabel(value: BrowserConnectionMode) {
   return value === "current-browser" ? "当前浏览器" : "独立浏览器";
 }

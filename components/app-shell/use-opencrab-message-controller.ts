@@ -25,6 +25,8 @@ export type SendMessageInput = {
   conversationId?: string;
   content?: string;
   attachments?: UploadedAttachment[];
+  workspaceDir?: string | null;
+  sandboxMode?: CodexSandboxMode | null;
 };
 
 type ActiveStreamState = {
@@ -38,6 +40,8 @@ type ActiveStreamState = {
 type CreateConversationInput = {
   title?: string;
   folderId?: string | null;
+  workspaceDir?: string | null;
+  sandboxMode?: CodexSandboxMode | null;
   agentProfileId?: string | null;
 };
 
@@ -45,7 +49,6 @@ type UseOpenCrabMessageControllerInput = {
   conversations: ConversationItem[];
   selectedModel: string;
   selectedReasoningEffort: CodexReasoningEffort;
-  selectedSandboxMode: CodexSandboxMode;
   createConversation: (input?: CreateConversationInput) => Promise<string>;
   applySnapshot: (snapshot: AppSnapshot) => void;
   patchConversation: (
@@ -181,6 +184,8 @@ export function useOpenCrabMessageController(
             content || attachments[0]?.name || "带附件的新对话";
           conversationId = await input.createConversation({
             title: buildConversationTitle(titleSource),
+            workspaceDir: messageInput.workspaceDir ?? null,
+            sandboxMode: messageInput.sandboxMode ?? null,
           });
           createdConversation = true;
         }
@@ -308,7 +313,6 @@ export function useOpenCrabMessageController(
             attachmentIds: attachments.map((attachment) => attachment.id),
             model: input.selectedModel,
             reasoningEffort: input.selectedReasoningEffort,
-            sandboxMode: input.selectedSandboxMode,
             userMessageId,
             assistantMessageId,
           },

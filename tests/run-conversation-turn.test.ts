@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -82,6 +82,10 @@ describe("runConversationTurn streaming persistence", () => {
       hidden: true,
     });
     const conversationId = created.conversationId;
+    localStore.updateConversation(conversationId, {
+      sandboxMode: "read-only",
+    });
+    const conversation = localStore.findConversation(conversationId);
 
     let thinkingSnapshot: AppSnapshot | null = null;
     let assistantSnapshot: AppSnapshot | null = null;
@@ -122,5 +126,51 @@ describe("runConversationTurn streaming persistence", () => {
     expect(finalAssistantMessage?.status).toBe("done");
     expect(finalAssistantMessage?.thinking).toEqual(["先读取上下文", "正在整理第一版判断"]);
     expect(finalAssistantMessage?.content).toBe("首页建议已经整理完成。");
+    expect(streamCodexReplyMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sandboxMode: "read-only",
+        workingDirectory: conversation?.workspaceDir,
+      }),
+    );
+  });
+
+  it("assigns a default workspace per conversation and lets manual overrides fall back to that default", async () => {
+    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-conversation-workspace-"));
+    tempHomes.push(tempHome);
+    process.env.OPENCRAB_HOME = tempHome;
+
+    const localStore = await loadLocalStore();
+    const created = localStore.createConversation({
+      title: "Workspace defaults",
+    });
+    const conversationId = created.conversationId;
+    const expectedDefaultWorkspace = path.join(
+      tempHome,
+      "workspaces",
+      "conversations",
+      conversationId,
+    );
+
+    expect(localStore.findConversation(conversationId)?.workspaceDir).toBe(expectedDefaultWorkspace);
+    expect(existsSync(expectedDefaultWorkspace)).toBe(true);
+    expect(localStore.findConversation(conversationId)?.sandboxMode).toBe("workspace-write");
+
+    const customWorkspace = path.join(tempHome, "custom-workspace");
+    localStore.updateConversation(conversationId, {
+      workspaceDir: customWorkspace,
+      sandboxMode: "danger-full-access",
+    });
+
+    expect(localStore.findConversation(conversationId)?.workspaceDir).toBe(customWorkspace);
+    expect(existsSync(customWorkspace)).toBe(true);
+    expect(localStore.findConversation(conversationId)?.sandboxMode).toBe("danger-full-access");
+
+    localStore.updateConversation(conversationId, {
+      workspaceDir: null,
+      sandboxMode: null,
+    });
+
+    expect(localStore.findConversation(conversationId)?.workspaceDir).toBe(expectedDefaultWorkspace);
+    expect(localStore.findConversation(conversationId)?.sandboxMode).toBe("workspace-write");
   });
 });

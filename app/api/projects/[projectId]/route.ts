@@ -1,6 +1,7 @@
 import { projectManagementService } from "@/lib/modules/projects/project-management-service";
 import { projectQueryService } from "@/lib/modules/projects/project-query-service";
 import { projectRuntimeService } from "@/lib/modules/projects/project-runtime-service";
+import type { CodexSandboxMode } from "@/lib/resources/opencrab-api-types";
 import {
   errorResponse,
   noStoreJson,
@@ -53,10 +54,27 @@ export async function PATCH(
   try {
     const { projectId } = await readRouteParams(context);
     const body = await readJsonBody<{
-      action: ProjectCheckpointAction;
+      action?: ProjectCheckpointAction;
       note?: string | null;
+      workspaceDir?: string;
+      sandboxMode?: CodexSandboxMode;
     }>(request);
-    const detail = await projectRuntimeService.updateCheckpoint(projectId, body);
+
+    const detail =
+      typeof body.workspaceDir === "string"
+        ? projectManagementService.updateWorkspaceDir(projectId, body.workspaceDir)
+        : body.sandboxMode
+          ? projectManagementService.updateSandboxMode(projectId, body.sandboxMode)
+        : body.action
+          ? await projectRuntimeService.updateCheckpoint(projectId, {
+              action: body.action,
+              note: body.note,
+            })
+          : null;
+
+    if (!body.action && typeof body.workspaceDir !== "string" && !body.sandboxMode) {
+      throw new Error("缺少要更新的团队字段。");
+    }
 
     if (!detail) {
       return notFoundJson("这个团队模式不存在，可能已经被删除。");
@@ -64,7 +82,7 @@ export async function PATCH(
 
     return noStoreJson(detail);
   } catch (error) {
-    return errorResponse(error, "更新团队检查点失败。", 400, {
+    return errorResponse(error, "更新团队失败。", 400, {
       request,
       operation: "update_project_checkpoint",
     });

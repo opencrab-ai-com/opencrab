@@ -115,9 +115,9 @@ class IdentityMatcher:
 
 ### Pattern: Phone numbers from source X often have wrong country code
 
-Source X sends US numbers without +1 prefix. Normalization handles it
-but confidence drops on the phone field. Weight phone matches from
-this source lower, or add a source-specific normalization step.
+源 X 发送不带 +1 前缀的美国号码。标准化处理它
+但对电话领域的信心下降。重量手机匹配
+将此源降低，或添加特定于源的标准化步骤。
 ```
 
 ### 高级能力

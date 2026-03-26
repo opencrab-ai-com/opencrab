@@ -6,6 +6,7 @@ import { Composer, type ComposerMentionOption } from "@/components/composer/comp
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
 import { ConversationThread } from "@/components/conversation/conversation-thread";
 import { MetaPill as UnifiedMetaPill } from "@/components/ui/pill";
+import { WorkspacePickerDialog } from "@/components/workspace/workspace-picker-dialog";
 import {
   formatBrowserSessionLabel,
   formatReasoningEffortLabel,
@@ -13,8 +14,15 @@ import {
 } from "@/lib/opencrab/labels";
 import { usePersistedDraft } from "@/lib/opencrab/use-persisted-draft";
 import type { ProjectDetail } from "@/lib/projects/types";
-import { getProjectDetail as getProjectDetailResource } from "@/lib/resources/opencrab-api";
-import type { UploadedAttachment } from "@/lib/resources/opencrab-api-types";
+import {
+  getProjectDetail as getProjectDetailResource,
+  updateProjectSandboxMode as updateProjectSandboxModeResource,
+  updateProjectWorkspaceDir as updateProjectWorkspaceDirResource,
+} from "@/lib/resources/opencrab-api";
+import type {
+  CodexSandboxMode,
+  UploadedAttachment,
+} from "@/lib/resources/opencrab-api-types";
 import type { ConversationItem } from "@/lib/seed-data";
 
 type ConversationDetailScreenProps = {
@@ -34,10 +42,11 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
     browserSessionStatus,
     selectedModel,
     selectedReasoningEffort,
-    selectedSandboxMode,
     isConversationStreaming,
     setSelectedModel,
     setSelectedReasoningEffort,
+    setConversationSandboxMode,
+    setConversationWorkspaceDir,
     isHydrated,
     isUploadingAttachments,
     stopMessage,
@@ -62,6 +71,7 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
   });
   const [, setTeamProjectDetail] = useState<ProjectDetail | null>(null);
   const [isReplayActive, setIsReplayActive] = useState(false);
+  const [isWorkspaceDialogOpen, setIsWorkspaceDialogOpen] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const replayFrameRef = useRef<number | null>(null);
   const replayLastTickRef = useRef<number | null>(null);
@@ -79,6 +89,7 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
     conversationMode === "team" && activeConversation?.projectId === teamMentionState.projectId
       ? teamMentionState.options
       : [];
+  const activeSandboxMode = activeConversation?.sandboxMode ?? "workspace-write";
   useEffect(() => {
     if (!activeConversation?.projectId) {
       return;
@@ -265,6 +276,42 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
     setIsReplayActive((current) => !current);
   }
 
+  async function handleSaveWorkspace(nextWorkspaceDir: string | null) {
+    if (!activeConversation) {
+      return;
+    }
+
+    if (conversationMode === "team" && activeConversation.projectId) {
+      const detail = await updateProjectWorkspaceDirResource(
+        activeConversation.projectId,
+        nextWorkspaceDir || "",
+      );
+      setTeamProjectDetail(detail);
+      await refreshSnapshot();
+      return;
+    }
+
+    await setConversationWorkspaceDir(conversationId, nextWorkspaceDir);
+  }
+
+  async function handleSaveSandboxMode(nextSandboxMode: CodexSandboxMode) {
+    if (!activeConversation) {
+      return;
+    }
+
+    if (conversationMode === "team" && activeConversation.projectId) {
+      const detail = await updateProjectSandboxModeResource(
+        activeConversation.projectId,
+        nextSandboxMode,
+      );
+      setTeamProjectDetail(detail);
+      await refreshSnapshot();
+      return;
+    }
+
+    await setConversationSandboxMode(conversationId, nextSandboxMode);
+  }
+
   return (
     <div className="flex min-h-screen flex-col lg:h-full lg:min-h-0">
       <div className="shrink-0 border-b border-line bg-background px-5 py-3 lg:px-6">
@@ -346,7 +393,7 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
               </>
             ) : null}
             <StatusMetaPill>
-              当前发送权限：{formatSandboxModeLabel(selectedSandboxMode)}
+              当前发送权限：{formatSandboxModeLabel(activeSandboxMode)}
             </StatusMetaPill>
             <StatusMetaPill>
               当前发送模型：{selectedModel}
@@ -380,11 +427,35 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
             selectedReasoningEffort={selectedReasoningEffort}
             onModelChange={setSelectedModel}
             onReasoningEffortChange={setSelectedReasoningEffort}
+            workspaceLabel={activeConversation.workspaceDir?.trim() || "默认工作区"}
+            workspaceTitle={
+              activeConversation.workspaceDir?.trim() ||
+              "默认：~/.opencrab/workspaces/conversations/<conversationId>"
+            }
+            onWorkspaceClick={() => setIsWorkspaceDialogOpen(true)}
+            selectedSandboxMode={activeSandboxMode}
+            onSandboxModeChange={handleSaveSandboxMode}
             mentionOptions={mentionOptions}
             compact
           />
         </div>
       </div>
+      {isWorkspaceDialogOpen ? (
+        <WorkspacePickerDialog
+          title={conversationMode === "team" ? "更新 Team 工作区" : "修改对话工作区"}
+          description={
+            conversationMode === "team"
+              ? "这里会同步更新整个 Team 的默认写入目录。已经产生的历史产物不会被搬迁，后续运行会基于新目录继续。"
+              : "这里是这条对话的默认写入目录。留空时会恢复到 ~/.opencrab/workspaces/conversations/<conversationId>。"
+          }
+          initialValue={activeConversation.workspaceDir ?? null}
+          allowEmpty={conversationMode !== "team"}
+          defaultHint="~/.opencrab/workspaces/conversations/<conversationId>"
+          confirmLabel={conversationMode === "team" ? "更新工作区" : "保存工作区"}
+          onClose={() => setIsWorkspaceDialogOpen(false)}
+          onConfirm={handleSaveWorkspace}
+        />
+      ) : null}
     </div>
   );
 }

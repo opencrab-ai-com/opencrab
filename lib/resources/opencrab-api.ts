@@ -410,6 +410,8 @@ export async function updateFolder(folderId: string, name: string) {
 export async function createConversation(input?: {
   title?: string;
   folderId?: string | null;
+  workspaceDir?: string | null;
+  sandboxMode?: CodexSandboxMode | null;
   projectId?: string | null;
   agentProfileId?: string | null;
 }) {
@@ -426,6 +428,8 @@ export async function updateConversation(
     preview: string;
     timeLabel: string;
     folderId: string | null;
+    workspaceDir: string | null;
+    sandboxMode: CodexSandboxMode | null;
     projectId: string | null;
     agentProfileId: string | null;
     codexThreadId: string | null;
@@ -515,7 +519,7 @@ export async function streamReplyToConversation(
     attachmentIds?: string[];
     userMessageId: string;
     assistantMessageId: string;
-    sandboxMode: CodexSandboxMode;
+    sandboxMode?: CodexSandboxMode;
   },
   options: {
     signal?: AbortSignal;
@@ -543,6 +547,46 @@ export async function streamReplyToConversation(
   for await (const event of readNdjsonStream<ReplyStreamEvent>(response)) {
     options.onEvent(event);
   }
+}
+
+export async function updateProjectWorkspaceDir(
+  projectId: string,
+  workspaceDir: string,
+) {
+  return request<import("@/lib/projects/types").ProjectDetailResponse>(
+    `/api/projects/${projectId}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ workspaceDir }),
+    },
+  );
+}
+
+export async function updateProjectSandboxMode(
+  projectId: string,
+  sandboxMode: CodexSandboxMode,
+) {
+  return request<import("@/lib/projects/types").ProjectDetailResponse>(
+    `/api/projects/${projectId}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ sandboxMode }),
+    },
+  );
+}
+
+export async function pickLocalDirectory(input?: {
+  title?: string;
+  defaultPath?: string | null;
+}) {
+  return request<{
+    ok: boolean;
+    path: string | null;
+    cancelled: boolean;
+  }>("/api/local-files/pick-directory", {
+    method: "POST",
+    body: JSON.stringify(input ?? {}),
+  });
 }
 
 async function request<T>(input: string, init: RequestInit) {

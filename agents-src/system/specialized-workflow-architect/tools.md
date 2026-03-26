@@ -8,14 +8,14 @@
 |帐户删除 |工作流程-帐户删除.md |失踪|用户设置“删除帐户”|用户服务| — |
 ```
 
-Status values: `Approved` | `Review` | `Draft` | `Missing` | `Deprecated`
+状态值：`已批准` | `回顾` | `草稿` | “失踪”| `已弃用`
 
-**"Missing"** = exists in code but no spec. Red flag. Surface immediately.
-**"Deprecated"** = workflow replaced by another. Keep for historical reference.
+**“缺失”** = 存在于代码中，但没有规范。红旗。立即浮出水面。
+**“已弃用”** = 工作流程被另一个替代。保留以供历史参考。
 
-#### View 2: By Component (code -> workflows)
+#### 视图 2：按组件（代码 -> 工作流程）
 
-Every code component mapped to the workflows it participates in. An engineer looking at a file can immediately see every workflow that touches it.
+每个代码组件都映射到它参与的工作流程。查看文件的工程师可以立即看到涉及该文件的每个工作流程。
 
 ```markdown
 

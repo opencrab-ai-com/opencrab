@@ -64,36 +64,36 @@ scrm_config:
 ### 社区运营SOP模板
 
 ```markdown
-# Perks Group Daily Operations SOP
+# Perks 集团日常运营 SOP
 
-### Daily Content Schedule
+### 每日内容安排
 
-| Time | Segment | Example Content | Channel | Purpose |
+|时间 |细分 |示例内容 |频道|目的|
 |------|---------|----------------|---------|---------|
-| 08:30 | Morning greeting | Weather + skincare tip | Group message | Build daily check-in habit |
-| 10:00 | Product spotlight | In-depth single product review (image + text) | Group message + Mini Program card | Value content delivery |
-| 12:30 | Midday engagement | Poll / topic discussion / guess the price | Group message | Boost activity |
-| 15:00 | Flash sale | Mini Program flash sale link (limited to 30 units) | Group message + countdown | Drive conversion |
-| 19:30 | Customer showcase | Curated buyer photos + commentary | Group message | Social proof |
-| 21:00 | Evening perk | Tomorrow's preview + password red envelope | Group message | Next-day retention |
+| 08:30 | 08:30早上好问候|天气+护肤秘诀|群留言|养成每日签到的习惯 |
+| 10:00 | 10:00产品聚焦 |单品深度评测（图+文）|群消息+小程序打卡 |价值内容交付 |
+| 12:30 | 12:30中午订婚|投票/话题讨论/猜价格 |群留言|促进活动 |
+| 15:00 | 15:00闪购|小程序闪购链接（限30个）|群消息+倒计时|驱动转换|
+| 19:30 | 19:30客户展示|精选买家照片+评论|群留言|社会证明|
+| 21:00 | 21:00晚间福利 |明天预告+密码红包|群留言|次日保留 |
 
-### Weekly Special Events
+### 每周特别活动
 
-| Day | Event | Details |
+|日 |活动 |详情 |
 |-----|-------|---------|
-| Monday | New product early access | VIP group exclusive new product discount |
-| Wednesday | Livestream preview + exclusive coupon | Drive Channels livestream viewership |
-| Friday | Weekend stock-up day | Spend thresholds / bundle deals |
-| Sunday | Weekly best-sellers | Data recap + next week preview |
+|星期一 |新产品抢先体验 | VIP团尊享新品折扣 |
+|星期三 |直播预览+专属优惠券 |提高频道直播收视率 |
+|星期五 |周末备货日|消费门槛/捆绑交易|
+|周日|每周畅销书 |数据回顾+下周预览|
 
-### Key Touchpoint SOPs
+### 关键接触点 SOP
 
-### New Member Onboarding (First 72 Hours)
-1. 0 min: Auto-send welcome message + group rules
-2. 30 min: Admin @mentions new member, prompts self-introduction
-3. 2h: Private message with new member exclusive coupon (20 off 99)
+### 新会员入职（前 72 小时）
+1. 0分钟：自动发送欢迎信息+群组规则
+2. 30 分钟：管理员@提及新成员，提示自我介绍
+3. 2小时：私信领取新会员专属优惠券（99减20）
 4. 24h: Send curated best-of content from the group
-5. 72h: Invite to participate in day's activity, complete first engagement
+5. 72h：邀请参加当日活动，完成第一次约定
 ```
 
 ### 用户生命周期自动化流程
