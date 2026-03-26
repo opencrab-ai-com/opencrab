@@ -2,68 +2,67 @@
 
 ### 开发者入职审核框架
 ```markdown
-# DX Audit: Time-to-First-Success Report
+# DX 审核：首次成功时间报告
 
-### Methodology
+### 方法论
 
-- Recruit 5 developers with [target experience level]
-- Ask them to complete: [specific onboarding task]
-- Observe silently, note every friction point, measure time
-- Grade each phase: 🟢 <5min | 🟡 5-15min | 🔴 >15min
+- 招募 5 名具有 [目标经验水平] 的开发人员
+- 要求他们完成：[具体入职任务]
+- 默默观察，记下每一个摩擦点，测量时间
+- 对每个阶段进行评分：🟢 <5 分钟 | 🟡 5-15 分钟 | 🔴>15分钟
 
-### Onboarding Flow Analysis
+### 入职流程分析
 
-### Phase 1: Discovery (Goal: < 2 minutes)
-| Step | Time | Friction Points | Severity |
+### 第 1 阶段：发现（目标：< 2 分钟）
+|步骤|时间 |摩擦点|严重性 |
 |------|------|-----------------|----------|
-| Find docs from homepage | 45s | "Docs" link is below fold on mobile | Medium |
-| Understand what the API does | 90s | Value prop is buried after 3 paragraphs | High |
-| Locate Quick Start | 30s | Clear CTA — no issues | ✅ |
+|从主页查找文档 | 45 秒 | “文档”链接在移动设备上位于折叠下方 |中等|
+|了解 API 的作用 | 90 年代 |价值支柱在 3 段后被埋葬 |高|
+|找到快速入门 | 30 多岁 |清除 CTA — 没有问题 | ✅ |
 
-### Phase 2: Account Setup (Goal: < 5 minutes)
+### 第 2 阶段：帐户设置（目标：< 5 分钟）
 ...
 
-### Phase 3: First API Call (Goal: < 10 minutes)
+### 第 3 阶段：第一次 API 调用（目标：< 10 分钟）
 ...
 
-### Top 5 DX Issues by Impact
+### 按影响排名前 5 名的 DX 问题
 
-1. **Error message `AUTH_FAILED_001` has no docs** — developers hit this in 80% of sessions
-2. **SDK missing TypeScript types** — 3/5 developers complained unprompted
+1. **错误消息“AUTH_FAILED_001”没有文档** - 开发人员在 80% 的会话中遇到此问题
+2. **SDK 缺少 TypeScript 类型** — 3/5 的开发人员自发抱怨
 ...
 
-### Recommended Fixes (Priority Order)
+### 建议修复（优先顺序）
 
-1. Add `AUTH_FAILED_001` to error reference docs + inline hint in error message itself
-2. Generate TypeScript types from OpenAPI spec and publish to `@types/your-sdk`
+1. 将 `AUTH_FAILED_001` 添加到错误参考文档 + 错误消息本身的内联提示
+2. 根据 OpenAPI 规范生成 TypeScript 类型并发布到 `@types/your-sdk`
 ...
 ```
 
 ### 病毒式教程结构
 ```markdown
-# Build a [Real Thing] with [Your Platform] in [Honest Time]
+# 在[诚实的时间]中用[你的平台]构建[真实的东西]
 
-**Live demo**: [link] | **Full source**: [GitHub link]
+**现场演示**：[链接] | **完整来源**：[GitHub 链接]
 
-<!-- Hook: start with the end result, not with "in this tutorial we will..." -->
-Here's what we're building: a real-time order tracking dashboard that updates every
-2 seconds without any polling. Here's the [live demo](link). Let's build it.
+<!-- Hook：从最终结果开始，而不是“在本教程中我们将......”-->
+这就是我们正在构建的：一个实时订单跟踪仪表板，可以更新每个订单
+2 秒，没有任何轮询。这是[现场演示]（链接）。让我们来构建它。
 
-### What You'll Need
+### 你需要什么
 
-- [Platform] account (free tier works — [sign up here](link))
-- Node.js 18+ and npm
-- About 20 minutes
+- [平台] 帐户（免费套餐 - [在此处注册]（链接））
+- Node.js 18+ 和 npm
+- 约20分钟
 
-### Why This Approach
+### 为什么采用这种方法
 
-<!-- Explain the architectural decision BEFORE the code -->
-Most order tracking systems poll an endpoint every few seconds. That's inefficient
-and adds latency. Instead, we'll use server-sent events (SSE) to push updates to
-the client as soon as they happen. Here's why that matters...
+<!-- 在代码之前解释架构决策 -->
+大多数订单跟踪系统每隔几秒轮询一次端点。那样效率低下
+并增加延迟。相反，我们将使用服务器发送事件 (SSE) 将更新推送到
+客户一旦发生。这就是为什么这很重要......
 
-### Step 1: Create Your [Platform] Project
-
+### 第 1 步：创建您的[平台]项目
 ```bash
 npx 创建您的平台应用程序 my-tracker
 cd 我的追踪器
@@ -94,47 +93,47 @@ Ready to go further?
 
 ### 会议演讲提案模板
 ```markdown
-# Talk Proposal: [Title That Promises a Specific Outcome]
+# 谈话提案：[承诺特定结果的标题]
 
-**Category**: [Engineering / Architecture / Community / etc.]
-**Level**: [Beginner / Intermediate / Advanced]
-**Duration**: [25 / 45 minutes]
+**类别**：[工程/建筑/社区/等]
+**级别**：[初级/中级/高级]
+**持续时间**：[25 / 45 分钟]
 
-### Abstract (Public-facing, 150 words max)
+### 摘要（面向公众，最多 150 个字）
 
-[Start with the developer's pain or the compelling question. Not "In this talk I will..."
-but "You've probably hit this wall: [relatable problem]. Here's what most developers
-do wrong, why it fails at scale, and the pattern that actually works."]
+[从开发人员的痛苦或引人注目的问题开始。不是“在这次演讲中我将……”
+但是“你可能遇到了这堵墙：[相关问题]。这就是大多数开发人员遇到的问题
+做错了，为什么会大规模失败，以及实际有效的模式。”]
 
-### Detailed Description (For reviewers, 300 words)
+###详细描述（供审稿人使用，300字）
 
-[Problem statement with evidence: GitHub issues, Stack Overflow questions, survey data.
-Proposed solution with a live demo. Key takeaways developers will apply immediately.
-Why this speaker: relevant experience and credibility signal.]
+[带有证据的问题陈述：GitHub 问题、Stack Overflow 问题、调查数据。
+带有现场演示的建议解决方案。关键要点开发人员将立即申请。
+为什么选择这位演讲者：相关经验和可信度信号。]
 
-### Takeaways
+### 要点
 
-1. Developers will understand [concept] and know when to apply it
-2. Developers will leave with a working code pattern they can copy
-3. Developers will know the 2-3 failure modes to avoid
+1. 开发人员会理解[概念]并知道何时应用它
+2. 开发人员将留下可以复制的工作代码模式
+3. 开发人员将了解要避免的 2-3 种故障模式
 
 ### Speaker Bio
 
-[Two sentences. What you've built, not your job title.]
+[两句话。你建造了什么，而不是你的职位。]
 
-### Previous Talks
+### 之前的演讲
 
-- [Conference Name, Year] — [Talk Title] ([recording link if available])
+- [会议名称、年份] — [演讲标题]（[录制链接（如果有）]）
 ```
 
 ### GitHub 问题响应模板
 ```markdown
-<!-- For bug reports with reproduction steps -->
-Thanks for the detailed report and reproduction case — that makes debugging much faster.
+<!-- 对于包含重现步骤的错误报告 -->
+感谢您提供详细的报告和重现案例 - 这使得调试速度更快。
 
-I can reproduce this on [version X]. The root cause is [brief explanation].
+我可以在 [版本 X] 上重现此内容。根本原因是[简要说明]。
 
-**Workaround (available now)**:
+**解决方法（现已可用）**：
 ```code
 解决方法代码在这里
 ```

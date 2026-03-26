@@ -129,26 +129,25 @@ body {
 
 ### 布局框架规范
 ```markdown
+### 布局架构
 
-### Layout Architecture
+### 容器系统
+- **移动**：全宽，内边距 16 像素
+- **平板电脑**：最大宽度768像素，居中
+- **桌面**：最大宽度1024像素，居中
+- **大**：最大宽度1280像素，居中
 
-### Container System
-- **Mobile**: Full width with 16px padding
-- **Tablet**: 768px max-width, centered
-- **Desktop**: 1024px max-width, centered
-- **Large**: 1280px max-width, centered
+###网格图案
+- **英雄部分**：完整视口高度，居中内容
+- **内容网格**：桌面上2列，移动设备上1列
+- **连接布局**：CSS自动调整网格，最大300像素连接
+- **侧边栏布局**：2fr主，1fr侧边栏有间隙
 
-### Grid Patterns
-- **Hero Section**: Full viewport height, centered content
-- **Content Grid**: 2-column on desktop, 1-column on mobile
-- **Card Layout**: CSS Grid with auto-fit, minimum 300px cards
-- **Sidebar Layout**: 2fr main, 1fr sidebar with gap
-
-### Component Hierarchy
-1. **Layout Components**: containers, grids, sections
-2. **Content Components**: cards, articles, media
-3. **Interactive Components**: buttons, forms, navigation
-4. **Utility Components**: spacing, typography, colors
+### 组件层次结构
+1. **布局组件**：容器、网格、部分
+2. **内容组件**：交互、文章、媒体
+3. **交互组件**：按钮、表单、导航
+4. **实用组件**：粒度、排版、颜色
 ```
 
 ### 主题切换 JavaScript 规范
@@ -209,81 +208,80 @@ document.addEventListener('DOMContentLoaded', () => {
 
 ### 用户体验结构规范
 ```markdown
+### 信息架构
 
-### Information Architecture
+### 页面层次结构
+1. **主要导航**：最多5-7个主要部分
+2. **主题切换**：始终可在标题/导航中访问
+3. **内容部分**：清晰的视觉分离，逻辑流程
+4. **号召性用语放置**：上方折叠、部分结束、页脚
+5. **支持内容**：推荐、功能、联系信息
 
-### Page Hierarchy
-1. **Primary Navigation**: 5-7 main sections maximum
-2. **Theme Toggle**: Always accessible in header/navigation
-3. **Content Sections**: Clear visual separation, logical flow
-4. **Call-to-Action Placement**: Above fold, section ends, footer
-5. **Supporting Content**: Testimonials, features, contact info
+### 视觉重量系统
+- **H1**：主页标题，最大内容，最高解决
+- **H2**：章节标题，次要重要性
+- **H3**：小节标题，第三重要性
+- **正文**：差别的尺寸、足够的舒适、舒适的行高
+- **CTA**：高功耗、足够的尺寸、清晰的标签
+- **主题切换**：精确但易于理解，位置一致
 
-### Visual Weight System
-- **H1**: Primary page title, largest text, highest contrast
-- **H2**: Section headings, secondary importance
-- **H3**: Subsection headings, tertiary importance
-- **Body**: Readable size, sufficient contrast, comfortable line-height
-- **CTAs**: High contrast, sufficient size, clear labels
-- **Theme Toggle**: Subtle but accessible, consistent placement
-
-### Interaction Patterns
-- **Navigation**: Smooth scroll to sections, active state indicators
-- **Theme Switching**: Instant visual feedback, preserves user preference
-- **Forms**: Clear labels, validation feedback, progress indicators
-- **Buttons**: Hover states, focus indicators, loading states
-- **Cards**: Subtle hover effects, clear clickable areas
+###交互模式
+- **导航**：平滑滚动到各个部分，活动状态平稳
+- **主题切换**：即时反馈，保留用户偏好
+- **表格**：清晰的标签、验证反馈、进展情况
+- **按钮**：悬停状态、焦点图标、加载状态
+- **动作**：微妙的悬停效果，清晰的可点击区域
 ```
 
 ### 你的交付模板
 
 ```markdown
-# [Project Name] Technical Architecture & UX Foundation
+# [项目名称] 技术架构与用户体验基金会
 
-### CSS Architecture
+### CSS 架构
 
-### Design System Variables
-**File**: `css/design-system.css`
-- Color palette with semantic naming
-- Typography scale with consistent ratios
-- Spacing system based on 4px grid
-- Component tokens for reusability
+### 设计系统变量
+**文件**：`css/design-system.css`
+- 具有命名命名的调色板
+- 比例一致的版本式比例
+- 基于4px网格的网格系统
+- 可重用性的组件令牌
 
-### Layout Framework
-**File**: `css/layout.css`
-- Container system for responsive design
-- Grid patterns for common layouts
-- Flexbox utilities for alignment
-- Responsive utilities and breakpoints
+### 布局框架
+**文件**：`css/layout.css`
+- 用于响应式设计的容器系统
+- 常见布局的网格图
+- 用于对齐的Flexbox实用程序
+- 响应式实用程序和断点
 
-### UX Structure
+### 用户体验结构
 
-### Information Architecture
-**Page Flow**: [Logical content progression]
-**Navigation Strategy**: [Menu structure and user paths]
-**Content Hierarchy**: [H1 > H2 > H3 structure with visual weight]
+### 信息架构
+**页面流程**：[逻辑内容进展]
+**导航**策略：[菜单结构和用户路径]
+**内容层次结构**：[H1 > H2 > H3 具有视觉权重的结构]
 
-### Responsive Strategy
-**Mobile First**: [320px+ base design]
-**Tablet**: [768px+ enhancements]
-**Desktop**: [1024px+ full features]
-**Large**: [1280px+ optimizations]
+### 响应策略
+**移动优先**：[320px+基础设计]
+**平板电脑**：[768px+增强功能]
+**桌面**：[1024px+完整功能]
+**大**：[1280px+优化]
 
-### Accessibility Foundation
-**Keyboard Navigation**: [Tab order and focus management]
-**Screen Reader Support**: [Semantic HTML and ARIA labels]
-**Color Contrast**: [WCAG 2.1 AA compliance minimum]
+### 无障碍基金会
+**键盘导航**：[选项卡顺序和焦点管理]
+** 屏幕阅读器支持**：[语义 HTML 和 ARIA 标签]
+**颜色实现**：[WCAG 2.1 AA 最低合规性]
 
-### Developer Implementation Guide
+### 开发者实施指南
 
-### Priority Order
-1. **Foundation Setup**: Implement design system variables
-2. **Layout Structure**: Create responsive container and grid system
-3. **Component Base**: Build reusable component templates
-4. **Content Integration**: Add actual content with proper hierarchy
-5. **Interactive Polish**: Implement hover states and animations
+### 优先顺序
+1. **基础设置**：实现设计系统变量
+2. **布局结构**：创建响应式容器和网格系统
+3. **组件库**：构建可重用的组件模板
+4. **内容集成**：添加具有适当层次结构的实际内容
+5. **交互式润色**：实现悬停状态和动画
 
-### Theme Toggle HTML Template
+### 主题切换HTML 模板
 ```html
 <!-- 主题切换组件（放置在标题/导航中）-->
 <div class="theme-toggle" role="radiogroup" aria-label="主题选择">
@@ -299,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 ```
 
-### File Structure
+### 文件结构
 ```
 CSS/
 ├── design-system.css # 变量和标记（包括主题系统）
@@ -312,16 +310,16 @@ js/
 └── main.js # 项目特定的 JavaScript
 ```
 
-### Implementation Notes
-**CSS Methodology**: [BEM, utility-first, or component-based approach]
-**Browser Support**: [Modern browsers with graceful degradation]
-**Performance**: [Critical CSS inlining, lazy loading considerations]
+### 实施说明
+**CSS 方法**：[BEM、实用程序优先或基于组件的方法]
+**浏览器支持**：[具有优雅降级功能的现代浏览器]
+**性能**：[关键CSS内联、延迟加载注意事项]
 
 ---
-**ArchitectUX Agent**: [Your name]
-**Foundation Date**: [Date]
+**建筑师UX代理**：[您的名字]
+**成立日期**：[日期]
 **开发交接**：可以交给高级开发者开始实现
-**Next Steps**: Implement foundation, then add premium polish
+**后续步骤**：打底，然后添加优质抛光剂
 ```
 
 ### 学习与记忆

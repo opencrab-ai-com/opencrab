@@ -2,76 +2,76 @@
 
 ### 差距评估报告
 ```markdown
-# Compliance Gap Assessment: [Framework]
+# 合规差距评估：[框架]
 
-**Assessment Date**: YYYY-MM-DD
-**Target Certification**: SOC 2 Type II / ISO 27001 / etc.
-**Audit Period**: YYYY-MM-DD to YYYY-MM-DD
+**评估日期**：YYYY-MM-DD
+**目标认证**：SOC 2 Type II / ISO 27001 / 等。
+**审核周期**：YYYY-MM-DD 至 YYYY-MM-DD
 
-### Executive Summary
+### 执行摘要
 
-- Overall readiness: X/100
-- Critical gaps: N
-- Estimated time to audit-ready: N weeks
+- 总体准备情况：X/100
+- 关键差距：N
+- 预计审核准备时间：N 周
 
-### Findings by Control Domain
+### 控制域的调查结果
 
-### Access Control (CC6.1)
-**Status**: Partial
-**Current State**: SSO implemented for SaaS apps, but AWS console access uses shared credentials for 3 service accounts
-**Target State**: Individual IAM users with MFA for all human access, service accounts with scoped roles
-**Remediation**:
-1. Create individual IAM users for the 3 shared accounts
-2. Enable MFA enforcement via SCP
-3. Rotate existing credentials
-**Effort**: 2 days
-**Priority**: Critical — auditors will flag this immediately
+### 访问控制（CC6.1）
+**状态**：部分
+**当前状态**：为 SaaS 应用程序实施 SSO，但 AWS 控制台访问使用 3 个服务账户的共享凭证
+**目标状态**：具有用于所有人工访问的 MFA 的单个 IAM 用户、具有范围角色的服务帐户
+**补救措施**：
+1. 为 3 个共享账户创建单独的 IAM 用户
+2. 通过 SCP 启用 MFA 实施
+3.轮换现有凭证
+**努力**：2天
+**优先级**：关键 - 审核员将立即标记这一点
 ```
 
 ### 证据收集矩阵
 ```markdown
-# Evidence Collection Matrix
+# 证据收集矩阵
 
-| Control ID | Control Description | Evidence Type | Source | Collection Method | Frequency |
-|------------|-------------------|---------------|--------|-------------------|-----------|
-| CC6.1 | Logical access controls | Access review logs | Okta | API export | Quarterly |
-| CC6.2 | User provisioning | Onboarding tickets | Jira | JQL query | Per event |
-| CC6.3 | User deprovisioning | Offboarding checklist | HR system + Okta | Automated webhook | Per event |
-| CC7.1 | System monitoring | Alert configurations | Datadog | Dashboard export | Monthly |
-| CC7.2 | Incident response | Incident postmortems | Confluence | Manual collection | Per event |
+|控制ID |控制说明|证据类型|来源 |采集方式 |频率|
+|------------|--------------------|---------------|--------|--------------------|------------------------|
+| CC6.1 |逻辑访问控制|访问评论日志 |奥克塔 |原料药出口|季刊 |
+| CC6.2 |用户配置|入职工单 |吉拉 | JQL查询|每个事件 |
+| CC6.3 |用户取消配置|离职清单 |人力资源系统+Okta |自动化 webhook |每个事件 |
+| CC7.1 |系统监控|警报配置 |数据狗 |仪表板导出|每月 |
+| CC7.2 |事件响应 |事件事后分析|汇流|手册收藏|每个事件 |
 ```
 
 ### 保单模板
 ```markdown
-# [Policy Name]
+# [政策名称]
 
-**Owner**: [Role, not person name]
-**Approved By**: [Role]
-**Effective Date**: YYYY-MM-DD
-**Review Cycle**: Annual
-**Last Reviewed**: YYYY-MM-DD
+**所有者**：[角色，不是人名]
+**批准者**：[角色]
+**生效日期**：YYYY-MM-DD
+**审核周期**：每年
+**上次审核**：YYYY-MM-DD
 
-### Purpose
+### 目的
 
-One paragraph: what risk does this policy address?
+一段：这项政策解决了什么风险？
 
-### Scope
+### 范围
 
-Who and what does this policy apply to?
+这项政策适用于谁以及什么？
 
-### Policy Statements
+### 政策声明
 
-Numbered, specific, testable requirements. Each statement should be verifiable in an audit.
+编号的、具体的、可测试的要求。每个陈述都应该在审计中得到验证。
 
-### Exceptions
+### 例外情况
 
-Process for requesting and documenting exceptions.
+请求和记录异常的流程。
 
-### Enforcement
+### 执行
 
-What happens when this policy is violated?
+违反此政策会发生什么？
 
-### Related Controls
+### 相关控件
 
-Map to framework control IDs (e.g., SOC 2 CC6.1, ISO 27001 A.9.2.1)
+映射到框架控制 ID（例如 SOC 2 CC6.1、ISO 27001 A.9.2.1）
 ```

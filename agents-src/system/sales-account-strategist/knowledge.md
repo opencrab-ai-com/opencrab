@@ -2,105 +2,105 @@
 
 ### 账户扩展计划
 ```markdown
-# Account Expansion Plan: [Account Name]
+# 账户扩展计划：[账户名称]
 
-### Account Overview
+### 账户概览
 
-- **Current ARR**: [Annual recurring revenue]
-- **Contract Renewal**: [Date and terms]
-- **Health Score**: [Green/Yellow/Red with rationale]
-- **Products Deployed**: [Current product footprint]
-- **Whitespace**: [Products/modules not yet adopted]
+- **当前 ARR**：[年度经常性收入]
+- **合同续签**：[日期和条款]
+- **健康分数**：[绿色/黄色/红色并说明理由]
+- **部署的产品**：[当前产品足迹]
+- **空白**：[尚未采用的产品/模块]
 
-### Stakeholder Map
+### 利益相关者地图
 
-| Name | Title | Role | Influence | Sentiment | Last Contact |
-|------|-------|------|-----------|-----------|--------------|
-| [Name] | [Title] | Champion | High | Positive | [Date] |
-| [Name] | [Title] | Economic Buyer | High | Neutral | [Date] |
-| [Name] | [Title] | End User | Medium | Positive | [Date] |
-| [Name] | [Title] | Detractor | Medium | Negative | [Date] |
+|名称 |标题 |角色 |影响力 |感悟|最后联系 |
+|------|--------|------|------------|------------|------------||
+| [姓名] | [标题] |冠军|高|积极| [日期] |
+| [姓名] | [标题] |经济买家|高|中性| [日期] |
+| [姓名] | [标题] |最终用户|中等|积极| [日期] |
+| [姓名] | [标题] |批评者|中等|负面| [日期] |
 
-### Expansion Opportunities
+### 扩展机会
 
-| Opportunity | Trigger Signal | Business Case | Timing | Owner | Stage |
-|------------|----------------|---------------|--------|-------|-------|
-| [Upsell/Cross-sell] | [Usage data, request, event] | [Customer value] | [Q#] | [Rep] | [Discovery/Proposal/Negotiation] |
+|机会|触发信号|商业案例|时间 |业主|舞台|
+|------------|----------------|---------------|--------|--------|--------|
+| [追加销售/交叉销售] | [使用数据、请求、事件] | [客户价值] | [Q#] | [代表] | [发现/建议/谈判] |
 
-### RACI Matrix
+### RACI 矩阵
 
-| Activity | Responsible | Accountable | Consulted | Informed |
-|----------|-------------|-------------|-----------|----------|
-| Champion enablement | AE | Account Strategist | CS | Sales Mgmt |
-| Usage monitoring | CS | Account Strategist | Product | AE |
-| QBR facilitation | Account Strategist | AE | CS, Product | Exec Sponsor |
-| Contract negotiation | AE | Sales Mgmt | Legal | Account Strategist |
+|活动 |责任|负责任 |咨询 |消息灵通 |
+|----------|-------------|-------------|------------|---------|
+|冠军赋能 | AE |账户策略师 |计算机科学 |销售管理|
+|使用情况监控 |计算机科学 |账户策略师|产品 | AE |
+| QBR 便利化 |账户策略师 | AE |客户服务，产品 |执行赞助商|
+|合同谈判 | AE |销售管理|法律 |账户策略师 |
 
-### Mutual Action Plan
+### 共同行动计划
 
-| Action Item | Owner (Us) | Owner (Customer) | Due Date | Status |
-|-------------|-----------|-------------------|----------|--------|
-| [Action] | [Name] | [Name] | [Date] | [Status] |
+|行动项目|所有者（我们）|所有者（客户）|截止日期 |状态 |
+|------------|------------|--------------------|---------|--------|
+| [行动]| [姓名] | [姓名] | [日期] | [状态] |
 ```
 
 ### QBR 准备框架
 ```markdown
-# QBR Preparation: [Account Name] — [Quarter]
+# QBR 准备：[账户名称] — [季度]
 
-### Pre-QBR Research
+### QBR 前研究
 
-- **Usage Trends**: [Key metrics, adoption curves, capacity utilization]
-- **Support History**: [Ticket volume, CSAT, escalations, resolution themes]
-- **ROI Data**: [Quantified value delivered — specific numbers, not estimates]
-- **Industry Context**: [Customer's market conditions, competitive pressures, strategic shifts]
+- **使用趋势**：[关键指标、采用曲线、容量利用率]
+- **支持历史记录**：[票务量、CSAT、升级、解决主题]
+- **投资回报率数据**：[提供的量化价值 - 具体数字，而不是估计值]
+- **行业背景**：[客户的市场状况、竞争压力、战略转变]
 
-### Agenda (60 minutes)
+### 议程（60 分钟）
 
-1. **Value Delivered** (15 min): ROI recap with hard numbers
-2. **Their Roadmap** (20 min): Where is the business going? What challenges are ahead?
-3. **Product Alignment** (15 min): How we evolve together — tied to their priorities
-4. **Mutual Action Plan** (10 min): Commitments, owners, next steps
+1. **交付的价值**（15 分钟）：用硬数据回顾投资回报率
+2. **他们的路线图**（20 分钟）：业务将走向何方？未来还有哪些挑战？
+3. **产品调整**（15 分钟）：我们如何共同发展 - 与他们的优先事项相关
+4. **共同行动计划**（10 分钟）：承诺、所有者、后续步骤
 
-### Questions to Ask
+### 要问的问题
 
-- "What are the top three business priorities for the next two quarters?"
-- "Where are you spending time on manual work that should be automated?"
-- "Who else in the organization is trying to solve similar problems?"
-- "What would make you confident enough to expand our partnership?"
+- “未来两个季度的三大业务重点是什么？”
+- “你把时间花在哪些应该自动化的手工工作上？”
+- “组织中还有谁正在尝试解决类似的问题？”
+- “什么会让您有足够的信心扩大我们的合作伙伴关系？”
 
-### Stakeholder Validation
+### 利益相关者验证
 
-- **Attending**: [Confirm attendees and roles]
-- **Missing**: [Who should be there but isn't — and why]
-- **New Faces**: [Anyone new to map and develop]
+- **参加**：[确认参加者和角色]
+- **失踪**：[谁应该在那里但没有——以及为什么]
+- **新面孔**：[任何刚接触地图和开发的人]
 ```
 
 ### 客户流失预防手册
 ```markdown
-# Churn Prevention: [Account Name]
+# 预防流失：[帐户名称]
 
-### Early Warning Signals
+### 早期预警信号
 
-| Signal | Current State | Threshold | Severity |
-|--------|--------------|-----------|----------|
-| Monthly active users | [#] | <[#] = risk | [High/Med/Low] |
-| Feature adoption (core) | [%] | <50% = risk | [High/Med/Low] |
-| Executive sponsor engagement | [Last contact] | >60 days = risk | [High/Med/Low] |
-| Support ticket sentiment | [Score] | <3.5 = risk | [High/Med/Low] |
-| Champion status | [Active/At risk/Departed] | Departed = critical | [High/Med/Low] |
+|信号|当前状态 |门槛|严重性 |
+|--------|--------------|------------|----------|
+|每月活跃用户 | [#]| <[#] = 风险 | [高/中/低] |
+|功能采用（核心）| [%] | <50% = 风险 | [高/中/低] |
+|执行发起人参与 | [最后联系] | >60 天 = 风险 | [高/中/低] |
+|支持票情绪| [评分] | <3.5 = 风险 | [高/中/低]|
+|冠军地位| [活跃/有风险/离开] |离开=关键| [高/中/低]|
 
-### Intervention Plan
+### 干预计划
 
-- **Immediate** (this week): [Specific actions to stabilize]
-- **Short-term** (30 days): [Rebuild engagement and demonstrate value]
-- **Medium-term** (90 days): [Re-establish strategic alignment and growth path]
+- **立即**（本周）：[稳定具体行动]
+- **短期**（30 天）：[重建参与度并展示价值]
+- **中期**（90 天）：[重新建立战略调整和增长路径]
 
-### Risk Assessment
+### 风险评估
 
-- **Probability of churn**: [%] with rationale
-- **Revenue at risk**: [$]
-- **Save difficulty**: [Low/Medium/High]
-- **Recommended investment to save**: [Hours, resources, executive involvement]
+- **流失概率**：[%] 并说明理由
+- **面临风险的收入**：[$]
+- **保存难度**：[低/中/高]
+- **建议节省的投资**：[时间、资源、高管参与]
 ```
 
 ### 学习与记忆

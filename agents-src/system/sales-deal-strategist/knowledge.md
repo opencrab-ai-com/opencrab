@@ -100,50 +100,50 @@
 
 ### 机会评估
 ```markdown
-# Deal Assessment: [Account Name]
+# 交易评估：[账户名称]
 
-### MEDDPICC Score: [X/40] (5-point scale per element)
+### MEDDPICC 分数：[X/40]（每个元素 5 分制）
 
-| Element           | Score | Evidence                                    | Gap / Risk                         |
-|-------------------|-------|---------------------------------------------|------------------------------------|
-| Metrics           | 4     | "Reduce churn from 18% to 9% annually"     | Need CFO validation on cost model  |
-| Economic Buyer    | 2     | Identified (VP Ops) but no direct access    | Champion hasn't brokered meeting   |
-| Decision Criteria | 3     | Draft eval matrix shared                    | Two criteria favor competitor      |
-| Decision Process  | 3     | 4-step process mapped                       | Security review timeline unknown   |
-| Paper Process     | 1     | Not discussed                               | HIGH RISK — start immediately      |
-| Identify Pain     | 5     | Quantified: $2.1M/yr in manual rework       | Strong — validated by two VPs      |
-| Champion          | 3     | Dir. of Engineering — motivated, connected  | Hasn't been tested on hard ask     |
-| Competition       | 3     | Incumbent + one challenger identified       | Need battlecard for challenger     |
+|元素|分数 |证据|差距/风险|
+|-------------------|--------------------|---------------------------------------------------------|------------------------------------|
+|指标| 4 | “每年将客户流失率从 18% 减少到 9%”|需要 CFO 验证成本模型 |
+|经济买家| 2 |已识别（VP Ops）但无法直接访问 | Champion 尚未安排会面 |
+|决策标准| 3 |共享评估矩阵草稿 |有两个标准有利于竞争对手|
+|决策过程| 3 | 4 步流程映射 |安全审查时间表未知|
+|造纸工艺 | 1 |未讨论 |高风险——立即开始|
+|识别疼痛 | 5 |量化：每年 210 万美元的手动返工 |强大 — 由两位副总裁验证 |
+|冠军| 3 |导演。工程系——积极进取、相互联系|尚未经过硬询问测试 |
+|竞赛| 3 |现任者+一名挑战者已确定|挑战者需要战斗卡|
 
 ### Next Actions:
 
-1. Champion to broker EB meeting by Friday
-2. Initiate paper process discovery with procurement
-3. Prepare competitive landmine questions for next technical session
+1. 周五之前主持 EB 会议的冠军
+2. 通过采购启动纸质流程发现
+3. 为下一次技术会议准备竞争性地雷问题
 ```
 
 ### 竞技战卡模板
 ```markdown
-# Competitive Battlecard: [Competitor Name]
+# 竞技战卡：[参赛者姓名]
 
-### Encounter Rate: [% of deals where they appear]
+### 遭遇率：[出现的交易的百分比]
 
-### Where We Win
-- [Differentiator]: [Why it matters to the buyer]
-- Talk Track: "[Exact language to use]"
+### 我们获胜的地方
+- [差异化因素]：[为什么这对买家很重要]
+- 谈话曲目：“[要使用的确切语言]”
 
-### Where We Battle
-- [Shared capability]: [How to create separation]
-- Talk Track: "[Exact language to use]"
+### 我们战斗的地方
+- [共享能力]：[如何创造分离]
+- 谈话曲目：“[要使用的确切语言]”
 
-### Where We Lose
-- [Their strength]: [Repositioning strategy]
-- Talk Track: "[How to shrink its importance without attacking]"
+### 我们输在哪里
+- [他们的强项]：[重新定位策略]
+- 谈话曲目：“[如何在不攻击的情况下缩小其重要性]”
 
-### Landmine Questions
-- "[Question that surfaces a requirement where we're strongest]"
-- "[Question that exposes a gap in their approach]"
+### 地雷问题
+- “[提出我们最强要求的问题]”
+- “[暴露他们方法中的差距的问题]”
 
-### Trap Handling
-- If buyer says "[competitor claim]" → respond with "[reframe]"
+### 陷阱处理
+- 如果买家说“[竞争对手索赔]”→ 回复“[重新设计]”
 ```

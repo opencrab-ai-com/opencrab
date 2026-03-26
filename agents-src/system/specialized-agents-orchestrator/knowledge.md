@@ -2,149 +2,147 @@
 
 ### 逐个任务的质量循环
 ```markdown
+### 当前任务验证过程
 
-### Current Task Validation Process
+### 第 1 步：开发实施
+- 根据任务类型生成适当的开发代理：
+  * 前端开发人员：用于 UI/UX 实现
+  * 后端架构师：针对服务器端架构
+  * 工程高级开发人员：用于高级实施
+  * 移动应用程序生成器：适用于移动应用程序
+  * DevOps Automator：用于基础设施任务
+- 确保任务全面实施
+- 验证开发人员将任务标记为完成
 
-### Step 1: Development Implementation
-- Spawn appropriate developer agent based on task type:
-  * Frontend Developer: For UI/UX implementation
-  * Backend Architect: For server-side architecture
-  * engineering-senior-developer: For premium implementations
-  * Mobile App Builder: For mobile applications
-  * DevOps Automator: For infrastructure tasks
-- Ensure task is implemented completely
-- Verify developer marks task as complete
+### 第 2 步：质量验证  
+- 通过特定任务测试生成 EvidenceQA
+- 需要屏幕截图证据进行验证
+- 通过反馈获得明确的通过/失败决策
 
-### Step 2: Quality Validation  
-- Spawn EvidenceQA with task-specific testing
-- Require screenshot evidence for validation
-- Get clear PASS/FAIL decision with feedback
+### 步骤 3：循环决策
+**如果 QA 结果 = 通过：**
+- 将当前任务标记为已验证
+- 移至列表中的下一个任务
+- 重置重试计数器
 
-### Step 3: Loop Decision
-**IF QA Result = PASS:**
-- Mark current task as validated
-- Move to next task in list
-- Reset retry counter
+**如果 QA 结果 = 失败：**
+- 增加重试计数器  
+- 如果重试次数 < 3：通过 QA 反馈循环回开发人员
+- 如果重试 >= 3：通过详细的故障报告升级
+- 保持当前任务焦点
 
-**IF QA Result = FAIL:**
-- Increment retry counter  
-- If retries < 3: Loop back to dev with QA feedback
-- If retries >= 3: Escalate with detailed failure report
-- Keep current task focus
-
-### Step 4: Progression Control
-- Only advance to next task after current task PASSES
-- Only advance to Integration after ALL tasks PASS
-- Maintain strict quality gates throughout pipeline
+### 步骤 4：进度控制
+- 仅在当前任务通过后才前进到下一个任务
+- 仅在所有任务通过后才进入集成
+- 在整个管道中保持严格的质量把关
 ```
 
 ### 错误处理和恢复
 ```markdown
+### 故障管理
 
-### Failure Management
+### 代理生成失败
+- 重试代理生成最多 2 次
+- 如果持续失败：记录并上报
+- 继续手动回退程序
 
-### Agent Spawn Failures
-- Retry agent spawn up to 2 times
-- If persistent failure: Document and escalate
-- Continue with manual fallback procedures
+### 任务执行失败  
+- 每个任务最多重试 3 次
+- 每次重试都包含特定的 QA 反馈
+- 3次失败后：将任务标记为阻塞，继续管道
+- 最终集成将解决剩余问题
 
-### Task Implementation Failures  
-- Maximum 3 retry attempts per task
-- Each retry includes specific QA feedback
-- After 3 failures: Mark task as blocked, continue pipeline
-- Final integration will catch remaining issues
-
-### Quality Validation Failures
-- If QA agent fails: Retry QA spawn
-- If screenshot capture fails: Request manual evidence
-- If evidence is inconclusive: Default to FAIL for safety
+### 质量验证失败
+- 如果 QA 代理失败：重试 QA 生成
+- 如果屏幕截图失败：请求手动证据
+- 如果证据不确定：出于安全考虑，默认为 FAIL
 ```
 
 ### 您的状态报告
 
 ### 管道进度模板
 ```markdown
-# WorkflowOrchestrator Status Report
+# WorkflowOrchestrator 状态报告
 
-### Pipeline Progress
+### 管道进展
 
-**Current Phase**: [PM/ArchitectUX/DevQALoop/Integration/Complete]
-**Project**: [project-name]
-**Started**: [timestamp]
+**当前阶段**：[PM/ArchitectUX/DevQALoop/集成/完成]
+**项目**：[项目名称]
+**开始**：[时间戳]
 
-### Task Completion Status
+### 任务完成状态
 
-**Total Tasks**: [X]
-**Completed**: [Y] 
-**Current Task**: [Z] - [task description]
-**QA Status**: [PASS/FAIL/IN_PROGRESS]
+**总任务**：[X]
+**已完成**：[Y] 
+**当前任务**：[Z] - [任务描述]
+**质量检查状态**：[通过/失败/进行中]
 
-### Dev-QA Loop Status
+### 开发-QA 循环状态
 
-**Current Task Attempts**: [1/2/3]
-**Last QA Feedback**: "[specific feedback]"
-**Next Action**: [spawn dev/spawn qa/advance task/escalate]
+**当前任务尝试**：[1/2/3]
+**上次 QA 反馈**：“[具体反馈]”
+**下一步行动**：[spawn dev/spawn qa/高级任务/升级]
 
-### Quality Metrics
+### 质量指标
 
-**Tasks Passed First Attempt**: [X/Y]
-**Average Retries Per Task**: [N]
-**Screenshot Evidence Generated**: [count]
-**Major Issues Found**: [list]
+**任务通过第一次尝试**：[X/Y]
+**每个任务的平均重试次数**：[N]
+**生成的屏幕截图证据**：[计数]
+**发现的主要问题**：[列表]
 
-### Next Steps
+### 后续步骤
 
-**Immediate**: [specific next action]
-**Estimated Completion**: [time estimate]
-**Potential Blockers**: [any concerns]
+**立即**：[具体下一步行动]
+**预计完成**：[预计时间]
+**潜在的阻碍**：[任何问题]
 
 ---
-**Orchestrator**: WorkflowOrchestrator
-**Report Time**: [timestamp]
-**Status**: [ON_TRACK/DELAYED/BLOCKED]
+**编排器**：工作流程编排器
+**报告时间**：[时间戳]
+**状态**：[ON_TRACK/延迟/阻止]
 ```
 
 ### 完成摘要模板
 ```markdown
-# Project Pipeline Completion Report
+# 项目管道完成报告
 
-### Pipeline Success Summary
+### 管道成功总结
 
-**Project**: [project-name]
-**Total Duration**: [start to finish time]
-**Final Status**: [COMPLETED/NEEDS_WORK/BLOCKED]
+**项目**：[项目名称]
+**总持续时间**：[开始到结束时间]
+**最终状态**：[已完成/NEEDS_WORK/已阻止]
 
-### Task Implementation Results
+### 任务执行结果
 
-**Total Tasks**: [X]
-**Successfully Completed**: [Y]
-**Required Retries**: [Z]
-**Blocked Tasks**: [list any]
+**总任务**：[X]
+**成功完成**：[Y]
+**需要重试**：[Z]
+**阻止的任务**：[列出任意]
 
-### Quality Validation Results
+### 质量验证结果
 
-**QA Cycles Completed**: [count]
-**Screenshot Evidence Generated**: [count]
-**Critical Issues Resolved**: [count]
-**Final Integration Status**: [PASS/NEEDS_WORK]
+**已完成的 QA 周期**：[计数]
+**生成的屏幕截图证据**：[计数]
+**已解决的关键问题**：[计数]
+**最终集成状态**：[PASS/NEEDS_WORK]
 
-### Agent Performance
+### 特工表现
 
-**project-manager-senior**: [completion status]
-**ArchitectUX**: [foundation quality]
-**Developer Agents**: [implementation quality - Frontend/Backend/Senior/etc.]
-**EvidenceQA**: [testing thoroughness]
-**testing-reality-checker**: [final assessment]
+**项目经理-高级**：[完成状态]
+**ArchitectUX**：[基础质量]
+**开发人员代理**：[实施质量 - 前端/后端/高级/等]
+**证据QA**：[测试彻底性]
+**测试现实检查器**：[最终评估]
 
-### Production Readiness
+### 生产准备
 
-**Status**: [READY/NEEDS_WORK/NOT_READY]
-**Remaining Work**: [list if any]
-**Quality Confidence**: [HIGH/MEDIUM/LOW]
+**状态**：[READY/NEEDS_WORK/NOT_READY]
+**剩余工作**：[如果有，请列出]
+**质量信心**：[高/中/低]
 
 ---
-**Pipeline Completed**: [timestamp]
-**Orchestrator**: WorkflowOrchestrator
+**管道已完成**：[时间戳]
+**编排器**：工作流程编排器
 ```
 
 ### 学习与记忆

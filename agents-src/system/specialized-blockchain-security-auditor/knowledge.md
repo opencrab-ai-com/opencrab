@@ -109,35 +109,35 @@ contract SecureLending {
 
 ### 访问控制审核清单
 ```markdown
-# Access Control Audit Checklist
+# 访问控制审核清单
 
-### Role Hierarchy
+### 角色层次结构
 
-- [ ] All privileged functions have explicit access modifiers
-- [ ] Admin roles cannot be self-granted — require multi-sig or timelock
-- [ ] Role renunciation is possible but protected against accidental use
-- [ ] No functions default to open access (missing modifier = anyone can call)
+- [ ] 所有特权函数都有显式访问修饰符
+- [ ] 管理员角色不能自行授予 - 需要多重签名或时间锁定
+- [ ] 可以放弃角色，但可以防止意外使用
+- [ ] 没有函数默认开放访问（缺少修饰符 = 任何人都可以调用）
 
-### Initialization
+### 初始化
 
-- [ ] `initialize()` can only be called once (initializer modifier)
-- [ ] Implementation contracts have `_disableInitializers()` in constructor
-- [ ] All state variables set during initialization are correct
-- [ ] No uninitialized proxy can be hijacked by frontrunning `initialize()`
+- [ ] `initialize()` 只能调用一次（初始化修饰符）
+- [ ] 实现合约在构造函数中有 `_disableInitializers()`
+- [ ] 初始化时设置的所有状态变量均正确
+- [ ] 未初始化的代理不能被抢先运行的 `initialize()` 劫持
 
-### Upgrade Controls
+### 升级控制
 
-- [ ] `_authorizeUpgrade()` is protected by owner/multi-sig/timelock
-- [ ] Storage layout is compatible between versions (no slot collisions)
-- [ ] Upgrade function cannot be bricked by malicious implementation
-- [ ] Proxy admin cannot call implementation functions (function selector clash)
+- [ ] `_authorizeUpgrade()` 受所有者/多重签名/时间锁保护
+- [ ] 存储布局在版本之间兼容（无插槽冲突）
+- [ ] 升级功能不会被恶意实现变砖
+- [ ] 代理管理员无法调用实现函数（函数选择器冲突）
 
-### External Calls
+### 外部调用
 
-- [ ] No unprotected `delegatecall` to user-controlled addresses
-- [ ] Callbacks from external contracts cannot manipulate protocol state
-- [ ] Return values from external calls are validated
-- [ ] Failed external calls are handled appropriately (not silently ignored)
+- [ ] 没有对用户控制地址的不受保护的“delegatecall”
+- [ ] 来自外部合约的回调无法操纵协议状态
+- [ ] 验证外部调用的返回值
+- [ ] 失败的外部调用得到适当处理（不会默默地忽略）
 ```
 
 ### 滑动分析集成
@@ -193,69 +193,69 @@ echidna . --contract EchidnaTest \
 
 ### 审计报告模板
 ```markdown
-# Security Audit Report
+# 安全审计报告
 
-### Commit: [Git Commit Hash]
+### 提交：[Git 提交哈希]
 
 ---
 
-### Executive Summary
+### 执行摘要
 
-[Protocol Name] is a [description]. This audit reviewed [N] contracts
-comprising [X] lines of Solidity code. The review identified [N] findings:
-[C] Critical, [H] High, [M] Medium, [L] Low, [I] Informational.
+[协议名称]是[描述]。本次审计审查了 [N] 份合同
+包含 [X] 行 Solidity 代码。审查确定了 [N] 个发现：
+[C] 严重、[H] 高、[M] 中、[L] 低、[I] 信息。
 
-| Severity      | Count | Fixed | Acknowledged |
-|---------------|-------|-------|--------------|
-| Critical      |       |       |              |
-| High          |       |       |              |
-| Medium        |       |       |              |
-| Low           |       |       |              |
-| Informational |       |       |              |
+|严重性 |计数 |固定|已确认 |
+|----------------|--------|--------|----------------|
+|关键|       |       |              |
+|高|       |       |              |
+|中等|       |       |              |
+|低|       |       |              |
+|信息 |       |       |              |
 
-### Scope
+### 范围
 
-| Contract           | SLOC | Complexity |
+|合同| SLOC |复杂性 |
 |--------------------|------|------------|
-| MainVault.sol      |      |            |
-| Strategy.sol       |      |            |
-| Oracle.sol         |      |            |
+| MainVault.sol |      |            |
+|策略.sol |      |            |
+| Oracle.sol |      |            |
 
-### Findings
+### 调查结果
 
-### [C-01] Title of Critical Finding
+### [C-01] 关键发现的标题
 
-**Severity**: Critical
-**Status**: [Open / Fixed / Acknowledged]
-**Location**: `ContractName.sol#L42-L58`
+**严重性**：严重
+**状态**：[开放/已修复/已确认]
+**位置**：`ContractName.sol#L42-L58`
 
-**Description**:
-[Clear explanation of the vulnerability]
+**描述**：
+[漏洞解释清楚]
 
-**Impact**:
-[What an attacker can achieve, estimated financial impact]
+**影响**：
+[攻击者可以实现什么，估计的财务影响]
 
-**Proof of Concept**:
-[Foundry test or step-by-step exploit scenario]
+**概念证明**：
+[Foundry 测试或逐步利用场景]
 
-**Recommendation**:
-[Specific code changes to fix the issue]
+**建议**：
+[具体代码更改以解决问题]
 
 ---
 
-### Appendix
+### 附录
 
-### A. Automated Analysis Results
-- Slither: [summary]
-- Mythril: [summary]
-- Echidna: [summary of property test results]
+### A. 自动分析结果
+- 滑行者：[摘要]
+- 秘银：[摘要]
+- 针鼹：[属性测试结果总结]
 
-### B. Methodology
-1. Manual code review (line-by-line)
-2. Automated static analysis (Slither, Mythril)
-3. Property-based fuzz testing (Echidna/Foundry)
-4. Economic attack modeling
-5. Access control and privilege analysis
+### B. 方法论
+1. 手动代码审查（逐行）
+2. 自动静态分析（Slither、Mythril）
+3. 基于属性的模糊测试（Echidna/Foundry）
+4. 经济攻击建模
+5. 访问控制和权限分析
 ```
 
 ### Foundry 利用概念验证

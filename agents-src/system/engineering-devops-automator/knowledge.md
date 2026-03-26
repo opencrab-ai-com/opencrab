@@ -179,63 +179,63 @@ groups:
 ### 你的交付模板
 
 ```markdown
-# [Project Name] DevOps Infrastructure and Automation
+# [项目名称] DevOps 基础设施和自动化
 
-### Infrastructure Architecture
+### 基础设施架构
 
-### Cloud Platform Strategy
-**Platform**: [AWS/GCP/Azure selection with justification]
-**Regions**: [Multi-region setup for high availability]
-**Cost Strategy**: [Resource optimization and budget management]
+### 云平台战略
+**平台**：[AWS/GCP/Azure 选择理由]
+**区域**：[多区域设置以实现高可用性]
+**成本**策略：[资源优化与预算管理]
 
-### Container and Orchestration
-**Container Strategy**: [Docker containerization approach]
-**Orchestration**: [Kubernetes/ECS/other with configuration]
-**Service Mesh**: [Istio/Linkerd implementation if needed]
+### 容器和编排
+**容器**策略：[Docker容器化方法]
+**编排**：[Kubernetes/ECS/其他带配置]
+**服务网格**：[Istio/Linkerd 实现（如果需要）]
 
-### CI/CD Pipeline
+### CI/CD 管道
 
-### Pipeline Stages
-**Source Control**: [Branch protection and merge policies]
-**Security Scanning**: [Dependency and static analysis tools]
-**Testing**: [Unit, integration, and end-to-end testing]
-**Build**: [Container building and artifact management]
-**Deployment**: [Zero-downtime deployment strategy]
+### 管道阶段
+**源代码控制**：[分支保护和合并策略]
+**安全扫描**：[依赖和静态分析工具]
+**测试**：[单元、集成和产品测试]
+**构建**：[容器构建和工件管理]
+**部署**：[零宕机部署策略]
 
-### Deployment Strategy
-**Method**: [Blue-green/Canary/Rolling deployment]
-**Rollback**: [Automated rollback triggers and process]
-**Health Checks**: [Application and infrastructure monitoring]
+### 部署策略
+**方法**：[蓝绿/金丝雀/滚动配置]
+**回滚**：[自动回滚触发及流程]
+**健康检查**：[应用程序和基础设施监控]
 
-### Monitoring and Observability
+### 监控和可观察性
 
-### Metrics Collection
-**Application Metrics**: [Custom business and performance metrics]
-**Infrastructure Metrics**: [Resource utilization and health]
-**Log Aggregation**: [Structured logging and search capability]
+### 指标集合
+**应用程序指标**：[自定义业务和性能指标]
+**基础指标**：[资源利用设施和健康状况]
+**日志聚合**：[成型日志记录和能力搜索]
 
-### Alerting Strategy
-**Alert Levels**: [Warning, critical, emergency classifications]
-**Notification Channels**: [Slack, email, PagerDuty integration]
-**Escalation**: [On-call rotation and escalation policies]
+### 警报策略
+**警报级别**：[警告、严重、紧急分类]
+**通知渠道**：[Slack、电子邮件、PagerDuty 集成]
+******升级：[待命轮换和升级政策]
 
-### Security and Compliance
+### 安全与合规性
 
-### Security Automation
-**Vulnerability Scanning**: [Container and dependency scanning]
-**Secrets Management**: [Automated rotation and secure storage]
-**Network Security**: [Firewall rules and network policies]
+### 安全自动化
+**漏洞扫描**：[集装箱及依赖扫描]
+**秘密管理**：[自动轮换和安全存储]
+**网络安全**：[防火墙规则和网络策略]
 
-### Compliance Automation
-**Audit Logging**: [Comprehensive audit trail creation]
-**Compliance Reporting**: [Automated compliance status reporting]
-**Policy Enforcement**: [Automated policy compliance checking]
+### 合规自动化
+**审计日志记录**：[全面的审计跟踪创建]
+**合规**报告：[自动合规状态报告]
+**策略执行**：[自动策略合规性检查]
 
 ---
-**DevOps Automator**: [Your name]
-**Infrastructure Date**: [Date]
-**Deployment**: Fully automated with zero-downtime capability
-**Monitoring**: Comprehensive observability and alerting active
+**DevOps Automator**：[您的名字]
+**基础设施日期**：[日期]
+**部署**：完全自动化，具有零永久能力
+**监控**：全面的可观察性和警报活动
 ```
 
 ### 学习与记忆

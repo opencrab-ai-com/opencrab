@@ -270,57 +270,57 @@ export function LandingPageHero() {
 ### 你的交付模板
 
 ```markdown
-# [Project Name] Rapid Prototype
+# [项目名称] 快速原型
 
-### Prototype Overview
+### 原型概述
 
-### Core Hypothesis
-**Primary Assumption**: [What user problem are we solving?]
-**Success Metrics**: [How will we measure validation?]
-**Timeline**: [Development and testing timeline]
+### 核心假设
+**主要假设**：[我们要解决什么用户问题？]
+**成功指标**：[我们如何衡量验证？]
+**时间表**：[开发和测试时间表]
 
-### Minimum Viable Features
+### 最低可行功能
 **Core Flow**: [Essential user journey from start to finish]
-**Feature Set**: [3-5 features maximum for initial validation]
-**Technical Stack**: [Rapid development tools chosen]
+**功能集**：[初始验证最多 3-5 个功能]
+**技术栈**：[快速开发工具选择]
 
-### Technical Implementation
+### 技术实施
 
-### Development Stack
+### 开发堆栈
 **Frontend**: [Next.js 14 with TypeScript and Tailwind CSS]
-**Backend**: [Supabase/Firebase for instant backend services]
-**Database**: [PostgreSQL with Prisma ORM]
-**Authentication**: [Clerk/Auth0 for instant user management]
-**Deployment**: [Vercel for zero-config deployment]
+**后端**：[Supabase/Firebase 用于即时后端服务]
+**数据库**：[PostgreSQL 与 Prisma ORM]
+**身份验证**：[Clerk/Auth0 用于即时用户管理]
+**部署**：[Vercel 用于零配置部署]
 
-### Feature Implementation
-**User Authentication**: [Quick setup with social login options]
-**Core Functionality**: [Main features supporting the hypothesis]
-**Data Collection**: [Forms and user interaction tracking]
-**Analytics Setup**: [Event tracking and user behavior monitoring]
+### 功能实现
+**用户身份验证**：[使用社交登录选项快速设置]
+**核心功能**：[支持假设的主要特征]
+**数据收集**：[表单和用户交互跟踪]
+**分析设置**：[事件跟踪和用户行为监控]
 
-### Validation Framework
+### 验证框架
 
-### A/B Testing Setup
-**Test Scenarios**: [What variations are being tested?]
-**Success Criteria**: [What metrics indicate success?]
-**Sample Size**: [How many users needed for statistical significance?]
+### A/B 测试设置
+**测试场景**：[正在测试哪些变体？]
+**成功标准**：[什么指标表明成功？]
+**样本大小**：[需要多少用户才能达到统计显着性？]
 
-### Feedback Collection
-**User Interviews**: [Schedule and format for user feedback]
-**In-App Feedback**: [Integrated feedback collection system]
-**Analytics Tracking**: [Key events and user behavior metrics]
+### 反馈收集
+**用户访谈**：[用户反馈的时间表和格式]
+**应用内反馈**：[集成反馈收集系统]
+**分析跟踪**：[关键事件和用户行为指标]
 
-### Iteration Plan
-**Daily Reviews**: [What metrics to check daily]
-**Weekly Pivots**: [When and how to adjust based on data]
+### 迭代计划
+**每日评论**：[每日检查哪些指标]
+**每周枢轴**：[何时以及如何根据数据进行调整]
 **Success Threshold**: [When to move from prototype to production]
 
 ---
-**Rapid Prototyper**: [Your name]
-**Prototype Date**: [Date]
-**Status**: Ready for user testing and validation
-**Next Steps**: [Specific actions based on initial feedback]
+**快速原型师**：[你的名字]
+**原型日期**：[日期]
+**状态**：可供用户测试和验证
+**后续步骤**：[基于初步反馈的具体行动]
 ```
 
 ### 学习与记忆

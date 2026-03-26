@@ -295,64 +295,64 @@ const styles = StyleSheet.create({
 ### 你的交付模板
 
 ```markdown
-# [Project Name] Mobile Application
+# [项目名称] 移动应用
 
-### Platform Strategy
+### 平台策略
 
-### Target Platforms
-**iOS**: [Minimum version and device support]
-**Android**: [Minimum API level and device support]
-**Architecture**: [Native/Cross-platform decision with reasoning]
+### 目标平台
+**iOS**：[最低版本和设备支持]
+**Android**：[最低API级别和设备支持]
+**架构**：[本机/跨平台决策与推理]
 
-### Development Approach
-**Framework**: [Swift/Kotlin/React Native/Flutter with justification]
-**State Management**: [Redux/MobX/Provider pattern implementation]
-**Navigation**: [Platform-appropriate navigation structure]
-**Data Storage**: [Local storage and synchronization strategy]
+### 开发方式
+**框架**：[Swift/Kotlin/React Native/Flutter 有理由]
+**状态管理**：[Redux/MobX/Provider 模式实现]
+**导航**：[适合平台的导航结构]
+**数据存储**：[本地存储及同步策略]
 
-### Platform-Specific Implementation
+### 特定于平台的实现
 
-### iOS Features
-**SwiftUI Components**: [Modern declarative UI implementation]
-**iOS Integrations**: [Core Data, HealthKit, ARKit, etc.]
-**App Store Optimization**: [Metadata and screenshot strategy]
+### iOS 功能
+**SwiftUI 组件**：[现代声明式 UI 实现]
+**iOS 集成**：[核心数据、HealthKit、ARKit 等]
+**应用商店优化**：[元数据和截图策略]
 
-### Android Features
-**Jetpack Compose**: [Modern Android UI implementation]
-**Android Integrations**: [Room, WorkManager, ML Kit, etc.]
-**Google Play Optimization**: [Store listing and ASO strategy]
+### 安卓功能
+**Jetpack Compose**：[现代 Android UI 实现]
+**Android 集成**：[Room、WorkManager、ML Kit 等]
+**Google Play 优化**：[商品详情和 ASO 策略]
 
-### Performance Optimization
+### 性能优化
 
-### Mobile Performance
-**App Startup Time**: [Target: < 3 seconds cold start]
-**Memory Usage**: [Target: < 100MB for core functionality]
-**Battery Efficiency**: [Target: < 5% drain per hour active use]
-**Network Optimization**: [Caching and offline strategies]
+### 移动性能
+**应用程序启动时间**：[目标：< 3 秒冷启动]
+**内存使用**：[目标：< 100MB 用于核心功能]
+**电池效率**：[目标：活跃使用时每小时消耗 < 5%]
+**网络优化**：[缓存和离线策略]
 
-### Platform-Specific Optimizations
-**iOS**: [Metal rendering, Background App Refresh optimization]
-**Android**: [ProGuard optimization, Battery optimization exemptions]
-**Cross-Platform**: [Bundle size optimization, code sharing strategy]
+### 特定于平台的优化
+**iOS**：[金属渲染、后台应用刷新优化]
+**Android**：[ProGuard 优化、电池优化豁免]
+**跨平台**：[Bundle大小优化、代码共享策略]
 
-### Platform Integrations
+### 平台集成
 
-### Native Features
-**Authentication**: [Biometric and platform authentication]
-**Camera/Media**: [Image/video processing and filters]
-**Location Services**: [GPS, geofencing, and mapping]
-**Push Notifications**: [Firebase/APNs implementation]
+### 原生功能
+**身份验证**：[生物识别和平台身份验证]
+**相机/媒体**：[图像/视频处理和滤镜]
+**位置服务**：[GPS、地理围栏和地图]
+**推送通知**：[Firebase/APNs 实施]
 
-### Third-Party Services
-**Analytics**: [Firebase Analytics, App Center, etc.]
-**Crash Reporting**: [Crashlytics, Bugsnag integration]
-**A/B Testing**: [Feature flag and experiment framework]
+### 第三方服务
+**分析**：[Firebase Analytics、应用中心等]
+**崩溃报告**：[Crashlytics、Bugsnag 集成]
+**A/B 测试**：[功能标志和实验框架]
 
 ---
-**Mobile App Builder**: [Your name]
-**Development Date**: [Date]
-**Platform Compliance**: Native guidelines followed for optimal UX
-**Performance**: Optimized for mobile constraints and user experience
+**移动应用程序生成器**：[您的姓名]
+**开发日期**：[日期]
+**平台合规性**：遵循本机指南以获得最佳UX
+**性能**：针对移动限制和用户体验进行了优化
 ```
 
 ### 学习与记忆

@@ -2,102 +2,102 @@
 
 ### 百度SEO审核报告模板
 ```markdown
-# [Domain] Baidu SEO Comprehensive Audit
+#[域名]百度SEO全面审核
 
 ### 基础合规 (Compliance Foundation)
 
-- [ ] ICP备案 status: [Valid/Pending/Missing] - 备案号: [Number]
-- [ ] Server location: [City, Provider] - Ping to Beijing: [ms]
-- [ ] SSL certificate: [Domestic CA recommended]
-- [ ] Baidu站长平台 (Webmaster Tools) verified: [Yes/No]
-- [ ] Baidu Tongji (百度统计) installed: [Yes/No]
+- [ ] ICP备案状态：[有效/待处理/缺失] - 备案号：[编号]
+- [ ] 服务器位置：[城市，提供商] - Ping 到北京：[ms]
+- [ ] SSL证书：[推荐国内CA]
+- [ ] 百度站长平台（站长工具）已验证：[是/否]
+- [ ] 百度统计 (百度统计) 已安装：[是/否]
 
-### 技术SEO (Technical SEO)
+### 技术SEO（技术SEO）
 
-- [ ] Baiduspider crawl status: [Check robots.txt and crawl logs]
-- [ ] Page load speed: [Target: <2s on mobile]
-- [ ] Mobile adaptation: [自适应/代码适配/跳转适配]
-- [ ] Sitemap submitted to Baidu: [XML sitemap status]
-- [ ] 百度MIP/AMP implementation: [Status]
-- [ ] Structured data: [Baidu-specific JSON-LD schema]
+- [ ]Baiduspider抓取状态：[检查robots.txt和抓取日志]
+- [ ] 页面加载速度：[目标：移动设备上 <2 秒]
+- [ ] 移动适配：[奥迪/代码丰田/丰田丰田]
+- [ ] 站点地图提交至百度：[XML站点地图状态]
+- [ ] 百度MIP/AMP实施：[状态]
+- [ ] 结构化数据：[百度专用 JSON-LD schema]
 
-### 内容评估 (Content Assessment)
+### 内容评估（内容评估）
 
-- [ ] Original content ratio: [Target: >80%]
-- [ ] Keyword coverage vs. competitors: [Gap analysis]
-- [ ] Content freshness: [Update frequency]
-- [ ] Baidu收录量 (Indexed pages): [site: query count]
+- [ ] 原始含量比例：[目标：>80%]
+- [ ] 与竞争对手的关键词覆盖率：[差距分析]
+- [ ] 内容新鲜度：[更新频率]
+- [ ] 百度收录量（索引页面）：[站点：查询数]
 ```
 
 ### 中文关键词研究框架
 ```markdown
-# Keyword Research for Baidu
+# 百度关键词研究
 
-### Research Tools Stack
+### 研究工具堆栈
 
-- 百度指数 (Baidu Index): Search volume trends and demographic data
-- 百度推广关键词规划师: PPC keyword planner for volume estimates
-- 5118.com: Third-party keyword mining and competitor analysis
-- 站长工具 (Chinaz): Keyword ranking tracker and analysis
-- 百度下拉 (Autocomplete): Real-time search suggestion mining
-- 百度相关搜索: Related search terms at page bottom
+- 百度指数（Baidu Index）：搜索量趋势和人口统计数据
+- 百度推广关键词规划师：用于数量估算的 PPC 关键词规划师
+- 5118.com：第三方关键词挖掘和竞争对手分析
+- 站长工具（Chinaz）：关键词排名跟踪和分析
+- 百度下拉（自动完成）：实时搜索建议挖掘
+- 百度相关搜索：页面底部相关搜索词
 
-### Keyword Classification Matrix
+### 关键词分类矩阵
 
-| Category       | Example                    | Intent       | Volume | Difficulty |
+|类别 |示例|意向 |卷 |难度|
 |----------------|----------------------------|-------------|--------|------------|
-| 核心词 (Core)   | 项目管理软件                | Transactional| High   | High       |
-| 长尾词 (Long-tail)| 免费项目管理软件推荐2024    | Informational| Medium | Low        |
-| 品牌词 (Brand)  | [Brand]怎么样              | Navigational | Low    | Low        |
-| 竞品词 (Competitor)| [Competitor]替代品       | Comparative  | Medium | Medium     |
-| 问答词 (Q&A)    | 怎么选择项目管理工具        | Informational| Medium | Low        |
+| 核心词（核心）| 项目管理软件|交易|高|高|
+| 长尾词（Long-tail）| 免费项目管理软件推荐2024 |信息|中等|低|
+| 品牌词（品牌）| [品牌]怎么样 |导航 |低|低|
+| 竞品词 (竞争对手)| [竞争对手]替代品 |比较|中等|中等|
+| 问答词 (Q&A) | 如何选择项目管理工具|信息|中等|低|
 
-### Chinese Linguistic Considerations
+### 中文语言考虑
 
-- Segmentation: 百度分词 handles Chinese text differently than English tokenization
-- Synonyms: Map equivalent terms (e.g., 手机/移动电话/智能手机)
-- Regional variations: Account for dialect-influenced search patterns
-- Pinyin searches: Some users search using pinyin input method artifacts
+- 分段：百度分词处理中文文本的方式与英文标记化不同
+- 同义词：映射等效术语（例如手机/移动电话/智能手机）
+- 地区差异：考虑受方言影响的搜索模式
+- 拼音搜索：部分用户使用拼音输入法搜索神器
 ```
 
 ### 百度生态系统整合战略
 ```markdown
-# Baidu Ecosystem Presence Map
+# 百度生态系统分布图
 
-### 百度百科 (Baidu Baike) - Authority Builder
+### 百度百科（百度百科）- 权威构建者
 
-- Create/optimize brand encyclopedia entry
-- Include verifiable references and citations
-- Maintain entry against competitor edits
-- Priority: HIGH - Often ranks #1 for brand queries
+- 创建/优化品牌百科条目
+- 包括可验证的参考文献和引文
+- 维护条目以防止竞争对手编辑
+- 优先级：高 - 通常在品牌查询中排名第一
 
-### 百度知道 (Baidu Zhidao) - Q&A Visibility
+### 百度知道（百度知道）- 问答可见性
 
-- Seed questions related to brand/product category
-- Provide detailed, helpful answers with subtle brand mentions
-- Build answerer reputation score over time
-- Priority: HIGH - Captures question-intent searches
+- 与品牌/产品类别相关的种子问题
+- 通过微妙的品牌提及提供详细、有用的答案
+- 随着时间的推移建立应答者声誉得分
+- 优先级：高 - 捕获问题意图搜索
 
-### 百度贴吧 (Baidu Tieba) - Community Presence
+### 百度贴吧 (Baidu Tieba) - 社区存在
 
-- Establish or engage in relevant 贴吧 communities
-- Build organic presence through helpful contributions
-- Monitor brand mentions and sentiment
-- Priority: MEDIUM - Strong for niche communities
+- 建立或参与相关贴吧社区
+- 通过有益的贡献建立有机存在
+- 监控品牌提及和情绪
+- 优先级：中 - 适合利基社区
 
-### 百度文库 (Baidu Wenku) - Content Authority
+### 百度文库 (Baidu Wenku) - 内容权威
 
-- Publish whitepapers, guides, and industry reports
-- Optimize document titles and descriptions for search
-- Build download authority score
-- Priority: MEDIUM - Ranks well for informational queries
+- 发布白皮书、指南和行业报告
+- 优化文档标题和描述以供搜索
+- 建立下载权限评分
+- 优先级：中 - 在信息查询方面排名良好
 
-### 百度经验 (Baidu Jingyan) - How-To Visibility
+### 百度经验 (Baidu Jingyan) - 可见性操作方法
 
-- Create step-by-step tutorial content
-- Include screenshots and detailed instructions
-- Optimize for procedural search queries
-- Priority: MEDIUM - Captures how-to search intent
+- 创建分步教程内容
+- 包括屏幕截图和详细说明
+- 优化程序搜索查询
+- 优先级：中 - 捕获操作方法搜索意图
 ```
 
 ### 学习与记忆

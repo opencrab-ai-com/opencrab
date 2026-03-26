@@ -3,80 +3,80 @@
 ### 跨境产品评估记分卡
 
 ```markdown
-# Cross-Border Product Evaluation Model
+# 跨境产品评估模型
 
-### Market Dimension
+### 市场规模
 
-| Metric | Evaluation Criteria | Data Source |
-|--------|-------------------|-------------|
-| Market size | Monthly search volume > 10,000 | Jungle Scout / Helium 10 |
-| Competition | Avg reviews on page 1 < 500 | SellerSprite / Helium 10 |
-| Price range | Selling price $15-$50 (sufficient margin) | Amazon storefront |
-| Seasonality | Year-round demand, stable or predictable | Google Trends |
-| Growth trend | Search volume trending up over past 12 months | Brand Analytics |
+|公制|评估标准|数据来源|
+|--------|--------------------|-------------|
+|市场规模|每月搜索量> 10,000 |丛林侦察兵 / Helium 10 |
+|竞赛|第 1 页的平均评论 < 500 |卖家精灵 / 氦气 10 |
+|价格范围 |售价$15-$50（保证金充足）|亚马逊店面|
+|季节性|全年需求稳定或可预测|谷歌趋势|
+|增长趋势|过去 12 个月搜索量呈上升趋势 |品牌分析|
 
-### Margin Dimension
+### 边距尺寸
 
-| Cost Item | Amount (USD) | Share |
-|-----------|-------------|-------|
-| Procurement cost | - | - |
-| First-mile logistics | - | - |
-| FBA storage + fulfillment | - | - |
-| Platform commission (15%) | - | - |
-| Advertising (target ACOS 25%) | - | - |
-| Return losses (5%) | - | - |
-| **Net profit** | **-** | **Target >20%** |
+|成本项目|金额（美元）|分享 |
+|------------|-------------|--------|
+|采购成本| - | - |
+|第一英里物流 | - | - |
+| FBA仓储+配送| - | - |
+|平台佣金（15%）| - | - |
+|广告（目标 ACOS 25%）| - | - |
+|回波损耗 (5%) | - | - |
+| **净利润** | **-** | **目标>20%** |
 
-### Compliance Dimension
+### 合规维度
 
-- [ ] Does the target market require product certification?
-- [ ] Are certification costs and timelines acceptable?
-- [ ] Is there patent/trademark infringement risk?
-- [ ] Is this a platform-restricted or prohibited category?
-- [ ] Does import duty rate affect pricing competitiveness?
+- [ ] 目标市场是否需要产品认证？
+- [ ] 认证费用和时间表是否可以接受？
+- [ ] 是否存在专利/商标侵权风险？
+- [ ] 这是平台限制或禁止的类别吗？
+- [ ] 进口关税会影响定价竞争力吗？
 ```
 
 ### 多市场运营比较
 
 ```markdown
-# Cross-Border E-Commerce Platform Strategy Comparison
+#跨境电商平台策略比较
 
-| Dimension | Amazon NA | Amazon EU | Shopee SEA | TikTok Shop | Temu |
-|-----------|----------|----------|------------|-------------|------|
-| Core logic | Search + ads driven | Compliance + localization | Low price + campaigns | Content + social | Rock-bottom pricing |
-| User mindset | "Everything Store" | Quality + fast delivery | Cheap + free shipping | Discovery shopping | Ultra-low-price shopping |
-| Traffic acquisition | PPC + SEO + Deals | PPC + VAT compliance | Platform campaigns + Ads | Short video + livestream | Platform-allocated |
-| Logistics | FBA primary | FBA / Pan-EU | SLS / self-fulfilled | Platform logistics | Platform-fulfilled |
-| Margin range | 20-35% | 15-30% | 10-25% | 15-30% | 5-15% |
-| Operations focus | Reviews + ranking | Compliance + multilingual | Campaigns + pricing | Content + creators | Supply chain cost |
-| Best for | Brand / boutique sellers | Compliance-capable sellers | Volume / boutique | Strong content teams | Factory-direct sellers |
+|尺寸|北美亚马逊 |亚马逊欧盟 | Shopee 东南亚 | TikTok 商店 |特姆|
+|------------|----------|----------|------------|------------||------|
+|核心逻辑|搜索+广告驱动|合规+本地化|低价+活动|内容+社交|最低价格|
+|用户心态 | “万事商店” |品质+快速交期|便宜+免运费|探索购物 |超低价购物|
+|流量获取| PPC + SEO + 优惠 | PPC + 增值税合规 |平台活动+广告|短视频+直播 |平台分配|
+|物流 | FBA初级| FBA/泛欧盟| SLS / 自我实现 |平台物流|平台实现|
+|保证金范围 | 20-35% | 15-30% | 10-25% | 15-30% | 5-15% |
+|运营重点|评论+排名|合规+多语言 |活动+定价|内容+创作者|供应链成本|
+|最适合 |品牌/精品卖家|具有合规能力的卖家 |量/精品|强大的内容团队|厂家直销|
 ```
 
 ### 亚马逊 PPC 框架
 
 ```markdown
-# Amazon PPC Advertising Strategy
+# 亚马逊 PPC 广告策略
 
-### Launch Phase (Days 0-30)
+### 启动阶段（第 0-30 天）
 
-| Ad Type | Strategy | Budget Share | Goal |
-|---------|----------|-------------|------|
-| SP - Auto campaigns | Enable all match types | 40% | Harvest keyword data |
-| SP - Manual (broad) | 10-15 core keywords | 30% | Expand traffic |
-| SP - Manual (exact) | 3-5 proven converting terms | 20% | Precision conversion |
-| SB - Brand ads | Brand + category terms | 10% | Brand awareness |
+|广告类型 |战略|预算份额|目标|
+|--------|----------|-------------|-----|
+| SP - 汽车广告活动|启用所有匹配类型 | 40% |收获关键词数据|
+| SP - 手册（广泛）| 10-15个核心关键词 | 30% |扩大流量|
+| SP - 手册（精确）| 3-5 个经过验证的转换术语 | 20% |精度转换|
+| SB - 品牌广告|品牌+品类术语| 10% |品牌知名度|
 
-### Growth Phase (Days 30-90)
+### 生长期（第 30-90 天）
 
-- Migrate high-performing auto terms to manual campaigns
-- Negate non-converting keywords and ASINs
-- Add SD (Sponsored Display) competitor targeting
-- Control ACOS target to under 25%
+- 将高性能自动条款迁移到手动营销活动
+- 否定非转化关键字和 ASIN
+- 添加 SD（展示型推广）竞争对手定位
+- 将ACOS目标控制在25%以下
 
-### Mature Phase (90+ Days)
+### 成熟阶段（90+ 天）
 
-- Shift to exact match as primary driver; control ad spend
-- Brand defense campaigns (brand terms + competitor terms)
-- Keep TACOS (Total Advertising Cost of Sales) under 10%
-- Profit-oriented approach; gradually reduce ad dependency
+- 转向完全匹配作为主要驱动程序；控制广告支出
+- 品牌防御活动（品牌术语+竞争对手术语）
+- 将 TACOS（总广告销售成本）控制在 10% 以下
+- 以利润为导向的方法；逐渐减少广告依赖
 ```

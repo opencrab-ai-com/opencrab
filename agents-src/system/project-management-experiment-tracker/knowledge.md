@@ -2,75 +2,75 @@
 
 ### 实验设计文档模板
 ```markdown
-# Experiment: [Hypothesis Name]
+# 实验：[假设名称]
 
-### Hypothesis
+### 假设
 
-**Problem Statement**: [Clear issue or opportunity]
-**Hypothesis**: [Testable prediction with measurable outcome]
-**Success Metrics**: [Primary KPI with success threshold]
-**Secondary Metrics**: [Additional measurements and guardrail metrics]
+**问题陈述**：[明确的问题或机会]
+**假设**：[可测试的预测和可测量的结果]
+**成功指标**：[具有成功阈值的主要 KPI]
+**次要指标**：[附加测量和护栏指标]
 
-### Experimental Design
+### 实验设计
 
-**Type**: [A/B test, Multi-variate, Feature flag rollout]
-**Population**: [Target user segment and criteria]
-**Sample Size**: [Required users per variant for 80% power]
-**Duration**: [Minimum runtime for statistical significance]
-**Variants**: 
-- Control: [Current experience description]
-- Variant A: [Treatment description and rationale]
+**类型**：[A/B 测试、多变量、功能标志推出]
+**人群**：[目标用户细分和标准]
+**样本大小**：[80% 功率的每个变体所需的用户]
+**持续时间**：[统计显着性的最短运行时间]
+**变体**： 
+- 控制：[当前经验描述]
+- 变体 A：[治疗描述和理由]
 
-### Risk Assessment
+### 风险评估
 
-**Potential Risks**: [Negative impact scenarios]
-**Mitigation**: [Safety monitoring and rollback procedures]
-**Success/Failure Criteria**: [Go/No-go decision thresholds]
+**潜在风险**：[负面影响场景]
+**缓解**：[安全监控和回滚程序]
+**成功/失败标准**：[通过/不通过决策阈值]
 
-### Implementation Plan
+### 实施计划
 
-**Technical Requirements**: [Development and instrumentation needs]
-**Launch Plan**: [Soft launch strategy and full rollout timeline]
-**Monitoring**: [Real-time tracking and alert systems]
+**技术要求**：[开发和仪器需求]
+**启动计划**：[软启动策略和完整推出时间表]
+**监控**：[实时跟踪和警报系统]
 ```
 
 ### 你的交付模板
 
 ```markdown
-# Experiment Results: [Experiment Name]
+# 实验结果：[实验名称]
 
-### Executive Summary
+### 执行摘要
 
-**Decision**: [Go/No-Go with clear rationale]
-**Primary Metric Impact**: [% change with confidence interval]
-**Statistical Significance**: [P-value and confidence level]
-**Business Impact**: [Revenue/conversion/engagement effect]
+**决定**：[通过/不通过，并有明确的理由]
+**主要指标影响**：[随置信区间变化的百分比]
+**统计显着性**：[P 值和置信水平]
+**业务影响**：[收入/转化/参与效果]
 
-### Detailed Analysis
+###详细分析
 
-**Sample Size**: [Users per variant with data quality notes]
-**Test Duration**: [Runtime with any anomalies noted]
-**Statistical Results**: [Detailed test results with methodology]
-**Segment Analysis**: [Performance across user segments]
+**样本大小**：[每个变体的用户以及数据质量说明]
+**测试持续时间**：[注意到任何异常的运行时间]
+**统计结果**：[详细的测试结果与方法]
+**细分分析**：[跨用户细分的表现]
 
-### Key Insights
+### 关键见解
 
-**Primary Findings**: [Main experimental learnings]
-**Unexpected Results**: [Surprising outcomes or behaviors]
-**User Experience Impact**: [Qualitative insights and feedback]
-**Technical Performance**: [System performance during test]
+**主要发现**：[主要实验结果]
+**意外结果**：[令人惊讶的结果或行为]
+**用户体验影响**：[定性见解和反馈]
+**技术性能**：[测试时的系统性能]
 
-### Recommendations
+### 建议
 
-**Implementation Plan**: [If successful - rollout strategy]
-**Follow-up Experiments**: [Next iteration opportunities]
-**Organizational Learnings**: [Broader insights for future experiments]
+**实施计划**：[如果成功 - 推出策略]
+**后续实验**：[下一次迭代机会]
+**组织学习**：[对未来实验的更广泛见解]
 
 ---
-**Experiment Tracker**: [Your name]
-**Analysis Date**: [Date]
-**Statistical Confidence**: 95% with proper power analysis
-**Decision Impact**: Data-driven with clear business rationale
+**实验跟踪器**：[您的名字]
+**分析日期**：[日期]
+**统计置信度**：正确功效分析后为 95%
+**决策影响**：数据驱动，具有清晰的业务原理
 ```
 
 ### 学习与记忆

@@ -4,16 +4,16 @@
 ```
 文化系统：[社团名称]
 ================================
-Analytical Framework: [Structural / Functionalist / Symbolic / Practice Theory]
+分析框架：[结构主义/功能主义/象征主义/实践理论]
 
 生存与经济：
-- Mode of production: [Foraging / Pastoral / Agricultural / Industrial / Mixed]
+- 生产方式：[牧业/牧业/农业/工业/混合]
 - 交换系统：[互惠/再分配/市场——根据Polanyi]
 - 关键资源以及谁控制它们
 
 社会组织：
-- Kinship system: [Bilateral / Patrilineal / Matrilineal / Double descent]
-- Residence pattern: [Patrilocal / Matrilocal / Neolocal / Avunculocal]
+- 亲属制度：[双边/父系/母系/双系]
+- 居住模式：[父系 / 母系 / 新系 / 外系]
 - 血统群体职能：[财产、政治效忠、仪式义务]
 - 政治组织：[乐队/部落/酋长国/国家——每个军种/弗里德]
 

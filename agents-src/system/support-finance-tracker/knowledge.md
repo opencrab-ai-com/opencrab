@@ -224,86 +224,86 @@ class InvestmentAnalyzer:
 ### 您的财务报告模板
 
 ```markdown
-# [Period] Financial Performance Report
+# [期间] 财务业绩报告
 
-### Executive Summary
+### 执行摘要
 
-### Key Financial Metrics
-**Revenue**: $[Amount] ([+/-]% vs. budget, [+/-]% vs. prior period)
-**Operating Expenses**: $[Amount] ([+/-]% vs. budget)
-**Net Income**: $[Amount] (margin: [%], vs. budget: [+/-]%)
-**Cash Position**: $[Amount] ([+/-]% change, [days] operating expense coverage)
+### 关键财务指标
+**收入**：[金额] 美元（[+/-]% 与预算相比，[+/-]% 与前期相比）
+**运营费用**：[金额] 美元（[+/-]% 与预算）
+**净收入**：$[金额]（利润：[%]，与预算：[+/-]%）
+**现金头寸**：[金额] 美元（[+/-]% 变化，[天] 运营费用覆盖范围）
 
-### Critical Financial Indicators
-**Budget Variance**: [Major variances with explanations]
-**Cash Flow Status**: [Operating, investing, financing cash flows]
-**Key Ratios**: [Liquidity, profitability, efficiency ratios]
-**Risk Factors**: [Financial risks requiring attention]
+### 关键财务指标
+**预算差异**：[主要差异及解释]
+**现金流状况**：[经营、投资、融资现金流量]
+**关键比率**：[流动性、盈利能力、效率比率]
+**风险因素**：[需要关注的财务风险]
 
-### Action Items Required
-1. **Immediate**: [Action with financial impact and timeline]
-2. **Short-term**: [30-day initiatives with cost-benefit analysis]
-3. **Strategic**: [Long-term financial planning recommendations]
+### 所需的行动项目
+1. **立即**：[具有财务影响和时间表的行动]
+2. **短期**：[30 天的成本效益分析举措]
+3. **战略**：[长期财务规划建议]
 
-### Detailed Financial Analysis
+### 详细的财务分析
 
-### Revenue Performance
-**Revenue Streams**: [Breakdown by product/service with growth analysis]
-**Customer Analysis**: [Revenue concentration and customer lifetime value]
-**Market Performance**: [Market share and competitive position impact]
-**Seasonality**: [Seasonal patterns and forecasting adjustments]
+### 收入表现
+**收入来源**：[按产品/服务细分并进行增长分析]
+**客户分析**：[收入集中度与客户终身价值]
+**市场表现**：[市场份额和竞争地位影响]
+**季节性**：[季节性模式和预测调整]
 
-### Cost Structure Analysis
-**Cost Categories**: [Fixed vs. variable costs with optimization opportunities]
-**Department Performance**: [Cost center analysis with efficiency metrics]
-**Vendor Management**: [Major vendor costs and negotiation opportunities]
-**Cost Trends**: [Cost trajectory and inflation impact analysis]
+### 成本结构分析
+**成本类别**：[具有优化机会的固定成本与可变成本]
+**部门绩效**：[成本中心分析与效率指标]
+**供应商管理**：[主要供应商成本和谈判机会]
+**成本趋势**：[成本轨迹和通胀影响分析]
 
-### Cash Flow Management
-**Operating Cash Flow**: $[Amount] (quality score: [rating])
-**Working Capital**: [Days sales outstanding, inventory turns, payment terms]
-**Capital Expenditures**: [Investment priorities and ROI analysis]
-**Financing Activities**: [Debt service, equity changes, dividend policy]
+### 现金流管理
+**运营现金流**：[金额] 美元（质量评分：[评级]）
+**营运资金**：[应收账款周转天数、库存周转率、付款条件]
+**资本支出**：[投资重点和投资回报率分析]
+**融资活动**：[偿债、股权变动、股利政策]
 
-### Budget vs. Actual Analysis
+### 预算与实际分析
 
-### Variance Analysis
-**Favorable Variances**: [Positive variances with explanations]
-**Unfavorable Variances**: [Negative variances with corrective actions]
-**Forecast Adjustments**: [Updated projections based on performance]
-**Budget Reallocation**: [Recommended budget modifications]
+### 方差分析
+**有利差异**：[正差异及解释]
+**不利差异**：[纠正措施的负差异]
+**预测调整**：[根据表现更新预测]
+**预算重新分配**：[建议的预算修改]
 
-### Department Performance
-**High Performers**: [Departments exceeding budget targets]
-**Attention Required**: [Departments with significant variances]
-**Resource Optimization**: [Reallocation recommendations]
-**Efficiency Improvements**: [Process optimization opportunities]
+### 部门绩效
+**高绩效者**：[超出预算目标的部门]
+**需要注意**：[存在重大差异的部门]
+**资源优化**：[重新分配建议]
+**效率提升**：[流程优化机会]
 
-### Financial Recommendations
+### 财务建议
 
-### Immediate Actions (30 days)
-**Cash Flow**: [Actions to optimize cash position]
-**Cost Reduction**: [Specific cost-cutting opportunities with savings projections]
-**Revenue Enhancement**: [Revenue optimization strategies with implementation timelines]
+### 立即采取行动（30 天）
+**现金流**：[优化现金状况的行动]
+**成本降低**：[具体的成本削减机会以及节省预测]
+**收入增加**：[收入优化策略及实施时间表]
 
-### Strategic Initiatives (90+ days)
-**Investment Priorities**: [Capital allocation recommendations with ROI projections]
-**Financing Strategy**: [Optimal capital structure and funding recommendations]
-**Risk Management**: [Financial risk mitigation strategies]
-**Performance Improvement**: [Long-term efficiency and profitability enhancement]
+### 战略举措（90 多天）
+**投资优先事项**：[资本分配建议和投资回报率预测]
+**融资策略**：[最佳资本结构及融资建议]
+**风险管理**：[金融风险缓解策略]
+**绩效提升**：[长期效率和盈利能力提升]
 
-### Financial Controls
-**Process Improvements**: [Workflow optimization and automation opportunities]
-**Compliance Updates**: [Regulatory changes and compliance requirements]
-**Audit Preparation**: [Documentation and control improvements]
-**Reporting Enhancement**: [Dashboard and reporting system improvements]
+### 财务控制
+**流程改进**：[工作流程优化和自动化机会]
+**合规性更新**：[监管变更和合规性要求]
+**审核准备**：[文档和控制改进]
+**报告增强**：[仪表板和报告系统改进]
 
 ---
-**Finance Tracker**: [Your name]
-**Report Date**: [Date]
-**Review Period**: [Period covered]
-**Next Review**: [Scheduled review date]
-**Approval Status**: [Management approval workflow]
+**财务追踪**：[您的名字]
+**报告日期**：[日期]
+**审核期**：[涵盖期间]
+**下一次审核**：[预定审核日期]
+**审批状态**：[管理审批工作流程]
 ```
 
 ### 学习与记忆

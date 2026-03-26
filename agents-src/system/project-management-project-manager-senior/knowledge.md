@@ -21,56 +21,56 @@
 ### 任务列表格式模板
 
 ```markdown
-# [Project Name] Development Tasks
+# [项目名称] 开发任务
 
-### Specification Summary
+### 规格摘要
 
-**Original Requirements**: [Quote key requirements from spec]
-**Technical Stack**: [Laravel, Livewire, FluxUI, etc.]
-**Target Timeline**: [From specification]
+**原始要求**：[引用规范中的关键要求]
+**技术栈**：[Laravel、Livewire、FluxUI 等]
+**目标时间表**：[来自规范]
 
-### Development Tasks
+### 开发任务
 
-### [ ] Task 1: Basic Page Structure
-**Description**: Create main page layout with header, content sections, footer
-**Acceptance Criteria**: 
-- Page loads without errors
-- All sections from spec are present
-- Basic responsive layout works
+### [ ] 任务 1：基本页面结构
+**描述**：创建带有页眉、内容部分、页脚的主页布局
+**验收标准**： 
+- 页面加载没有错误
+- 规范中的所有部分都存在
+- 基本的响应式布局工作
 
-**Files to Create/Edit**:
-- resources/views/home.blade.php
-- Basic CSS structure
+**要创建/编辑的文件**：
+- 资源/视图/home.blade.php
+- 基本CSS结构
 
-**Reference**: Section X of specification
+**参考**：规范第 X 节
 
-### [ ] Task 2: Navigation Implementation  
-**Description**: Implement working navigation with smooth scroll
-**Acceptance Criteria**:
-- Navigation links scroll to correct sections
-- Mobile menu opens/closes
-- Active states show current section
+### [ ] 任务 2：导航实施  
+**描述**：实现平滑滚动的工作导航
+**验收标准**：
+- 导航链接滚动到正确的部分
+- 移动菜单打开/关闭
+- 活动状态显示当前部分
 
-**Components**: flux:navbar, Alpine.js interactions
-**Reference**: Navigation requirements in spec
+**组件**：flux:navbar、Alpine.js 交互
+**参考**：规范中的导航要求
 
-[Continue for all major features...]
+[继续所有主要功能...]
 
-### Quality Requirements
+### 质量要求
 
-- [ ] All FluxUI components use supported props only
-- [ ] No background processes in any commands - NEVER append `&`
-- [ ] No server startup commands - assume development server running
-- [ ] Mobile responsive design required
-- [ ] Form functionality must work (if forms in spec)
-- [ ] Images from approved sources (Unsplash, https://picsum.photos/) - NO Pexels (403 errors)
-- [ ] Include Playwright screenshot testing: `./qa-playwright-capture.sh http://localhost:8000 public/qa-screenshots`
+- [ ] 所有 FluxUI 组件仅使用支持的 props
+- [ ] 任何命令中都没有后台进程 - 切勿附加 `&`
+- [ ] 无服务器启动命令 - 假设开发服务器正在运行
+- [ ] 需要移动响应式设计
+- [ ] 表单功能必须有效（如果表单符合规范）
+- [ ] 图片来自经批准的来源（Unsplash、https://picsum.photos/） - 无 Pexels（403 错误）
+- [ ] 包括 Playwright 屏幕截图测试：`./qa-playwright-capture.sh http://localhost:8000 public/qa-screenshots`
 
-### Technical Notes
+### 技术说明
 
-**Development Stack**: [Exact requirements from spec]
-**Special Instructions**: [Client-specific requests]
-**Timeline Expectations**: [Realistic based on scope]
+**开发堆栈**：[规范的确切要求]
+**特别说明**：[客户特定要求]
+**时间表期望**：[基于范围的现实]
 ```
 
 ### 学习与进步

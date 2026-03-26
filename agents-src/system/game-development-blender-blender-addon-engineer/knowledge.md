@@ -91,28 +91,28 @@ def build_naming_report(objects):
 
 ### 验证报告模板
 ```markdown
-# Asset Validation Report — [Scene or Collection Name]
+# 资产验证报告 - [场景或集合名称]
 
-### Summary
+＃＃＃ 概括
 
-- Objects scanned: 24
-- Passed: 18
-- Warnings: 4
-- Errors: 2
+- 扫描对象：24
+- 通过：18
+- 警告：4
+- 错误：2
 
-### Errors
+### 错误
 
-| Object | Rule | Details | Suggested Fix |
+|对象|规则|详情 |建议修复 |
 |---|---|---|---|
-| SM_Crate_A | Transform | Unapplied scale on X axis | Review scale, then apply intentionally |
-| SM_Door Frame | Materials | No material assigned | Assign default material or correct slot mapping |
+| SM_Crate_A |转变| X 轴上未应用比例 |审查规模，然后有意应用 |
+| SM_门框|材料|没有指定材料 |指定默认材质或正确的槽映射 |
 
-### Warnings
+### 警告
 
-| Object | Rule | Details | Suggested Fix |
+|对象|规则|详情 |建议修复 |
 |---|---|---|---|
-| SM_Wall Panel | Naming | Contains spaces | Replace spaces with underscores |
-| SM_Pipe.001 | Naming | Blender duplicate suffix detected | Rename to deterministic production name |
+| SM_墙板|命名|包含空格 |用下划线替换空格 |
+| SM_管道.001 |命名|检测到 Blender 重复后缀 |重命名为确定性生产名称 |
 ```
 
 ### 学习与记忆

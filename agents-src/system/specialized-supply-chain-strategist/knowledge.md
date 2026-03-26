@@ -252,25 +252,24 @@ class SupplyChainDigitalization:
 ### 降低成本战略框架
 
 ```markdown
+### 成本降低策略矩阵
 
-### Cost Reduction Strategy Matrix
+### 短期节省（0-3 个月即可实现）
+- **商业谈判**：利用有竞争力的报价来降低价格，谈判改善付款条件（例如，Net 30 → Net 60）
+- **合并采购**：汇总类似的要求以利用批量折扣（通常节省 5-15%）
+- **付款期限优化**：提前付款折扣（2/10 净 30），或延长期限以改善现金流
 
-### Short-Term Savings (0-3 months to realize)
-- **Commercial negotiation**: Leverage competitive quotes for price reduction, negotiate payment term improvements (e.g., Net 30 → Net 60)
-- **Consolidated purchasing**: Aggregate similar requirements to leverage volume discounts (typically 5-15% savings)
-- **Payment term optimization**: Early payment discounts (2/10 net 30), or extended terms to improve cash flow
+### 中期节省（3-12 个月实现）
+- **VA/VE（价值分析/价值工程）**：分析产品功能与成本，在不影响功能的情况下优化设计
+- **材料替代**：寻找具有同等性能的低成本替代材料（例如，工程塑料替代金属部件）
+- **工艺优化**：与供应商共同改进制造工艺，以提高产量并降低加工成本
+- **供应商整合**：减少供应商数量，将产量集中于顶级供应商，以换取更好的定价
 
-### Mid-Term Savings (3-12 months to realize)
-- **VA/VE (Value Analysis / Value Engineering)**: Analyze product function vs. cost, optimize design without compromising functionality
-- **Material substitution**: Find lower-cost alternative materials with equivalent performance (e.g., engineering plastics replacing metal parts)
-- **Process optimization**: Jointly improve manufacturing processes with suppliers to increase yield and reduce processing costs
-- **Supplier consolidation**: Reduce supplier count, concentrate volume with top suppliers in exchange for better pricing
-
-### Long-Term Savings (12+ months to realize)
-- **Vertical integration**: Make-or-buy decisions for critical components
-- **Supply chain restructuring**: Shift production to lower-cost regions, optimize logistics networks
-- **Joint development**: Co-develop new products/processes with suppliers, sharing cost reduction benefits
-- **Digital procurement**: Reduce transaction costs and manual overhead through electronic procurement processes
+### 长期节省（12 个月以上即可实现）
+- **垂直集成**：关键组件的自制或外购决策
+- **供应链重组**：将生产转移到成本较低的地区，优化物流网络
+- **联合开发**：与供应商共同开发新产品/工艺，共享成本降低效益
+- **数字采购**：通过电子采购流程降低交易成本和人工开销
 ```
 
 ### 风险管理框架
@@ -391,42 +390,42 @@ class SupplyChainRiskManager:
 ### 供应链管理报告模板
 
 ```markdown
-# [Period] Supply Chain Management Report
+# [期间]供应链管理报告
 
-### Summary
+### 总结
 
-### Core Operating Metrics
-**Total procurement spend**: ¥[amount] (YoY: [+/-]%, Budget variance: [+/-]%)
-**Supplier count**: [count] (New: [count], Phased out: [count])
-**Incoming quality pass rate**: [%] (Target: [%], Trend: [up/down])
-**On-time delivery rate**: [%] (Target: [%], Trend: [up/down])
+### 核心运营指标
+**总采购支出**：日元[金额]（同比：[+/-]%，预算差异：[+/-]%）
+**供应商数量**：[数量]（新供应商：[数量]，已淘汰：[数量]）
+**来料质量合格率**：[%]（目标：[%]，趋势：[上/下]）
+**准时交货率**：[%]（目标：[%]，趋势：[上/下]）
 
-### Inventory Health
-**Total inventory value**: ¥[amount] (Days of inventory: [days], Target: [days])
-**Dead stock**: ¥[amount] (Share: [%], Disposition progress: [%])
-**Shortage alerts**: [count] (Production orders affected: [count])
+### 库存状况
+**库存总价值**：¥[金额]（库存天数：[天]，目标：[天]）
+**滞销库存**：¥[金额]（份额：[%]，处置进度：[%]）
+**短缺警报**：[计数]（受影响的生产订单：[计数]）
 
-### Cost Reduction Results
-**Cumulative savings**: ¥[amount] (Target completion rate: [%])
-**Cost reduction projects**: [completed/in progress/planned]
-**Primary savings drivers**: [Commercial negotiation / Material substitution / Process optimization / Consolidated purchasing]
+### 成本降低结果
+**累计节省**：日元[金额]（目标完成率：[%]）
+**降低成本项目**：[已完成/正在进行/计划]
+**主要节省驱动因素**：[商业谈判/材料替代/流程优化/合并采购]
 
-### Risk Alerts
-**High-risk suppliers**: [count] (with detailed list and response plans)
-**Raw material price trends**: [Key material price movements and hedging strategies]
-**Supply disruption events**: [count] (Impact assessment and resolution status)
+### 风险提示
+**高风险供应商**：[数量]（附详细清单和应对计划）
+**原材料价格走势**：[关键原材料价格走势及对冲策略]
+**供应中断事件**：[计数]（影响评估和解决状态）
 
-### Action Items
+### 行动项目
 
-1. **Urgent**: [Action, impact, and timeline]
-2. **Short-term**: [Improvement initiatives within 30 days]
-3. **Strategic**: [Long-term supply chain optimization directions]
+1. **紧急**：[行动、影响和时间表]
+2. **短期**：[30天内的改进举措]
+3. **战略**：[长期供应链优化方向]
 
 ---
-**Supply Chain Strategist**: [Name]
-**Report date**: [Date]
-**Coverage period**: [Period]
-**Next review**: [Planned review date]
+**供应链策略师**：[姓名]
+**报告日期**：[日期]
+**承保期限**：[期限]
+**下一次审核**：[计划审核日期]
 ```
 
 ### 学习与积累

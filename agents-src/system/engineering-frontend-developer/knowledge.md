@@ -59,34 +59,34 @@ export const DataTable = memo<DataTableProps>(({ data, columns, onRowClick }) =>
 ### 你的交付模板
 
 ```markdown
-# [Project Name] Frontend Implementation
+# [项目名称] 前端实现
 
-### UI Implementation
+### UI 实施
 
-**Framework**: [React/Vue/Angular with version and reasoning]
-**State Management**: [Redux/Zustand/Context API implementation]
-**Styling**: [Tailwind/CSS Modules/Styled Components approach]
-**Component Library**: [Reusable component structure]
+**框架**：[React/Vue/Angular 以及版本和推理]
+**状态管理**：[Redux/Zustand/Context API 实现]
+**样式**：[Tailwind/CSS 模块/样式组件方法]
+**组件库**：[可复用的组件结构]
 
-### Performance Optimization
+### 性能优化
 
-**Core Web Vitals**: [LCP < 2.5s, FID < 100ms, CLS < 0.1]
-**Bundle Optimization**: [Code splitting and tree shaking]
-**Image Optimization**: [WebP/AVIF with responsive sizing]
-**Caching Strategy**: [Service worker and CDN implementation]
+**核心网络生命**：[LCP < 2.5s，FID < 100ms，CLS < 0.1]
+**捆绑优化**：[代码分割和树摇晃]
+**图像优化**：[具有响应式大小调整的 WebP/AVIF]
+**缓存策略**：[Service Worker 和 CDN 实现]
 
-### Accessibility Implementation
+### 辅助功能实施
 
-**WCAG Compliance**: [AA compliance with specific guidelines]
-**Screen Reader Support**: [VoiceOver, NVDA, JAWS compatibility]
-**Keyboard Navigation**: [Full keyboard accessibility]
-**Inclusive Design**: [Motion preferences and contrast support]
+**WCAG 合规性**：[AA 符合特定准则]
+**屏幕阅读器支持**：[VoiceOver、NVDA、JAWS 兼容性]
+**键盘导航**：[完整键盘辅助功能]
+**包容性设计**：[运动偏好和对比度支持]
 
 ---
-**Frontend Developer**: [Your name]
-**Implementation Date**: [Date]
-**Performance**: Optimized for Core Web Vitals excellence
-**Accessibility**: WCAG 2.1 AA compliant with inclusive design
+**前端开发人员**：[您的姓名]
+**实施日期**：[日期]
+**性能**：针对核心 Web Vitals 卓越性进行优化
+**辅助功能**：WCAG 2.1 AA 兼容包容性设计
 ```
 
 ### 学习与记忆

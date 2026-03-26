@@ -2,64 +2,62 @@
 
 ### 核心游戏循环文档
 ```markdown
-# Core Loop: [Game Title]
+# 核心循环：[游戏标题]
 
-### Moment-to-Moment (0–30 seconds)
+### 时刻到时刻（0–30 秒）
 
-- **Action**: Player performs [X]
-- **Feedback**: Immediate [visual/audio/haptic] response
-- **Reward**: [Resource/progression/intrinsic satisfaction]
+- **行动**：玩家执行[X]
+- **反馈**：立即[视觉/音频/触觉]响应
+- **奖励**：[资源/进度/内在满足感]
 
-### Session Loop (5–30 minutes)
+### 会话循环（5–30 分钟）
 
-- **Goal**: Complete [objective] to unlock [reward]
-- **Tension**: [Risk or resource pressure]
-- **Resolution**: [Win/fail state and consequence]
+- **目标**：完成[目标]以解锁[奖励]
+- **紧张**：[风险或资源压力]
+- **解决方案**：[获胜/失败状态和后果]
 
-### Long-Term Loop (hours–weeks)
+### 长期循环（小时-周）
 
-- **Progression**: [Unlock tree / meta-progression]
-- **Retention Hook**: [Daily reward / seasonal content / social loop]
+- **进程**：[解锁树/元进程]
+- **保留钩**：[每日奖励/季节性内容/社交循环]
 ```
 
 ### 经济平衡电子表格模板
 ```
-Variable          | Base Value | Min | Max | Tuning Notes
+变量|基础价值|最小|最大|调音注意事项
 ------------------|------------|-----|-----|-------------------
-Player HP         | 100        | 50  | 200 | Scales with level
-Enemy Damage      | 15         | 5   | 40  | [PLACEHOLDER] - test at level 5
-Resource Drop %   | 0.25       | 0.1 | 0.6 | Adjust per difficulty
-Ability Cooldown  | 8s         | 3s  | 15s | Feel test: does 8s feel punishing?
+玩家生命值 | 100 | 100 50 | 50 200 | 200随水平变化而变化
+敌人伤害 | 15 | 15 5 | 40 | 40 [PLACEHOLDER] - 5 级测试
+资源下降% | 0.25 | 0.25 0.1 | 0.1 0.6 | 0.6根据难度调整
+技能冷却 | 8 秒 | 3秒| 15 秒 |感觉测试：8s 感觉惩罚吗？
 ```
 
 ### 玩家入职流程
 ```markdown
+### 入职清单
 
-### Onboarding Checklist
-
-- [ ] Core verb introduced within 30 seconds of first control
-- [ ] First success guaranteed — no failure possible in tutorial beat 1
-- [ ] Each new mechanic introduced in a safe, low-stakes context
-- [ ] Player discovers at least one mechanic through exploration (not text)
-- [ ] First session ends on a hook — cliff-hanger, unlock, or "one more" trigger
+- [ ] 首次控制后 30 秒内引入核心动词
+- [ ] 保证首次成功 — 教程第 1 节中不可能失败
+- [ ] 每个新机制都是在安全、低风险的环境中引入的
+- [ ] 玩家通过探索发现至少一种机制（非文本）
+- [ ] 第一个会话以悬而未决的方式结束——悬而未决、解锁或“再来一次”触发
 ```
 
 ### 机械规格
 ```markdown
+### 机械师：[姓名]
 
-### Mechanic: [Name]
-
-**Purpose**: Why this mechanic exists in the game
-**Player Fantasy**: What power/emotion this delivers
-**Input**: [Button / trigger / timer / event]
-**Output**: [State change / resource change / world change]
-**Success Condition**: [What "working correctly" looks like]
-**Failure State**: [What happens when it goes wrong]
-**Edge Cases**:
-  - What if [X] happens simultaneously?
-  - What if the player has [max/min] resource?
-**Tuning Levers**: [List of variables that control feel/balance]
-**Dependencies**: [Other systems this touches]
+**目的**：为什么游戏中存在这个机制
+**玩家幻想**：这会带来什么力量/情感
+**输入**：[按钮/触发器/计时器/事件]
+**输出**：[状态变化/资源变化/世界变化]
+**成功条件**：[“正确工作”是什么样的]
+**失败状态**：[出错时会发生什么]
+**边缘情况**：
+  - 如果[X]同时发生怎么办？
+  - 如果玩家拥有[最大/最小]资源怎么办？
+**调节杆**：[控制感觉/平衡的变量列表]
+**依赖关系**：[涉及的其他系统]
 ```
 
 ### 高级能力

@@ -2,29 +2,28 @@
 
 ### 世界分区设置参考
 ```markdown
+### 世界分区配置 — [项目名称]
 
-### World Partition Configuration — [Project Name]
+**世界大小**：[X 公里 × Y 公里]
+**目标平台**： [ ] PC [ ] 主机 [ ] 两者
 
-**World Size**: [X km × Y km]
-**Target Platform**: [ ] PC  [ ] Console  [ ] Both
+### 网格配置
+|网格名称 |电池尺寸 |负载范围|内容类型 |
+|-------------------|------------------------|------------------------|------------------------|
+|主网格| 128m | 512m |地形、道具|
+|演员网格 | 64m | 256m | NPC、游戏演员|
+|视觉特效网格 | 32m | 128m |粒子发射器|
 
-### Grid Configuration
-| Grid Name         | Cell Size | Loading Range | Content Type        |
-|-------------------|-----------|---------------|---------------------|
-| MainGrid          | 128m      | 512m          | Terrain, props      |
-| ActorGrid         | 64m       | 256m          | NPCs, gameplay actors|
-| VFXGrid           | 32m       | 128m          | Particle emitters   |
+### 数据层
+|图层名称 |类型 |内容 |
+|--------------------------------|----------------|------------------------------------|
+|始终加载 |始终加载| Sky、音频管理器、游戏系统|
+|高细节 |运行时|当设置 = 高 | 时加载
+|玩家营地数据 |运行时 |特定于任务的环境变化 |
 
-### Data Layers
-| Layer Name        | Type           | Contents                           |
-|-------------------|----------------|------------------------------------|
-| AlwaysLoaded      | Always Loaded  | Sky, audio manager, game systems   |
-| HighDetail        | Runtime        | Loaded when setting = High         |
-| PlayerCampData    | Runtime        | Quest-specific environment changes |
-
-### Streaming Source
-- Player Pawn: primary streaming source, 512m activation range
-- Cinematic Camera: secondary source for cutscene area pre-loading
+### 流媒体源
+- Player Pawn：主要流媒体源，512m激活范围
+- 电影摄影机：过场动画区域预加载的辅助来源
 ```
 
 ### 景观材料建筑
@@ -58,26 +57,25 @@ Runtime Virtual Texture Output Volumes:
 
 ### HLOD层配置
 ```markdown
+### HLOD 层：[级别名称] — HLOD0
 
-### HLOD Layer: [Level Name] — HLOD0
+**方法**：网格合并（最快构建，> 500m 的质量可接受）
+**LOD 屏幕尺寸阈值**：0.01
+**绘制距离**：50,000 cm (500m)
+**材质烘焙**：启用 — 1024×1024 烘焙纹理
 
-**Method**: Mesh Merge (fastest build, acceptable quality for > 500m)
-**LOD Screen Size Threshold**: 0.01
-**Draw Distance**: 50,000 cm (500m)
-**Material Baking**: Enabled — 1024×1024 baked texture
+**包含的演员类型**：
+- 区域中的所有 StaticMeshActor
+- 排除：启用 Nanite 的网格（Nanite 处理自己的 LOD）
+- 排除：骨架网格物体（HLOD 不支持骨架）
 
-**Included Actor Types**:
-- All StaticMeshActor in zone
-- Exclusion: Nanite-enabled meshes (Nanite handles its own LOD)
-- Exclusion: Skeletal meshes (HLOD does not support skeletal)
+**构建设置**：
+- 合并距离：50cm（焊接附近的几何体）
+- 硬角阈值：80°（保留锋利边缘）
+- 目标三角形数量：每个 HLOD 网格 5000 个
 
-**Build Settings**:
-- Merge distance: 50cm (welds nearby geometry)
-- Hard angle threshold: 80° (preserves sharp edges)
-- Target triangle count: 5000 per HLOD mesh
-
-**Rebuild Trigger**: Any geometry addition or removal in HLOD coverage area
-**Visual Validation**: Required at 600m, 1000m, and 2000m camera distances before milestone
+**重建触发器**：HLOD 覆盖区域中的任何几何体添加或删除
+**视觉验证**：在里程碑之前需要在 600m、1000m 和 2000m 相机距离处进行
 ```
 
 ### PCG 森林人口图
@@ -124,34 +122,33 @@ Exposed Graph Parameters:
 
 ### 开放世界性能分析清单
 ```markdown
+### 开放世界性能回顾 — [构建版本]
 
-### Open-World Performance Review — [Build Version]
+**平台**： ___ **目标帧速率**： ___fps
 
-**Platform**: ___  **Target Frame Rate**: ___fps
+流媒体
+- [ ] 以 8m/s 运行速度正常运行时，无卡顿 > 16ms
+- [ ] 流媒体源范围已验证：玩家无法以冲刺速度超越加载
+- [ ] 单元格边界交叉测试：过渡时游戏演员不会消失
 
-Streaming
-- [ ] No hitches > 16ms during normal traversal at 8m/s run speed
-- [ ] Streaming source range validated: player can't out-run loading at sprint speed
-- [ ] Cell boundary crossing tested: no gameplay actor disappearance at transitions
+渲染
+- [ ] 最坏情况密度区域的 GPU 帧时间：___ms（预算：___ms）
+- [ ] 峰值区域的纳米实例数：___（限制：16M）
+- [ ] 峰值区域的绘制调用计数：___（预算因平台而异）
+- [ ] HLOD 从最大绘制距离进行视觉验证
 
-Rendering
-- [ ] GPU frame time at worst-case density area: ___ms (budget: ___ms)
-- [ ] Nanite instance count at peak area: ___ (limit: 16M)
-- [ ] Draw call count at peak area: ___ (budget varies by platform)
-- [ ] HLOD visually validated from max draw distance
+风景
+- [ ] 为电影摄影机实现 RVT 缓存预热
+- [ ] 景观 LOD 过渡可见？ [ ] 可以接受 [ ] 需要调整
+- [ ] 任何单个区域的层数：___（限制：4）
 
-Landscape
-- [ ] RVT cache warm-up implemented for cinematic cameras
-- [ ] Landscape LOD transitions visible? [ ] Acceptable  [ ] Needs adjustment
-- [ ] Layer count in any single region: ___ (limit: 4)
+计算机图形学
+- [ ] 预烘焙所有面积 > 1km² 的区域：是/否
+- [ ] 流加载/卸载成本：___ms（预算：< 2ms）
 
-PCG
-- [ ] Pre-baked for all areas > 1km²: Y/N
-- [ ] Streaming load/unload cost: ___ms (budget: < 2ms)
-
-Memory
-- [ ] Streaming cell memory budget: ___MB per active cell
-- [ ] Total texture memory at peak loaded area: ___MB
+内存
+- [ ] 流单元内存预算：每个活动单元 ___MB
+- [ ] 峰值加载区域的总纹理内存： ___MB
 ```
 
 ### 高级能力

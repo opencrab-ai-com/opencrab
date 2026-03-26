@@ -2,80 +2,80 @@
 
 ### 标准操作程序模板
 ```markdown
-# SOP: [Process Name]
+# SOP：[进程名称]
 
-### Process Overview
+### 流程概述
 
-**Purpose**: [Why this process exists and its business value]
-**Scope**: [When and where this process applies]
-**Responsible Parties**: [Roles and responsibilities for process execution]
-**Frequency**: [How often this process is performed]
+**目的**：[这个流程为何存在及其商业价值]
+**范围**：[此流程适用的时间和地点]
+**责任方**：[流程执行的角色和责任]
+**频率**：[执行此过程的频率]
 
-### Prerequisites
+### 先决条件
 
-**Required Tools**: [Software, equipment, or materials needed]
-**Required Permissions**: [Access levels or approvals needed]
-**Dependencies**: [Other processes or conditions that must be completed first]
+**所需工具**：[所需的软件、设备或材料]
+**所需权限**：[需要访问级别或批准]
+**依赖关系**：[必须首先完成的其他流程或条件]
 
-### Step-by-Step Procedure
+### 分步程序
 
-1. **[Step Name]**: [Detailed action description]
-   - **Input**: [What is needed to start this step]
-   - **Action**: [Specific actions to perform]
-   - **Output**: [Expected result or deliverable]
-   - **Quality Check**: [How to verify step completion]
+1. **[步骤名称]**：[详细动作描述]
+   - **输入**：[开始此步骤需要什么]
+   - **操作**：[要执行的具体操作]
+   - **输出**：[预期结果或可交付成果]
+   - **质量检查**：[如何验证步骤完成情况]
 
-### Quality Control
+### 质量控制
 
-**Success Criteria**: [How to know the process completed successfully]
-**Common Issues**: [Typical problems and their solutions]
-**Escalation**: [When and how to escalate problems]
+**成功标准**：[如何知道流程成功完成]
+**常见问题**：[典型问题及其解决方法]
+**升级**：[何时以及如何升级问题]
 
-### Documentation and Reporting
+### 文档和报告
 
-**Required Records**: [What must be documented]
-**Reporting**: [Any status updates or metrics to track]
-**Review Cycle**: [When to review and update this process]
+**所需记录**：[必须记录的内容]
+**报告**：[任何要跟踪的状态更新或指标]
+**审查周期**：[何时审查和更新此流程]
 ```
 
 ### 你的交付模板
 
 ```markdown
-# Operational Efficiency Report: [Period]
+# 运营效率报告：[期间]
 
-### Executive Summary
+### 执行摘要
 
-**Overall Efficiency**: [Percentage with comparison to previous period]
-**Cost Optimization**: [Savings achieved through process improvements]
-**Team Satisfaction**: [Support service rating and feedback summary]
-**System Uptime**: [Availability metrics for critical operational systems]
+**总体效率**：[与上期相比的百分比]
+**成本优化**：[通过流程改进实现节省]
+**团队满意度**：[支持服务评分及反馈汇总]
+**系统正常运行时间**：[关键操作系统的可用性指标]
 
-### Performance Metrics
+### 性能指标
 
-**Process Efficiency**: [Key operational process performance indicators]
-**Resource Utilization**: [Equipment, space, and team capacity metrics]
-**Quality Metrics**: [Error rates, rework, and compliance measures]
-**Response Times**: [Support request and issue resolution timeframes]
+**流程效率**：[关键运营流程绩效指标]
+**资源利用率**：[设备、空间和团队能力指标]
+**质量指标**：[错误率、返工和合规措施]
+**响应时间**：[支持请求和问题解决时间范围]
 
-### Process Improvements Implemented
+### 实施流程改进
 
-**Automation Initiatives**: [New automated processes and their impact]
-**Workflow Optimizations**: [Process improvements and efficiency gains]
-**System Upgrades**: [Technology improvements and performance benefits]
-**Training Programs**: [Team skill development and process adoption]
+**自动化举措**：[新的自动化流程及其影响]
+**工作流程优化**：[流程改进和效率提升]
+**系统升级**：[技术改进和性能优势]
+**培训计划**：[团队技能发展和流程采用]
 
-### Continuous Improvement Plan
+### 持续改进计划
 
-**Identified Opportunities**: [Areas for further optimization]
-**Planned Initiatives**: [Upcoming process improvements and timeline]
-**Resource Requirements**: [Investment needed for optimization projects]
-**Expected Benefits**: [Quantified impact of planned improvements]
+**已确定的机会**：[需要进一步优化的领域]
+**计划的举措**：[即将进行的流程改进和时间表]
+**资源需求**：[优化项目所需投资]
+**预期收益**：[计划改进的量化影响]
 
 ---
-**Studio Operations**: [Your name]
-**Report Date**: [Date]
-**Operational Excellence**: 95%+ efficiency with proactive maintenance
-**Team Support**: Comprehensive administrative and technical assistance
+**工作室运营**：[您的名字]
+**报告日期**：[日期]
+**卓越运营**：通过主动维护实现 95% 以上的效率
+**团队支持**：全面的行政和技术援助
 ```
 
 ### 学习与记忆

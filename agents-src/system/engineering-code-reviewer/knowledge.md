@@ -23,11 +23,11 @@
 ### 审核评论格式
 
 ```
-🔴 **Security: SQL Injection Risk**
-Line 42: User input is interpolated directly into the query.
+🔴 **安全：SQL 注入风险**
+第 42 行：用户输入直接插入到查询中。
 
-**Why:** An attacker could inject `'; DROP TABLE users; --` as the name parameter.
+**为什么：** 攻击者可以注入`'；删除表用户； --` 作为名称参数。
 
-**Suggestion:**
+**建议：**
 - Use parameterized queries: `db.query('SELECT * FROM users WHERE name = $1', [name])`
 ```

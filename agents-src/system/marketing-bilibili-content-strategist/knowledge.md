@@ -2,74 +2,74 @@
 
 ### 内容策略蓝图
 ```markdown
-# [Brand/Channel] Bilibili Content Strategy
+#[品牌/渠道]哔哩哔哩内容策略
 
-### 账号定位 (Account Positioning)
+### 账号定位 (账户定位)
 
-**Target Vertical**: [知识区/科技区/生活区/美食区/etc.]
-**Content Personality**: [Defined voice and visual style]
-**Core Value Proposition**: [Why users should follow]
-**Differentiation**: [What makes this channel unique on B站]
+**目标垂直领域**：[知识区/科技区/生活区/美食区/等]
+**内容个性**：[定义的声音和视觉风格]
+**核心价值主张**：[为什么用户应该遵循]
+**差异化**：[这个频道在B站上有何独特之处]
 
-### 内容规划 (Content Planning)
+###内容规划（内容规划）
 
-**Pillar Content** (40%): Deep-dive videos, 10-20 min, high production value
-**Trending Content** (30%): Hot topic responses, meme integration, timely commentary
-**Community Content** (20%): Q&A, fan interaction, behind-the-scenes
-**Experimental Content** (10%): New formats, collaborations, live streams
+**支柱内容** (40%)：深度视频，10-20 分钟，高制作价值
+**热门内容**（30%）：热点话题回应、表情包整合、及时评论
+**社区内容**（20%）：问答、粉丝互动、幕后花絮
+**实验内容** (10%)：新格式、合作、直播
 
-### 数据目标 (Performance Targets)
+### 数据目标（绩效目标）
 
-**播放量 (Views)**: [Target per video tier]
-**三连率 (Triple Combo Rate)**: [Coin + Favorite + Like target]
-**弹幕密度 (Danmaku Density)**: [Target per minute of video]
-**粉丝转化率 (Follow Conversion)**: [Views to follower ratio]
+** 播放量（观看次数）**：[每个视频层的目标]
+**三连率（Triple Combo Rate）**：[金币+收藏+点赞目标]
+**幕弹密度（Damaku Density）**：[视频每分钟目标]
+**粉丝转化率(Follow Conversion)**：[观看次数与关注者比例]
 ```
 
 ### 弹幕订婚设计模板
 ```markdown
-# Danmaku Interaction Design
+#弹幕交互设计
 
-### Trigger Points (弹幕触发点设计)
+### 触发点（弹幕触发点设计）
 
-| Timestamp | Content Moment           | Expected Danmaku Response    |
-|-----------|--------------------------|------------------------------|
-| 0:03      | Signature opening line   | Community catchphrase echo   |
-| 2:15      | Surprising fact reveal   | "??" and shock reactions     |
-| 5:30      | Interactive question     | Audience answers in danmaku  |
-| 8:00      | Callback to old video    | Veteran fan recognition      |
-| END       | Closing ritual           | "下次一定" / farewell phrases |
+|时间戳|内容时刻|预计弹幕反应 |
+|------------|--------------------------|------------------------------|
+| 0:03 | 0:03签名开场白|社区口号 echo |
+| 2:15 | 2:15令人惊讶的事实揭晓 | “？”和休克反应|
+| 5:30 |互动提问 |观众用弹幕回答|
+| 8:00 |回调旧视频 |老牌粉丝认可 |
+|结束 |闭幕仪式| “下次一定”/告别短语|
 
-### Danmaku Seeding Strategy
+### 弹幕播种策略
 
-- Prepare 10-15 seed danmaku for the first hour after publishing
-- Include timestamp-specific comments that guide interaction patterns
-- Plant humorous callbacks to build inside jokes over time
+- 发布后第一个小时准备10-15个种子弹幕
+- 包括指导交互模式的特定于时间戳的注释
+- 植入幽默的回调，随着时间的推移建立内部笑话
 ```
 
 ### 封面图片和标题 A/B 测试框架
 ```markdown
-# Video Packaging Optimization
+# 视频打包优化
 
-### Cover Design Checklist
+### 封面设计清单
 
-- [ ] High contrast, readable at mobile thumbnail size
-- [ ] Face or expressive character visible (30% CTR boost)
-- [ ] Text overlay: max 8 characters, bold font
-- [ ] Color palette matches channel brand identity
-- [ ] Passes the "scroll test" - stands out in a feed of 20 thumbnails
+- [ ] 高对比度，在移动缩略图大小下可读
+- [ ] 脸部或富有表现力的角色可见（点击率提升 30%）
+- [ ] 文本叠加：最多 8 个字符，粗体
+- [ ] 调色板与渠道品牌标识相匹配
+- [ ] 通过“滚动测试” - 在 20 个缩略图中脱颖而出
 
-### Title Formula Templates
+### 标题公式模板
 
-- 【Category】Curiosity Hook + Specific Detail + Emotional Anchor
-- Example: 【硬核科普】为什么中国高铁能跑350km/h？答案让我震惊
-- Example: 挑战！用100元在上海吃一整天，结果超出预期
+- [类别]好奇心钩+具体细节+情感锚
+- 例句：[硬核科普]为什么中国高铁能跑350公里/小时？答案让我震惊
+- 例子：挑战！用100元在上海吃一乐园，结果超出预期
 
-### A/B Testing Protocol
+### A/B 测试协议
 
-- Test 2 covers per video using Bilibili's built-in A/B tool
-- Measure CTR difference over first 48 hours
-- Archive winning patterns in a cover style library
+- 使用 Bilibili 的内置 A/B 工具测试每个视频 2 个封面
+- 测量前 48 小时内的点击率差异
+- 将获胜图案存档在封面样式库中
 ```
 
 ### 学习与记忆

@@ -351,105 +351,105 @@ class ContractReviewSystem:
 ### 您的合规性评估模板
 
 ```markdown
-# Regulatory Compliance Assessment Report
+# 监管合规评估报告
 
-### Executive Summary
+### 执行摘要
 
-### Compliance Status Overview
-**Overall Compliance Score**: [Score]/100 (target: 95+)
-**Critical Issues**: [Number] requiring immediate attention
-**Regulatory Frameworks**: [List of applicable regulations with status]
-**Last Audit Date**: [Date] (next scheduled: [Date])
+### 合规状态概述
+**总体合规分数**：[分数]/100（目标：95+）
+**关键问题**：[数量] 需要立即关注
+**监管框架**：[具有状态的适用法规列表]
+**上次审核日期**：[日期]（下次审核日期：[日期]）
 
-### Risk Assessment Summary
-**High Risk Issues**: [Number] with potential regulatory penalties
-**Medium Risk Issues**: [Number] requiring attention within 30 days
-**Compliance Gaps**: [Major gaps requiring policy updates or process changes]
-**Regulatory Changes**: [Recent changes requiring adaptation]
+### 风险评估摘要
+**高风险问题**：[数量] 可能受到监管处罚
+**中度风险问题**：[数量] 需要在 30 天内关注
+**合规差距**：[需要政策更新或流程变更的主要差距]
+**监管变化**：[最近需要适应的变化]
 
-### Action Items Required
-1. **Immediate (7 days)**: [Critical compliance issues with regulatory deadline pressure]
-2. **Short-term (30 days)**: [Important policy updates and process improvements]
-3. **Strategic (90+ days)**: [Long-term compliance framework enhancements]
+### 所需的行动项目
+1. **立即（7 天）**：[监管期限压力的关键合规问题]
+2. **短期（30天）**：[重要政策更新和流程改进]
+3. **战略（90+天）**：[长期合规框架增强]
 
-### Detailed Compliance Analysis
+### 详细的合规性分析
 
-### Data Protection Compliance (GDPR/CCPA)
-**Privacy Policy Status**: [Current, updated, gaps identified]
-**Data Processing Documentation**: [Complete, partial, missing elements]
-**User Rights Implementation**: [Functional, needs improvement, not implemented]
-**Breach Response Procedures**: [Tested, documented, needs updating]
-**Cross-border Transfer Safeguards**: [Adequate, needs strengthening, non-compliant]
+### 数据保护合规性 (GDPR/CCPA)
+**隐私政策状态**：[当前、更新、已发现的差距]
+**数据处理文档**：[完整、部分、缺失元素]
+**用户权限实施**：[功能正常，需要改进，未实施]
+**违规响应程序**：[已测试、记录、需要更新]
+**跨境转移保障**：[充分，需要加强，不合规]
 
-### Industry-Specific Compliance
-**HIPAA (Healthcare)**: [Applicable/Not Applicable, compliance status]
-**PCI-DSS (Payment Processing)**: [Level, compliance status, next audit]
-**SOX (Financial Reporting)**: [Applicable controls, testing status]
-**FERPA (Educational Records)**: [Applicable/Not Applicable, compliance status]
+### 特定行业合规性
+**HIPAA（医疗保健）**：[适用/不适用，合规状态]
+**PCI-DSS（支付处理）**：[级别、合规状态、下次审核]
+**SOX（财务报告）**：[适用的控制措施、测试状态]
+**FERPA（教育记录）**：[适用/不适用，合规状态]
 
-### Contract and Legal Document Review
-**Terms of Service**: [Current, needs updates, major revisions required]
-**Privacy Policies**: [Compliant, minor updates needed, major overhaul required]
-**Vendor Agreements**: [Reviewed, compliance clauses adequate, gaps identified]
-**Employment Contracts**: [Compliant, updates needed for new regulations]
+### 合同和法律文件审查
+**服务条款**：[当前、需求更新、需要重大修订]
+**隐私政策**：[合规，需要小幅更新，需要大修]
+**供应商协议**：[已审查，合规条款充足，已发现差距]
+**雇佣合同**：[合规，需要根据新法规进行更新]
 
-### Risk Mitigation Strategies
+### 风险缓解策略
 
-### Critical Risk Areas
-**Data Breach Exposure**: [Risk level, mitigation strategies, timeline]
-**Regulatory Penalties**: [Potential exposure, prevention measures, monitoring]
-**Third-party Compliance**: [Vendor risk assessment, contract improvements]
-**International Operations**: [Multi-jurisdiction compliance, local law requirements]
+### 关键风险领域
+**数据泄露风险**：[风险级别、缓解策略、时间表]
+**监管处罚**：[潜在暴露、预防措施、监控]
+**第三方合规性**：[供应商风险评估、合同改进]
+**国际运营**：[多司法管辖区合规性、当地法律要求]
 
-### Compliance Framework Improvements
-**Policy Updates**: [Required policy changes with implementation timelines]
-**Training Programs**: [Compliance education needs and effectiveness measurement]
-**Monitoring Systems**: [Automated compliance monitoring and alerting needs]
-**Documentation**: [Missing documentation and maintenance requirements]
+### 合规框架改进
+**政策更新**：[所需的政策变更及实施时间表]
+**培训计划**：[合规教育需求和有效性衡量]
+**监控系统**：[自动合规性监控和警报需求]
+**文档**：[缺少文档和维护要求]
 
-### Compliance Metrics and KPIs
+### 合规指标和 KPI
 
-### Current Performance
-**Policy Compliance Rate**: [%] (employees completing required training)
-**Incident Response Time**: [Average time] to address compliance issues
-**Audit Results**: [Pass/fail rates, findings trends, remediation success]
-**Regulatory Updates**: [Response time] to implement new requirements
+### 当前表现
+**政策遵守率**：[%]（完成所需培训的员工）
+**事件响应时间**：解决合规性问题的[平均时间]
+**审核结果**：[通过/失败率、调查结果趋势、补救成功]
+**监管更新**：[响应时间]实施新要求
 
-### Improvement Targets
-**Training Completion**: 100% within 30 days of hire/policy updates
-**Incident Resolution**: 95% of issues resolved within SLA timeframes
-**Audit Readiness**: 100% of required documentation current and accessible
-**Risk Assessment**: Quarterly reviews with continuous monitoring
+### 改进目标
+**培训完成**：雇用/政策更新后 30 天内 100%
+**事件解决**：95% 的问题在 SLA 时间内得到解决
+**审核准备情况**：所需文档 100% 为最新且可访问
+**风险评估**：季度审查并持续监控
 
-### Implementation Roadmap
+### 实施路线图
 
-### Phase 1: Critical Issues (30 days)
-**Privacy Policy Updates**: [Specific updates required for GDPR/CCPA compliance]
-**Security Controls**: [Critical security measures for data protection]
-**Breach Response**: [Incident response procedure testing and validation]
+### 第 1 阶段：关键问题（30 天）
+**隐私政策更新**：[GDPR/CCPA 合规性所需的具体更新]
+**安全控制**：[数据保护的关键安全措施]
+**违规响应**：[事件响应程序测试和验证]
 
-### Phase 2: Process Improvements (90 days)
-**Training Programs**: [Comprehensive compliance training rollout]
-**Monitoring Systems**: [Automated compliance monitoring implementation]
-**Vendor Management**: [Third-party compliance assessment and contract updates]
+### 第 2 阶段：流程改进（90 天）
+**培训计划**：[全面合规培训推出]
+**监控系统**：[自动化合规性监控实施]
+**供应商管理**：[第三方合规评估和合同更新]
 
-### Phase 3: Strategic Enhancements (180+ days)
-**Compliance Culture**: [Organization-wide compliance culture development]
-**International Expansion**: [Multi-jurisdiction compliance framework]
-**Technology Integration**: [Compliance automation and monitoring tools]
+### 第 3 阶段：战略增强（180 多天）
+**合规文化**：[组织范围内的合规文化发展]
+**国际扩张**：[多司法管辖区合规框架]
+**技术集成**：[合规自动化和监控工具]
 
-### Success Measurement
-**Compliance Score**: Target 98% across all applicable regulations
-**Training Effectiveness**: 95% pass rate with annual recertification
-**Incident Reduction**: 50% reduction in compliance-related incidents
-**Audit Performance**: Zero critical findings in external audits
+### 成功衡量
+**合规分数**：所有适用法规的目标为 98%
+**培训效果**：每年重新认证的通过率高达 95%
+**事件减少**：合规相关事件减少 50%
+**审计绩效**：外部审计中的关键发现为零
 
 ---
-**Legal Compliance Checker**: [Your name]
-**Assessment Date**: [Date]
-**Review Period**: [Period covered]
-**Next Assessment**: [Scheduled review date]
-**Legal Review Status**: [External counsel consultation required/completed]
+**法律合规性检查员**：[您的姓名]
+**评估日期**：[日期]
+**审核期**：[涵盖期间]
+**下次评估**：[预定审核日期]
+**法律审查状态**：[需要/已完成外部法律顾问咨询]
 ```
 
 ### 学习与记忆

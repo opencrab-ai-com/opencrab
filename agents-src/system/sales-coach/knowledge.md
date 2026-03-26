@@ -2,138 +2,138 @@
 
 ### 代表辅导计划
 ```markdown
-# Coaching Plan: [Rep Name]
+# 辅导计划：[代表姓名]
 
-### Current Performance
+### 当前表现
 
-- **Quota Attainment (YTD)**: [%]
-- **Win Rate**: [%]
-- **Average Deal Size**: [$]
-- **Sales Cycle Length**: [days]
-- **Pipeline Coverage**: [Ratio]
+- **配额完成情况（年初至今）**：[%]
+- **胜率**：[%]
+- **平均交易规模**：[$]
+- **销售周期长度**：[天]
+- **管道覆盖率**：[比率]
 
-### Skill Assessment
+### 技能评估
 
-| Competency | Current Level | Target Level | Gap |
-|-----------|--------------|-------------|-----|
-| Discovery quality | [1-5] | [1-5] | [Notes on specific gap] |
-| Qualification rigor | [1-5] | [1-5] | [Notes on specific gap] |
-| Objection handling | [1-5] | [1-5] | [Notes on specific gap] |
-| Executive presence | [1-5] | [1-5] | [Notes on specific gap] |
-| Closing / next-step commitment | [1-5] | [1-5] | [Notes on specific gap] |
-| Forecast accuracy | [1-5] | [1-5] | [Notes on specific gap] |
+|能力|当前级别 |目标水平|差距|
+|------------|--------------|-------------|-----|
+|发现品质| [1-5] | [1-5] | [具体差距注意事项]|
+|资质严谨| [1-5] | [1-5] | [具体差距注意事项]|
+|异议处理 | [1-5] | [1-5] | [具体差距注意事项]|
+|行政人员存在 | [1-5] | [1-5] | [具体差距注意事项]|
+|结束/下一步承诺| [1-5] | [1-5] | [具体差距注意事项]|
+|预测准确度 | [1-5] | [1-5] | [具体差距注意事项]|
 
-### Focus Areas (Max 3)
+### 重点领域（最多 3 个）
 
-### Focus 1: [Skill]
-- **Current behavior**: [What the rep does now — specific, observed]
-- **Target behavior**: [What "good" looks like — specific, behavioral]
-- **Coaching actions**: [How you will develop this — call reviews, role plays, shadowing]
-- **Milestone**: [How you will know it is working — observable indicator]
-- **Target date**: [When you expect the behavior to be habitual]
+###重点一：[技能]
+- **当前行为**：[代表现在做什么 - 具体的，观察到的]
+- **目标行为**：[“好”是什么样的——具体的、行为的]
+- **辅导行动**：[你将如何发展这一点——通话回顾、角色扮演、影子]
+- **里程碑**：[您如何知道它正在工作 - 可观察的指标]
+- **目标日期**：[当您期望该行为成为习惯时]
 
-### Coaching Cadence
+### 教练节奏
 
-- **Weekly 1:1**: [Day/time, focus areas, standing agenda]
-- **Call reviews**: [Frequency, selection criteria — random vs. targeted]
-- **Deal prep sessions**: [For which deal types or stages]
-- **Debrief sessions**: [Post-loss, post-win, post-important-meeting]
+- **每周 1:1**：[日期/时间、重点领域、常设议程]
+- **通话评论**：[频率、选择标准 — 随机与有针对性]
+- **交易准备会议**：[适用于哪些交易类型或阶段]
+- **汇报会**：[失败后、获胜后、重要会议后]
 ```
 
 ### 管道审查框架
 ```markdown
-# Pipeline Review: [Rep Name] — [Date]
+# 管道审核：[代表姓名] — [日期]
 
-### Portfolio Health
+### 投资组合健康状况
 
-- **Total Pipeline**: [$] across [#] deals
-- **Weighted Pipeline**: [$]
-- **Pipeline-to-Quota Ratio**: [X:1] (target 3:1+)
-- **Average Age by Stage**: [Days — flag deals that are stale]
-- **Stage Distribution**: [Is pipeline front-loaded (risk) or well-distributed?]
+- **总管道**：[#] 笔交易中的 [$]
+- **加权管道**：[$]
+- **管道与配额比率**：[X:1]（目标 3:1+）
+- **按阶段划分的平均年龄**：[天数 — 标记过时的交易]
+- **阶段分布**：[管道是前置（风险）还是均匀分布？]
 
-### Deal Inspection (Top 5 by Value)
+### 交易检查（按价值排名前 5 名）
 
-| Deal | Value | Stage | Age | Key Question | Risk |
-|------|-------|-------|-----|-------------|------|
-| [Deal] | [$] | [Stage] | [Days] | "What do we not know?" | [Red/Yellow/Green] |
+|交易 |价值|舞台|年龄 |关键问题|风险|
+|------|-----|--------|-----|-------------|-----|
+| [交易] | [$] | [舞台] | [天] | “什么是我们不知道的？” | [红/黄/绿] |
 
-### For Each Deal Under Review
+### 对于每笔正在审查的交易
 
-1. **What changed since last review?** — progress, not just activity
-2. **Who are we talking to?** — are we multi-threaded or single-threaded?
-3. **What is the business case?** — can you articulate why the buyer would spend this money?
-4. **What is the decision process?** — steps, people, criteria, timeline
-5. **What is the biggest risk?** — and what is the plan to mitigate it?
-6. **What is the specific next step?** — with a date, an owner, and a purpose
+1. **自上次审核以来发生了什么变化？** - 进展，而不仅仅是活动
+2. **我们在和谁说话？** — 我们是多线程还是单线程？
+3. **商业案例是什么？** — 你能阐明为什么买家会花这笔钱吗？
+4. **决策过程是什么？** — 步骤、人员、标准、时间表
+5. **最大的风险是什么？** — 缓解风险的计划是什么？
+6. **下一步具体是什么？** — 有日期、所有者和目的
 
-### Pattern Observations
+### 模式观察
 
-- **Stalled deals**: [Which deals have not progressed? Why?]
-- **Qualification gaps**: [Recurring missing information across deals]
-- **Stage accuracy**: [Are deals in the right stage based on evidence?]
-- **Coaching moment**: [One portfolio-level observation to discuss in the 1:1]
+- **停滞的交易**：[哪些交易尚未取得进展？为什么？]
+- **资格差距**：[交易中反复出现缺失信息]
+- **阶段准确性**：[基于证据，交易是否处于正确的阶段？]
+- **辅导时刻**：[在 1:1 中讨论的一个投资组合级别的观察]
 ```
 
 ### 致电辅导汇报
 ```markdown
-# Call Coaching: [Rep Name] — [Date]
+# 致电辅导：[代表姓名] — [日期]
 
-### Call Details
+### 通话详情
 
-- **Account**: [Name]
-- **Call Type**: [Discovery / Demo / Negotiation / Executive]
-- **Buyer Attendees**: [Names and roles]
-- **Duration**: [Minutes]
-- **Recording Link**: [URL]
+- **帐户**：[姓名]
+- **通话类型**：[发现/演示/谈判/执行]
+- **买家与会者**：[姓名和角色]
+- **持续时间**：[分钟]
+- **录音链接**：[URL]
 
-### What Went Well
+### 进展顺利
 
-- [Specific moment and why it was effective]
-- [Specific moment and why it was effective]
+- [具体时刻以及为什么有效]
+- [具体时刻以及为什么有效]
 
-### Coaching Opportunity
+### 辅导机会
 
-- **Moment**: [Timestamp] — [What the buyer said or did]
-- **What happened**: [How the rep responded]
-- **What to try instead**: [Specific alternative — exact words or approach]
-- **Why it matters**: [What this would have unlocked in the deal]
+- **时刻**：[时间戳] — [买家所说或所做的事情]
+- **发生了什么**：[代表如何回应]
+- **应该尝试什么**：[具体替代方案 - 确切的词语或方法]
+- **为什么重要**：[这将在交易中解锁什么]
 
-### Skill Connection
+### 技能连接
 
-- **This connects to**: [Which focus area in the coaching plan]
-- **Practice assignment**: [What the rep should try in their next call]
-- **Follow-up**: [When you will review the next attempt]
+- **这连接到**：[辅导计划中的哪个重点领域]
+- **练习作业**：[代表在下次通话中应尝试什么]
+- **后续**：[当您回顾下一次尝试时]
 ```
 
 ### 新代表斜坡计划
 ```markdown
-# Ramp Plan: [Rep Name] — Start Date: [Date]
+# 斜坡计划：[代表姓名] — 开始日期：[日期]
 
-### 30-Day Milestones (Learn)
+### 30 天里程碑（学习）
 
-- [ ] Complete product certification with passing score
-- [ ] Shadow [#] discovery calls and [#] demos with top performers
-- [ ] Deliver practice pitch to manager and receive feedback
-- [ ] Articulate the top 3 customer pain points and how the product addresses each
-- [ ] Complete CRM and tool stack onboarding
-- **Competency gate**: Can the rep describe the product's value proposition in the customer's language?
+- [ ] 完成产品认证并通过分数
+- [ ] Shadow [#] 发现电话和 [#] 与顶尖表演者进行演示
+- [ ] 向经理提供练习推介并接收反馈
+- [ ] 阐明最重要的 3 个客户痛点以及产品如何解决每个痛点
+- [ ] 完整的 CRM 和工具堆栈入门
+- **能力门**：代表能否用客户的语言描述产品的价值主张？
 
-### 60-Day Milestones (Execute with Support)
+### 60 天里程碑（在支持下执行）
 
-- [ ] Run [#] discovery calls with manager observing and debriefing
-- [ ] Build [#] qualified pipeline (measured by MEDDPICC completeness, not dollar value)
-- [ ] Demonstrate correct use of qualification framework on every active deal
-- [ ] Handle the top 5 objections without manager intervention
-- **Competency gate**: Can the rep run a full discovery call that uncovers business pain, identifies stakeholders, and secures a next step?
+- [ ] 运行 [#] 次发现电话，经理进行观察和汇报
+- [ ] 构建 [#] 合格管道（通过 MEDDPICC 完整性衡量，而不是美元价值）
+- [ ] 在每笔活跃交易中展示资格框架的正确使用
+- [ ] 在没有经理干预的情况下处理前 5 个反对意见
+- **能力门**：代表能否运行完整的发现电话来发现业务难题、识别利益相关者并确保下一步？
 
-### 90-Day Milestones (Execute Independently)
+### 90 天里程碑（独立执行）
 
-- [ ] Achieve [#] pipeline target with [%] stage-appropriate qualification
-- [ ] Close first deal (or have deal in final negotiation stage)
-- [ ] Forecast with [%] accuracy against commit
-- [ ] Receive positive buyer feedback on [#] calls
-- **Competency gate**: Can the rep manage a deal from qualification through close with coaching support only on strategy, not execution?
+- [ ] 实现 [#] 管道目标并具有 [%] 阶段适当的资格
+- [ ] 完成第一笔交易（或在最终谈判阶段达成交易）
+- [ ] 相对于提交的预测准确度为 [%]
+- [ ] 在 [#] 个电话中收到积极的买家反馈
+- **能力门**：代表能否在仅在策略而非执行方面提供教练支持的情况下管理交易从资格审查到成交的整个过程？
 ```
 
 ### 学习与记忆

@@ -118,32 +118,32 @@ func _render_callback(effect_callback_type: int, render_data: RenderData) -> voi
 ### 着色器性能审核
 ```markdown
 
-### Godot Shader Review: [Effect Name]
+### Godot 着色器评论：[效果名称]
 
-**Shader Type**: [ ] canvas_item  [ ] spatial  [ ] particles
-**Renderer Target**: [ ] Forward+  [ ] Mobile  [ ] Compatibility
+**着色器类型**： [ ] canvas_item [ ] 空间 [ ] 粒子
+**渲染器目标**： [ ] 向前+ [ ] 移动 [ ] 兼容性
 
-Texture Samples (fragment stage)
-  Count: ___ (mobile budget: ≤ 6 per fragment for opaque materials)
+纹理样本（片段阶段）
+数量：___（移动预算：对于不透明材料，每个片段 ≤ 6）
 
-Uniforms Exposed to Inspector
-  [ ] All uniforms have hints (hint_range, source_color, hint_normal, etc.)
-  [ ] No magic numbers in shader body
+制服暴露给检查员
+[ ] 所有制服都有提示（hint_range、source_color、hint_normal 等）
+[ ] 着色器主体中没有魔法数字
 
-Discard/Alpha Clip
-  [ ] discard used in opaque spatial shader?  — FLAG: convert to Alpha Scissor on mobile
-  [ ] canvas_item alpha handled via COLOR.a only?
+丢弃/Alpha 剪辑
+[ ] 放弃在不透明空间着色器中使用的内容？  — FLAG：在移动设备上转换为 Alpha Scissor
+[ ] canvas_item alpha 仅通过 COLOR.a 处理？
 
-SCREEN_TEXTURE Used?
-  [ ] Yes — triggers framebuffer copy. Justified for this effect?
-  [ ] No
+SCREEN_TEXTURE 使用过吗？
+[ ] 是 — 触发帧缓冲区复制。这种效果合理吗？
+[ ] 不
 
-Dynamic Loops?
-  [ ] Yes — validate loop count is constant or bounded on mobile
-  [ ] No
+动态循环？
+[ ] 是 - 验证循环计数在移动设备上是恒定的或有界的
+[ ] 不
 
-Compatibility Renderer Safe?
-  [ ] Yes  [ ] No — document which renderer is required in shader comment header
+兼容性渲染器安全吗？
+[ ] 是 [ ] 否 — 在着色器注释标题中记录需要哪个渲染器
 ```
 
 ### 高级能力

@@ -146,38 +146,38 @@
 ### 入职标准操作流程
 
 ```markdown
-# Standardized Onboarding Checklist
+# 标准化入职清单
 
-### Pre-Onboarding (T-7 Days)
+### 入职前（T-7 天）
 
-- [ ] Send onboarding notification email/SMS with required materials checklist
-- [ ] Prepare workstation, computer, access badge, and other office resources
-- [ ] Set up corporate email, OA system, and Feishu/DingTalk/WeCom accounts
-- [ ] Notify the hiring team and assigned mentor to prepare for the new hire
-- [ ] Schedule onboarding training sessions
+- [ ] 发送入职通知电子邮件/短信以及所需材料清单
+- [ ] 准备工作站、计算机、门禁卡和其他办公资源
+- [ ] 设置企业邮箱、OA系统、飞书/钉钉/微信账号
+- [ ] 通知招聘团队和指定导师为新员工做好准备
+- [ ] 安排入职培训课程
 
-### Onboarding Day (Day T)
+### 入职日（T 天）
 
-- [ ] Sign labor contract, confidentiality agreement, and employee handbook acknowledgment
-- [ ] Complete social insurance and housing fund registration
-- [ ] Enter records into HRIS (Beisen, iRenshi, Feishu People, etc.)
-- [ ] Distribute employee handbook and IT usage guide
-- [ ] Conduct onboarding training: company culture, organizational structure, policies and procedures
-- [ ] Hiring team welcome and team introductions
-- [ ] First one-on-one meeting with assigned mentor
+- [ ] 签订劳动合同、保密协议、员工手册确认书
+- [ ] 完成社会保险和住房公积金登记
+- [ ] 将记录输入HRIS（北森、爱人氏、飞书人等）
+- [ ] 分发员工手册和IT使用指南
+- [ ] 进行入职培训：公司文化、组织结构、政策和程序
+- [ ] 招聘团队欢迎和团队介绍
+- [ ] 与指定导师的第一次一对一会议
 
-### First Week (T+1 to T+7 Days)
+### 第一周（T+1 至 T+7 天）
 
-- [ ] Confirm job responsibilities and probation period goals
-- [ ] Arrange business training and system operations training
-- [ ] HR conducts onboarding experience check-in
-- [ ] Add new hire to department communication groups and relevant project teams
+- [ ] 确认工作职责和试用期目标
+- [ ]安排业务培训和系统操作培训
+- [ ] HR 进行入职体验签到
+- [ ] 将新员工添加到部门沟通小组和相关项目团队
 
-### First Month (T+30 Days)
+### 第一个月（T+30 天）
 
-- [ ] Mentor conducts first-month feedback session
-- [ ] HR conducts new hire satisfaction survey
-- [ ] Confirm probation assessment plan and milestone goals
+- [ ] 导师进行第一个月的反馈会议
+- [ ] HR开展新员工满意度调查
+- [ ] 确认试用期评估计划和里程碑目标
 ```
 
 ### 试用期管理
@@ -314,44 +314,44 @@ class RecruitmentFunnelAnalyzer:
 ### 招聘健康仪表板
 
 ```markdown
-# [Month] Recruitment Operations Monthly Report
+# [月]招聘运营月报
 
-### Key Metrics Overview
+### 关键指标概述
 
-**Open positions**: [count] (New: [count], Closed: [count])
-**Hires this month**: [count] (Target completion rate: [%])
-**Average time-to-hire**: [days] (MoM change: [+/-] days)
-**Offer acceptance rate**: [%] (MoM change: [+/-]%)
-**Monthly recruiting spend**: ¥[amount] (Budget utilization: [%])
+**未平仓头寸**：[计数]（新仓位：[计数]，已平仓：[计数]）
+**本月招聘人数**：[计数]（目标完成率：[%]）
+**平均雇用时间**：[天]（环比变化：[+/-] 天）
+**要约接受率**：[%]（环比变化：[+/-]%）
+**每月招聘支出**：¥[金额]（预算利用率：[%]）
 
-### Channel Performance Analysis
+### 渠道绩效分析
 
-| Channel | Resumes | Hires | Cost per Hire | Quality Score |
-|---------|---------|-------|---------------|---------------|
-| Boss Zhipin | [count] | [count] | ¥[amount] | [score] |
-| Lagou | [count] | [count] | ¥[amount] | [score] |
-| Liepin | [count] | [count] | ¥[amount] | [score] |
-| Headhunters | [count] | [count] | ¥[amount] | [score] |
-| Employee Referrals | [count] | [count] | ¥[amount] | [score] |
+|频道|简历 |招聘 |每次雇用成本|质量得分 |
+|--------|---------|--------|---------------|---------------|
+|老板直聘| [计数] | [计数] | ¥[金额] | [得分] |
+|拉沟| [计数] | [计数] | ¥[金额] | [得分] |
+|猎聘| [计数] | [计数] | ¥[金额] | [得分] |
+|猎头| [计数] | [计数] | ¥[金额] | [得分] |
+|员工推荐| [计数] | [计数] | ¥[金额] | [得分] |
 
-### Department Hiring Progress
+### 部门招聘进展
 
-| Department | Openings | Hired | Completion Rate | Pending Offers |
-|------------|----------|-------|-----------------|----------------|
-| [Dept] | [count] | [count] | [%] | [count] |
+|部门|职位空缺 |已聘用 |完成率 |待定优惠 |
+|------------|----------|--------|--------------------------------|----------------|
+| [部门] | [计数] | [计数] | [%] | [计数] |
 
-### Probation Retention
+### 缓刑保留
 
-**Converted this month**: [count]
-**Left during probation**: [count]
-**Probation retention rate**: [%]
-**Attrition reason analysis**: [categorized summary]
+**本月转换**：[计数]
+**试用期间离开**：[计数]
+**试用期保留率**：[%]
+**流失原因分析**：[分类汇总]
 
-### Action Items & Risks
+### 行动项目和风险
 
-1. **Urgent**: [Positions requiring acceleration and action plan]
-2. **Watch**: [Bottleneck stages in the recruiting funnel]
-3. **Optimize**: [Channel adjustments and process improvement recommendations]
+1. **紧急**：[需要加速的职位和行动计划]
+2. **观察**：[招聘渠道中的瓶颈阶段]
+3. **优化**：[渠道调整及流程改进建议]
 ```
 
 ### 学习与积累

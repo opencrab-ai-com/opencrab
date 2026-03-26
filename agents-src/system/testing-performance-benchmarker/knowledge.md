@@ -97,48 +97,48 @@ function generateHTMLReport(data) {
 ### 你的交付模板
 
 ```markdown
-# [System Name] Performance Analysis Report
+# [系统名称] 性能分析报告
 
-### Performance Test Results
+### 性能测试结果
 
-**Load Testing**: [Normal load performance with detailed metrics]
-**Stress Testing**: [Breaking point analysis and recovery behavior]
-**Scalability Testing**: [Performance under increasing load scenarios]
-**Endurance Testing**: [Long-term stability and memory leak analysis]
+**负载测试**：[具有详细指标的正常负载性能]
+**压力测试**：[断点分析和恢复行为]
+**可扩展性测试**：[负载增加场景下的性能]
+**耐久性测试**：[长期稳定性和内存泄漏分析]
 
-### Core Web Vitals Analysis
+### 核心网络生命力分析
 
-**Largest Contentful Paint**: [LCP measurement with optimization recommendations]
-**First Input Delay**: [FID analysis with interactivity improvements]
-**Cumulative Layout Shift**: [CLS measurement with stability enhancements]
-**Speed Index**: [Visual loading progress optimization]
+**最大的内容油漆**：[LCP 测量和优化建议]
+**首次输入延迟**：[FID 分析与交互性改进]
+**累积布局偏移**：[具有稳定性增强的 CLS 测量]
+**速度指标**：[可视化加载进度优化]
 
-### Bottleneck Analysis
+### 瓶颈分析
 
-**Database Performance**: [Query optimization and connection pooling analysis]
-**Application Layer**: [Code hotspots and resource utilization]
-**Infrastructure**: [Server, network, and CDN performance analysis]
-**Third-Party Services**: [External dependency impact assessment]
+**数据库性能**：[查询优化和连接池分析]
+**应用层**：[代码热点及资源利用]
+**基础设施**：[服务器、网络、CDN性能分析]
+**第三方服务**：[外部依赖影响评估]
 
-### Performance ROI Analysis
+### 绩效投资回报率分析
 
-**Optimization Costs**: [Implementation effort and resource requirements]
-**Performance Gains**: [Quantified improvements in key metrics]
-**Business Impact**: [User experience improvement and conversion impact]
-**Cost Savings**: [Infrastructure optimization and efficiency gains]
+**优化成本**：[实施工作和资源要求]
+**性能增益**：[关键指标的量化改进]
+**业务影响**：[用户体验改善和转化影响]
+**成本节省**：[基础设施优化和效率提升]
 
-### Optimization Recommendations
+### 优化建议
 
-**High-Priority**: [Critical optimizations with immediate impact]
-**Medium-Priority**: [Significant improvements with moderate effort]
-**Long-Term**: [Strategic optimizations for future scalability]
-**Monitoring**: [Ongoing monitoring and alerting recommendations]
+**高优先级**：[具有直接影响的关键优化]
+**中优先级**：[适度努力即可显着改善]
+**长期**：[未来可扩展性的战略优化]
+**监控**：[持续监控和警报建议]
 
 ---
-**Performance Benchmarker**: [Your name]
-**Analysis Date**: [Date]
-**Performance Status**: [MEETS/FAILS SLA requirements with detailed reasoning]
-**Scalability Assessment**: [Ready/Needs Work for projected growth]
+**性能基准测试**：[您的名字]
+**分析日期**：[日期]
+**性能状态**：[满足/失败 SLA 要求并附有详细的推理]
+**可扩展性评估**：[预计增长的准备工作/需要工作]
 ```
 
 ### 学习与记忆

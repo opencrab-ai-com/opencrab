@@ -3,79 +3,78 @@
 **总长度：** 325–475 个字（最多 ≤ 500 个）
 
 ```markdown
+### 1. 情况概述 [50–75 个字]
 
-### 1. SITUATION OVERVIEW [50–75 words]
+- 正在发生什么以及为什么现在很重要
+- 当前状态与期望状态的差距
 
-- What is happening and why it matters now
-- Current vs. desired state gap
+### 2. 主要发现 [125–175 个字]
 
-### 2. KEY FINDINGS [125–175 words]
+- 3–5 个最关键的见解（每个见解都有 ≥ 1 个量化或比较数据点）
+- **大胆强调每一项的战略含义**
+- 按业务影响排序
 
-- 3–5 most critical insights (each with ≥ 1 quantified or comparative data point)
-- **Bold the strategic implication in each**
-- Order by business impact
+### 3. 业务影响 [50–75 个字]
 
-### 3. BUSINESS IMPACT [50–75 words]
+- 量化潜在收益/损失（收入、成本、市场份额）
+- 注意风险或机会的大小（%或概率）
+- 定义实现的时间范围
 
-- Quantify potential gain/loss (revenue, cost, market share)
-- Note risk or opportunity magnitude (% or probability)
-- Define time horizon for realization
+### 4. 建议 [75–100 字]
 
-### 4. RECOMMENDATIONS [75–100 words]
+- 3–4 个优先操作标记为（严重/高/中）
+- 每个都有：所有者+时间表+预期结果
+- 包括资源或跨职能需求（如果有）
 
-- 3–4 prioritized actions labeled (Critical / High / Medium)
-- Each with: owner + timeline + expected result
-- Include resource or cross-functional needs if material
+### 5. 后续步骤 [25–50 个字]
 
-### 5. NEXT STEPS [25–50 words]
-
-- 2–3 immediate actions (≤ 30-day horizon)
-- Identify decision point + deadline
+- 2–3 项立即行动（≤ 30 天范围）
+- 确定决策点+截止日期
 ```
 
 ### 执行摘要模板
 
 ```markdown
-# Executive Summary: [Topic Name]
+# 执行摘要：[主题名称]
 
-### 1. SITUATION OVERVIEW
+### 1. 情况概述
 
-[Current state description with key context. What is happening and why executives should care right now. Include the gap between current and desired state. 50-75 words.]
+[带有关键上下文的当前状态描述。正在发生什么以及为什么高管们现在应该关心。包括当前状态和期望状态之间的差距。 50-75字。]
 
-### 2. KEY FINDINGS
+### 2. 主要发现
 
-**Finding 1**: [Quantified insight]. **Strategic implication: [Impact on business].**
+**发现 1**：[量化洞察]。 **战略意义：[对业务的影响]。**
 
-**Finding 2**: [Comparative data point]. **Strategic implication: [Impact on strategy].**
+**发现2**：[比较数据点]。 **战略意义：[对战略的影响]。**
 
-**Finding 3**: [Measured result]. **Strategic implication: [Impact on operations].**
+**发现 3**：[测量结果]。 **战略意义：[对运营的影响]。**
 
-[Continue with 2-3 more findings if material, always ordered by business impact]
+[如果重要，则继续进行 2-3 个发现，始终按业务影响排序]
 
-### 3. BUSINESS IMPACT
+### 3. 业务影响
 
-**Financial Impact**: [Quantified revenue/cost impact with $ or % figures]
+**财务影响**：[用美元或百分比数字量化收入/成本影响]
 
-**Risk/Opportunity**: [Magnitude expressed as probability or percentage]
+**风险/机会**：[大小以概率或百分比表示]
 
-**Time Horizon**: [Specific timeline for impact realization: Q3 2025, 6 months, etc.]
+**时间范围**：[影响实现的具体时间表：2025 年第三季度、6 个月等]
 
-### 4. RECOMMENDATIONS
+### 4. 建议
 
-**[Critical]**: [Action] — Owner: [Role/Name] | Timeline: [Specific dates] | Expected Result: [Quantified outcome]
+**[严重]**：[操作] — 所有者：[角色/名称] |时间表：[具体日期] |预期结果：[量化结果]
 
-**[High]**: [Action] — Owner: [Role/Name] | Timeline: [Specific dates] | Expected Result: [Quantified outcome]
+**[高]**：[操作] — 所有者：[角色/姓名] |时间表：[具体日期] |预期结果：[量化结果]
 
-**[Medium]**: [Action] — Owner: [Role/Name] | Timeline: [Specific dates] | Expected Result: [Quantified outcome]
+**[中]**：[操作] — 所有者：[角色/名称] |时间表：[具体日期] |预期结果：[量化结果]
 
-[Include resource requirements or cross-functional dependencies if material]
+[包括资源要求或跨职能依赖性（如果重要）]
 
-### 5. NEXT STEPS
+### 5. 下一步
 
-1. **[Immediate action 1]** — Deadline: [Date within 30 days]
-2. **[Immediate action 2]** — Deadline: [Date within 30 days]
+1. **[立即采取行动 1]** — 截止日期：[30 天内的日期]
+2. **[立即行动 2]** — 截止日期：[30 天内的日期]
 
-**Decision Point**: [Key decision required] by [Specific deadline]
+**决策点**：[需要做出关键决策][具体截止日期]
 ```
 
 ### 学习与记忆

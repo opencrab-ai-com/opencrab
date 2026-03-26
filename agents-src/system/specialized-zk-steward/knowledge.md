@@ -11,23 +11,22 @@
 
 ### 可交付模板（任务关闭）
 ```markdown
+### 验证
 
-### Validation
-
-- [ ] Luhmann four principles (atomic / connected / organic / dialogue)
-- [ ] Filing path + ≥2 links
-- [ ] Daily log updated
-- [ ] Open loops: promoted "easy to forget" items to open-loops file
-- [ ] If new note: link candidates + keyword suggestions + shareability
+- [ ] 卢曼四原则（原子/连接/有机/对话）
+- [ ] 归档路径+≥2个链接
+- [ ] 每日日志更新
+- [ ] 开环：将“容易忘记”的项目提升到开环文件
+- [ ] 如果有新注释：候选链接+关键词建议+可共享性
 ```
 
 ### 每日日志条目示例
 ```markdown
-### [YYYYMMDD] Short task title
+### [YYYYMMDD] 短任务标题
 
-- **Intent**: What the user wanted to accomplish.
-- **Changes**: What was done (files, links, decisions).
-- **Open loops**: [ ] Unresolved item 1; [ ] Unresolved item 2 (or "None.")
+- **意图**：用户想要完成什么。
+- **更改**：做了什么（文件、链接、决策）。
+- **开环**：[ ] 未解决的第 1 项； [ ] 未解决的项目 2（或“无”。）
 ```
 
 ### 深读输出示例（结构注释）
@@ -36,37 +35,37 @@
 
 ```markdown
 ---
-type: Structure_Note
-tags: [LLM, AI-infrastructure, deep-learning]
-links: ["[[Index_LLM_Stack]]", "[[Index_AI_Observations]]"]
+类型：结构_注释
+标签：[法学硕士、人工智能基础设施、深度学习]
+链接：[“[[Index_LLM_Stack]]”，“[[Index_AI_Observations]]”]
 ---
 
-# [Title] Structure Note
+# [标题]结构注释
 
-> **Context**: When, why, and under what project this was created.
-> **Default reader**: Yourself in six months—this structure is self-contained.
+> **上下文**：创建的时间、原因和项目。
+> **默认读者**：六个月后的你自己——这个结构是独立的。
 
-### Overview (5 Questions)
+### 概述（5 个问题）
 
-1. What problem does it solve?
-2. What is the core mechanism?
-3. Key concepts (3–5) → each linked to atomic notes [[YYYYMMDD_Atomic_Topic]]
-4. How does it compare to known approaches?
-5. One-sentence summary (Feynman test)
+1.它解决什么问题？
+2、核心机制是什么？
+3. 关键概念 (3-5) → 每个概念都与原子注释相关 [[YYYYMMDD_Atomic_Topic]]
+4. 与已知方法相比如何？
+5.一句话总结（费曼测试）
 
-### Logic Tree
+### 逻辑树
 
-Proposition 1: …
+提议 1：……
 ├─ [[Atomic_Note_A]]
 ├─ [[Atomic_Note_B]]
 └─ [[Atomic_Note_C]]
-Proposition 2: …
+提议 2：……
 └─ [[Atomic_Note_D]]
 
-### Reading Sequence
+### 阅读顺序
 
-1. **[[Atomic_Note_A]]** — Reason: …
-2. **[[Atomic_Note_B]]** — Reason: …
+1. **[[Atomic_Note_A]]** — 原因：...
+2. **[[Atomic_Note_B]]** — 原因：...
 ```
 
 配套输出：执行计划 (`YYYYMMDD_01_[Book_Title]_Execution_Plan.md`)、原子/方法注释、主题索引注释、工作流程审计报告。请参阅 [zk-steward-companion](https://github.com/mikonos/zk-steward-companion). 中的**深度学习**

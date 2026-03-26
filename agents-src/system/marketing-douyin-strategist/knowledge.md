@@ -3,63 +3,63 @@
 ### 病毒视频脚本模板
 
 ```markdown
-# Short-Video Script Template
+# 短视频脚本模板
 
-### Basic Info
+### 基本信息
 
-- Target duration: 30-45 seconds
-- Content type: Product seeding
-- Target completion rate: > 40%
+- 目标持续时间：30-45 秒
+- 内容类型：产品播种
+- 目标完成率：> 40%
 
-### Script Structure
+### 脚本结构
 
-### Seconds 1-3: Golden Hook (pick one)
-A. Conflict: "Never buy XXX unless you watch this first"
-B. Value: "Spent XX yuan to solve a problem that bugged me for 3 years"
-C. Suspense: "I discovered a secret the XX industry doesn't want you to know"
-D. Relatability: "Does anyone else lose it every time XXX happens?"
+### 第 1-3 秒：金钩（选其一）
+A. 冲突：“除非你先看这个，否则永远不要买 XXX”
+B.价值：“花了XX元解决了困扰我3年的问题”
+C.悬疑：“我发现了XX行业不想让你知道的秘密”
+D. 相关性：“每次 XXX 发生时，其他人都会失去它吗？”
 
-### Seconds 4-20: Core Content
-- Amplify the pain point (2-3s)
-- Introduce the solution (3-5s)
-- Usage demo / results showcase (5-8s)
-- Key data / before-after comparison (3-5s)
+### 第 4-20 秒：核心内容
+- 放大痛点（2-3秒）
+- 介绍解决方案（3-5秒）
+- 使用演示/结果展示（5-8秒）
+- 关键数据/前后对比（3-5秒）
 
-### Seconds 21-30: Wrap-Up + Hook
-- One-sentence value proposition
-- Engagement prompt: "Do you think it's worth it? Tell me in the comments"
-- Series teaser: "Next episode I'll teach you XXX - follow so you don't miss it"
+### 第 21-30 秒：总结 + 挂钩
+- 一句话价值主张
+- 参与提示：“你认为值得吗？在评论中告诉我”
+- 系列预告片：“下一集我会教你 XXX - 关注，这样你就不会错过”
 
-### Shooting Requirements
+### 拍摄要求
 
-- Vertical 9:16
-- On-camera talent preferred (completion rate 30%+ higher than product-only footage)
-- Subtitles required (many users watch on mute)
-- Use a trending BGM from the current week
+- 垂直 9:16
+- 上镜人才优先（完成率比纯产品镜头高 30% 以上）
+- 需要字幕（很多用户静音观看）
+- 使用本周流行的背景音乐
 ```
 
 ### 直播产品阵容
 
 ```markdown
-# Livestream Product Selection & Sequencing Strategy
+# 直播产品选择及排序策略
 
-### Product Structure
+### 产品结构
 
-| Type | Share | Margin | Purpose |
-|------|-------|--------|---------|
-| Traffic driver | 20% | 0-10% | Build viewership, increase watch time |
-| Profit item | 50% | 40-60% | Core revenue product |
-| Prestige item | 15% | 60%+ | Elevate brand perception |
-| Flash deal | 15% | Loss-leader | Spike retention and engagement |
+|类型 |分享 |保证金|目的|
+|------|--------|--------|---------|
+|交通司机| 20% | 0-10% |增加收视率，增加观看时间 |
+|盈利项目| 50% | 40-60% |核心营收产品|
+|声望物品 | 15% | 60%+ |提升品牌认知度 |
+|闪购| 15% |亏损领导者 |鞋钉保留度和参与度|
 
-### Livestream Pacing (2-hour example)
+### 直播节奏（2 小时示例）
 
-| Time | Segment | Product | Script Focus |
-|------|---------|---------|-------------|
-| 0:00-0:15 | Warm-up + deal preview | - | Retention, build anticipation |
-| 0:15-0:30 | Flash deal | Flash deal item | Drive watch time and engagement metrics |
-| 0:30-1:00 | Core selling | Profit items x3 | Pain point -> solution -> urgency close |
-| 1:00-1:15 | Traffic driver push | Traffic driver | Pull in a new wave of viewers |
-| 1:15-1:45 | Continue selling | Profit items x2 | Follow-up orders, bundle deals |
-| 1:45-2:00 | Wrap-up + preview | Prestige item | Next-stream preview, follow prompt |
+|时间 |细分 |产品 |脚本焦点 |
+|------|---------|---------|------------|
+| 0:00-0:15 |预热+交易预览| - |保留、建立预期 |
+| 0:15-0:30 |闪购|闪购商品 |提高观看时间和参与度指标|
+| 0:30-1:00 |核心销售|利润项目 x3 |痛点->解决方案->紧急关闭 |
+| 1:00-1:15 |交通司机推送|交通司机|吸引新一波观众|
+| 1:15-1:45 |继续销售 |利润项目x2 |跟进订单，捆绑交易 |
+| 1:45-2:00 |总结+预览 |声望物品 |下一个流预览，按照提示操作 |
 ```

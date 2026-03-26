@@ -2,162 +2,162 @@
 
 ### 多平台商店运营仪表板
 ```markdown
-# [Brand] China E-Commerce Operations Report
+#[品牌]中国电子商务运营报告
 
-### 平台概览 (Platform Overview)
+### 平台概览（平台概览）
 
-| Metric              | Taobao/Tmall | Pinduoduo  | JD         | Douyin Shop |
-|---------------------|-------------|------------|------------|-------------|
-| Monthly GMV         | ¥___        | ¥___       | ¥___       | ¥___        |
-| Order Volume        | ___         | ___        | ___        | ___         |
-| Avg Order Value     | ¥___        | ¥___       | ¥___       | ¥___        |
-| Conversion Rate     | ___%        | ___%       | ___%       | ___%        |
-| Store Rating        | ___/5.0     | ___/5.0    | ___/5.0    | ___/5.0     |
-| Ad Spend (ROI)      | ¥___ (_:1)  | ¥___ (_:1) | ¥___ (_:1) | ¥___ (_:1)  |
-| Return Rate         | ___%        | ___%       | ___%       | ___%        |
+|公制|淘宝/天猫 |拼多多 |京东 |抖音店铺|
+|--------------------|-------------|------------|------------|------------|
+|每月 GMV | ¥___ | ¥___ | ¥___ | ¥___ |
+|订单量 | ___ | ___ | ___ | ___ |
+|平均订单价值 | ¥___ | ¥___ | ¥___ | ¥___ |
+|转化率| ___% | ___% | ___% | ___% |
+|商店评级 | ___/5.0 | ___/5.0 | ___/5.0 | ___/5.0 |
+|广告支出（投资回报率）| ¥___ (_:1) | ¥___ (_:1) | ¥___ (_:1) | ¥___ (_:1) |
+|退货率| ___% | ___% | ___% | ___% |
 
-### 流量结构 (Traffic Breakdown)
+### 流量结构（流量细分）
 
-- Organic Search: ___%
-- Paid Search (直通车/搜索推广): ___%
-- Recommendation Feed: ___%
-- Live Commerce: ___%
-- Content/Short Video: ___%
-- External Traffic: ___%
-- Repeat Customers: ___%
+- 有机搜索：___%
+- 付费搜索（直通车/搜索推广）：___%
+- 推荐源：___%
+- 直播商务：___%
+- 内容/短视频：___%
+- 外部流量：___%
+- 回头客：___%
 ```
 
 ### 产品列表优化框架
 ```markdown
-# Product Listing Optimization Checklist
+# 产品列表优化清单
 
-### 标题优化 (Title Optimization) - Platform Specific
+### 标题优化（标题优化）- 特定于平台
 
-### Taobao/Tmall (60 characters max)
-- Formula: [Brand] + [Core Keyword] + [Attribute] + [Selling Point] + [Scenario]
-- Example: [品牌]保温杯女士316不锈钢大容量便携学生上班族2024新款
-- Use 生意参谋 for keyword search volume and competition data
-- Rotate long-tail keywords based on seasonal search trends
+### 淘宝/天猫（最多 60 个字符）
+- 公式：[品牌]+[核心关键词]+[属性]+[卖点]+[场景]
+- 示例: [品牌]保温杯女士316不锈钢大容量便携学生上班族2024新款
+- 使用商业参谋获取关键词搜索量和竞争数据
+- 根据季节性搜索趋势轮换长尾关键词
 
-### Pinduoduo (60 characters max)
-- Formula: [Core Keyword] + [Price Anchor] + [Value Proposition] + [Social Proof]
-- Pinduoduo users are price-sensitive; emphasize value in title
-- Use 多多搜索 keyword tool for PDD-specific search data
+###拼多多（最多60个字符）
+- 公式：[核心关键词] + [价格锚] + [价值主张] + [社交证明]
+- 拼多多用户对价格敏感；强调标题的价值
+- 使用多多搜索关键字工具来获取特定于PDD的搜索数据
 
-### JD (45 characters recommended)
-- Formula: [Brand] + [Product Name] + [Key Specification] + [Use Scenario]
-- JD users trust specifications and brand; be precise and factual
-- Optimize for JD's search algorithm which weights brand authority heavily
+### JD（建议45个字符）
+- 公式：[品牌]+[产品名称]+[主要规格]+[使用场景]
+- 京东用户信赖的规格和品牌；准确、真实
+- 优化京东重品牌权重的搜索算法
 
-### 主图优化 (Main Image Strategy) - 5 Image Slots
+### 主图优化（主图像策略）- 5 个图像槽位
 
-| Slot | Purpose                    | Best Practice                          |
-|------|----------------------------|----------------------------------------|
-| 1    | Hero shot (搜索展示图)       | Clean product on white, mobile-readable|
-| 2    | Key selling point           | Single benefit, large text overlay      |
-| 3    | Usage scenario              | Product in real-life context            |
-| 4    | Social proof / data         | Sales volume, awards, certifications   |
-| 5    | Promotion / CTA             | Current offer, urgency element         |
+|插槽|目的|最佳实践|
+|------|----------------------------------------|----------------------------------------|
+| 1 |英雄镜头（搜索展示图）|白色清洁产品，移动可读|
+| 2 |关键卖点|单一福利，大文字叠加|
+| 3 |使用场景|现实生活中的产品|
+| 4 |社会证明/数据|销量、奖项、认证 |
+| 5 |促销/号召性用语 |当前报价，紧急元素|
 
-### 详情页 (Detail Page) Structure
+### 详情页（详情页）结构
 
-1. Core value proposition banner (3 seconds to hook)
-2. Problem/solution framework with lifestyle imagery
-3. Product specifications and material details
-4. Comparison chart vs. competitors (indirect)
-5. User reviews and social proof showcase
-6. Usage instructions and care guide
-7. Brand story and trust signals
-8. FAQ addressing top 5 purchase objections
+1.核心价值主张横幅（3秒挂起）
+2. 具有生活方式意象的问题/解决方案框架
+3.产品规格及材质详情
+4. 与竞争对手的比较图（间接）
+5. 用户评论和社会证明展示
+6. 使用说明及保养指南
+7. 品牌故事和信任信号
+8. 针对前 5 名购买异议的常见问题解答
 ```
 
 ### 618/双11战役作战计划
 ```markdown
-# [Campaign Name] Operations Battle Plan
+# [战役名称] 作战计划
 
-### T-60 Days: Strategic Planning
+### T-60 天：战略规划
 
-- [ ] Set GMV target and work backwards to traffic/conversion requirements
-- [ ] Negotiate platform resource slots (会场坑位) with category managers
-- [ ] Plan product lineup: 引流款 (traffic drivers), 利润款 (profit items), 活动款 (promo items)
-- [ ] Design campaign pricing architecture with margin analysis per SKU
-- [ ] Confirm inventory requirements and place production orders
+- [ ] 设置 GMV 目标并回溯至流量/转化要求
+- [ ] 与品类经理洽谈平台资源位（会场坑位）
+- [ ] 计划产品阵容：引流款（流量驱动）、利润款（盈利项目）、活动款（促销项目）
+- [ ] 设计活动定价架构，并对每个 SKU 进行利润分析
+- [ ] 确认库存需求并下生产订单
 
-### T-30 Days: Preparation Phase
+### T-30 天：准备阶段
 
-- [ ] Finalize creative assets: main images, detail pages, video content
-- [ ] Set up campaign mechanics: 预售 (pre-sale), 定金膨胀 (deposit multiplier), 满减 (spend thresholds)
-- [ ] Configure advertising campaigns: 直通车 keywords, 万相台 targeting, 超级推荐 creatives
-- [ ] Brief live commerce hosts and finalize live session schedule
-- [ ] Coordinate influencer seeding and KOL content publication
-- [ ] Staff up customer service team and prepare FAQ scripts
+- [ ] 确定创意资产：主图、详情页、视频内容
+- [ ] 设置活动机制：预售（预售）、定金膨胀（存款乘数）、满减（支出阈值）
+- [ ] 配置广告活动：直通车关键词、万相台定位、超级推荐广告素材
+- [ ] 简要介绍直播商务主持人并最终确定直播会议时间表
+- [ ] 协调影响者播种和 KOL 内容发布
+- [ ] 组建客户服务团队并准备常见问题解答脚本
 
-### T-7 Days: Warm-Up Phase (蓄水期)
+### T-7 Days：热身阶段（蓄水期）
 
-- [ ] Activate pre-sale listings and deposit collection
-- [ ] Ramp up advertising spend to build momentum
-- [ ] Publish teaser content on social platforms (Weibo, Xiaohongshu, Douyin)
-- [ ] Push CRM messages to existing customers: membership benefits, early access
-- [ ] Monitor competitor pricing and adjust positioning if needed
+- [ ] 激活预售清单和押金收取
+- [ ] 增加广告支出以建立势头
+- [ ] 在社交平台（微博、小红书、抖音）发布预告内容
+- [ ] 向现有客户推送 CRM 消息：会员权益、抢先体验
+- [ ] 监控竞争对手的定价并根据需要调整定位
 
-### T-Day: Campaign Execution (爆发期)
+### T-Day：活动执行（爆发期）
 
-- [ ] War room setup: real-time GMV dashboard, inventory monitor, CS queue
-- [ ] Execute hourly advertising bid adjustments based on real-time data
-- [ ] Run live commerce marathon sessions (8-12 hours)
-- [ ] Monitor inventory levels and trigger restock alerts
-- [ ] Post hourly social updates: "Sales milestone" content for FOMO
-- [ ] Flash deal drops at pre-scheduled intervals (10am, 2pm, 8pm, midnight)
+- [ ]作战室设置：实时GMV仪表板、库存监控、CS队列
+- [ ] 根据实时数据执行每小时广告出价调整
+- [ ] 举办实时商业马拉松课程（8-12 小时）
+- [ ] 监控库存水平并触发补货警报
+- [ ] 每小时发布社交更新：FOMO 的“销售里程碑”内容
+- [ ] 闪购活动按照预先安排的时间间隔（上午 10 点、下午 2 点、晚上 8 点、午夜）进行
 
-### T+1 to T+7: Post-Campaign
+### T+1 到 T+7：活动后
 
-- [ ] Compile campaign performance report vs. targets
-- [ ] Analyze traffic sources, conversion funnels, and ROI by channel
-- [ ] Process returns and manage post-sale customer service surge
-- [ ] Execute retention campaigns: thank-you messages, review requests, membership enrollment
-- [ ] Conduct team retrospective and document lessons learned
+- [ ] 编制活动绩效报告与目标
+- [ ] 按渠道分析流量来源、转化渠道和投资回报率
+- [ ] 处理退货并管理售后客户服务激增
+- [ ] 执行保留活动：感谢信息、审核请求、会员注册
+- [ ] 进行团队回顾并记录经验教训
 ```
 
 ### 广告投资回报率优化框架
 ```markdown
-# Platform Advertising Operations
+# 平台广告运营
 
-### Taobao/Tmall Advertising Stack
+### 淘宝/天猫广告栈
 
-### 直通车 (Zhitongche) - Search Ads
-- Keyword bidding strategy: Focus on high-conversion long-tail terms
-- Quality Score optimization: CTR improvement through creative testing
-- Target ROAS: 3:1 minimum for profitable keywords
-- Daily budget allocation: 40% to proven converters, 30% to testing, 30% to brand terms
+### 直通车（直通车）- 搜索广告
+- 关键词竞价策略：关注高转化长尾词
+- 质量得分优化：通过创意测试提高点击率
+- 目标广告支出回报率：盈利关键字的最低 3:1
+- 每日预算分配：40% 用于经过验证的转换器，30% 用于测试，30% 用于品牌条款
 
-### 万相台 (Wanxiangtai) - Smart Advertising
-- Campaign types: 货品加速 (product acceleration), 拉新快 (new customer acquisition)
-- Audience targeting: Retargeting, lookalike, interest-based segments
-- Creative rotation: Test 5 creatives per campaign, cull losers weekly
+### 万相台 (Wanyangtai) - 智能广告
+- 活动类型：货品加速（产品加速）、拉新快（新客获取）
+- 受众定位：重新定位、相似、基于兴趣的细分
+- 创意轮换：每个广告系列测试 5 个创意，每周剔除失败者
 
-### 超级推荐 (Super Recommendation) - Feed Ads
-- Target recommendation feed placement for discovery traffic
-- Optimize for click-through rate and add-to-cart conversion
-- Use for new product launches and seasonal push campaigns
+### 超级推荐（超级推荐）- Feed 广告
+- 针对发现流量的目标推荐源放置
+- 优化点击率和添加到购物车转化
+- 用于新产品发布和季节性推广活动
 
-### Pinduoduo Advertising
+### 拼多多广告
 
-### 多多搜索 - Search Ads
-- Aggressive bidding on category keywords during first 14 days of listing
-- Focus on 千人千面 (personalized) ranking signals
-- Target ROAS: 2:1 (lower margins but higher volume)
+### 多多搜索 - 搜索广告
+- 在列表的前 14 天内对类别关键字进行积极的出价
+- 关注千人千面（个性化）排名信号
+- 目标广告支出回报率：2:1（利润率较低，但销量较高）
 
-### 多多场景 - Display Ads
-- Retargeting cart abandoners and product viewers
-- Category and competitor targeting for market share capture
+### 多多场景 - 展示广告
+- 重新定位购物车放弃者和产品查看者
+- 占领市场份额的品类和竞争对手定位
 
-### Universal Optimization Cycle
+### 通用优化循环
 
-1. Monday: Review past week's data, pause underperformers
-2. Tuesday-Thursday: Test new keywords, audiences, and creatives
-3. Friday: Optimize bids based on weekday performance data
-4. Weekend: Monitor automated campaigns, minimal adjustments
-5. Monthly: Full audit, budget reallocation, strategy refresh
+1. 周一：回顾上周数据，暂停表现不佳的
+2.周二至周四：测试新的关键词、受众和创意
+3. 周五：根据工作日表现数据优化出价
+4. 周末：监控自动化营销活动，进行最少的调整
+5. 每月：全面审计、预算重新分配、策略更新
 ```
 
 ### 学习与记忆

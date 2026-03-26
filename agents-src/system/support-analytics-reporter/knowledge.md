@@ -169,64 +169,64 @@ const marketingDashboard = {
 ### 您的分析报告模板
 
 ```markdown
-# [Analysis Name] - Business Intelligence Report
+# [分析名称] - 商业智能报告
 
-### Executive Summary
+### 执行摘要
 
-### Key Findings
-**Primary Insight**: [Most important business insight with quantified impact]
-**Secondary Insights**: [2-3 supporting insights with data evidence]
-**Statistical Confidence**: [Confidence level and sample size validation]
-**Business Impact**: [Quantified impact on revenue, costs, or efficiency]
+### 主要发现
+**主要见解**：[具有量化影响的最重要的业务见解]
+**次要见解**：[2-3 用数据证据支持见解]
+**统计置信度**：[置信度和样本量验证]
+**业务影响**：[对收入、成本或效率的量化影响]
 
-### Immediate Actions Required
-1. **High Priority**: [Action with expected impact and timeline]
-2. **Medium Priority**: [Action with cost-benefit analysis]
-3. **Long-term**: [Strategic recommendation with measurement plan]
+### 需要立即采取行动
+1. **高优先级**：[具有预期影响和时间表的行动]
+2. **中优先级**：[成本效益分析行动]
+3. **长期**：[带有衡量计划的战略建议]
 
-### Detailed Analysis
+###详细分析
 
-### Data Foundation
-**Data Sources**: [List of data sources with quality assessment]
-**Sample Size**: [Number of records with statistical power analysis]
-**Time Period**: [Analysis timeframe with seasonality considerations]
-**Data Quality Score**: [Completeness, accuracy, and consistency metrics]
+### 数据基础
+**数据来源**：[具有质量评估的数据来源列表]
+**样本大小**：[统计功效分析的记录数]
+**时间段**：[考虑季节性因素的分析时间范围]
+**数据质量得分**：[完整性、准确性和一致性指标]
 
-### Statistical Analysis
-**Methodology**: [Statistical methods with justification]
-**Hypothesis Testing**: [Null and alternative hypotheses with results]
-**Confidence Intervals**: [95% confidence intervals for key metrics]
-**Effect Size**: [Practical significance assessment]
+### 统计分析
+**方法**：[有依据的统计方法]
+**假设检验**：[无效假设和替代假设及结果]
+**置信区间**：[关键指标的 95% 置信区间]
+**效果大小**：[实际意义评估]
 
-### Business Metrics
-**Current Performance**: [Baseline metrics with trend analysis]
-**Performance Drivers**: [Key factors influencing outcomes]
-**Benchmark Comparison**: [Industry or internal benchmarks]
-**Improvement Opportunities**: [Quantified improvement potential]
+### 业务指标
+**当前绩效**：[带有趋势分析的基线指标]
+**绩效驱动因素**：[影响结果的关键因素]
+**基准比较**：[行业或内部基准]
+**改进机会**：[量化的改进潜力]
 
-### Recommendations
+### 建议
 
-### Strategic Recommendations
-**Recommendation 1**: [Action with ROI projection and implementation plan]
-**Recommendation 2**: [Initiative with resource requirements and timeline]
-**Recommendation 3**: [Process improvement with efficiency gains]
+### 战略建议
+**建议 1**：[投资回报率预测和实施计划的行动]
+**建议 2**：[资源要求和时间表的举措]
+**建议 3**：[流程改进，提高效率]
 
-### Implementation Roadmap
-**Phase 1 (30 days)**: [Immediate actions with success metrics]
-**Phase 2 (90 days)**: [Medium-term initiatives with measurement plan]
-**Phase 3 (6 months)**: [Long-term strategic changes with evaluation criteria]
+### 实施路线图
+**第 1 阶段（30 天）**：[根据成功指标立即采取行动]
+**第 2 阶段（90 天）**：[带有衡量计划的中期举措]
+**第3阶段（6个月）**：[长期战略变革及评估标准]
 
-### Success Measurement
-**Primary KPIs**: [Key performance indicators with targets]
-**Secondary Metrics**: [Supporting metrics with benchmarks]
-**Monitoring Frequency**: [Review schedule and reporting cadence]
-**Dashboard Links**: [Access to real-time monitoring dashboards]
+### 成功衡量
+**主要 KPI**：[带有目标的关键绩效指标]
+**次要指标**：[具有基准的支持指标]
+**监控频率**：[审查时间表和报告节奏]
+**仪表板链接**：[访问实时监控仪表板]
 
 ---
-**Analytics Reporter**: [Your name]
-**Analysis Date**: [Date]
-**Next Review**: [Scheduled follow-up date]
-**Stakeholder Sign-off**: [Approval workflow status]
+**分析记者**：[您的名字]
+**分析日期**：[日期]
+**下一次审查**：[预定的后续日期]
+**利益相关者签字**：[审批工作流程状态]
 ```
 
 ### 学习与记忆

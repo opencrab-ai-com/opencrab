@@ -2,21 +2,20 @@
 
 ### 高质量自述文件模板
 ```markdown
-# Project Name
+# 项目名称
 
-> One-sentence description of what this does and why it matters.
+> 用一句话描述它的作用及其重要性。
 
-[![npm version](https://badge.fury.io/js/your-package.svg)](https://badge.fury.io/js/your-package)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![npm 版本](https://badge.fury.io/js/your-package.svg)](https://badge.fury.io/js/your-package)
+[![许可证：MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-### Why This Exists
+### 为什么会存在
 
-<!-- 2-3 sentences: the problem this solves. Not features — the pain. -->
+<!-- 2-3 句话：解决的问题。不是功能——而是痛苦。 -->
 
-### Quick Start
+### 快速入门
 
-<!-- Shortest possible path to working. No theory. -->
-
+<!-- 最短的工作路径。没有理论。 -->
 ```bash
 npm 安装你的包
 ```
@@ -28,44 +27,44 @@ const 结果 = 等待 doTheThing({ 输入: '你好' });
 控制台.log(结果); //“你好世界”
 ```
 
-### Installation
+＃＃＃ 安装
 
-<!-- Full install instructions including prerequisites -->
+<!-- 完整安装说明，包括先决条件 -->
 
 **Prerequisites**: Node.js 18+, npm 9+
 
 ```bash
 npm 安装你的包
-# or
+＃ 或者
 纱线添加你的包
 ```
 
-### Usage
+＃＃＃ 用法
 
-### Basic Example
+### 基本示例
 
-<!-- Most common use case, fully working -->
+<!-- 最常见的用例，完全正常工作 -->
 
-### Configuration
+＃＃＃ 配置
 
-| Option | Type | Default | Description |
+|选项 |类型 |默认|描述 |
 |--------|------|---------|-------------|
-| `timeout` | `number` | `5000` | Request timeout in milliseconds |
-| `retries` | `number` | `3` | Number of retry attempts on failure |
+| `超时` | `数字` | `5000` |请求超时（以毫秒为单位）|
+| `重试` | `数字` | `3` |失败时重试的次数 |
 
-### Advanced Usage
+### 高级用法
 
-<!-- Second most common use case -->
+<!-- 第二个最常见的用例 -->
 
-### API Reference
+### API 参考
 
 See [full API reference →](https://docs.yourproject.com/api)
 
-### Contributing
+### 贡献
 
 See [CONTRIBUTING.md](CONTRIBUTING.md)
 
-### License
+＃＃＃ 执照
 
 MIT © [Your Name](https://github.com/yourname)
 ```
@@ -152,57 +151,56 @@ paths:
 
 ### 教程结构模板
 ```markdown
-# Tutorial: [What They'll Build] in [Time Estimate]
+# 教程：[时间估算]中的[他们将构建什么]
 
-**What you'll build**: A brief description of the end result with a screenshot or demo link.
+**您将构建什么**：带有屏幕截图或演示链接的最终结果的简短描述。
 
-**What you'll learn**:
-- Concept A
-- Concept B
-- Concept C
+**您将学到什么**：
+- 概念A
+- 概念B
+- 概念C
 
-**Prerequisites**:
-- [ ] [Tool X](link) installed (version Y+)
-- [ ] Basic knowledge of [concept]
-- [ ] An account at [service] ([sign up free](link))
+**先决条件**：
+- [ ] [工具 X]（链接）已安装（版本 Y+）
+- [ ] [概念]的基础知识
+- [ ] [服务] 的帐户（[免费注册]（链接））
 
 ---
 
-### Step 1: Set Up Your Project
+### 第 1 步：设置您的项目
 
-<!-- Tell them WHAT they're doing and WHY before the HOW -->
-First, create a new project directory and initialize it. We'll use a separate directory
-to keep things clean and easy to remove later.
-
+<!-- 在如何做之前告诉他们他们在做什么以及为什么 -->
+首先，创建一个新的项目目录并对其进行初始化。我们将使用一个单独的目录
+保持物品清洁并方便以后移除。
 ```bash
 mkdir 我的项目 && cd 我的项目
 npm 初始化 -y
 ```
 
-You should see output like:
+您应该看到如下输出：
 ```
 写入 /path/to/my-project/package.json: { ... }
 ```
 
 > **Tip**: If you see `EACCES` errors, [fix npm permissions](https://link) or use `npx`.
 
-### Step 2: Install Dependencies
+### 第 2 步：安装依赖项
 
-<!-- Keep steps atomic — one concern per step -->
+<!-- 保持步骤原子性 — 每一步一个关注点 -->
 
-### Step N: What You Built
+### 步骤 N：您构建的内容
 
-<!-- Celebrate! Summarize what they accomplished. -->
+<!-- 庆祝！总结一下他们所取得的成就。 -->
 
-You built a [description]. Here's what you learned:
-- **Concept A**: How it works and when to use it
-- **Concept B**: The key insight
+您构建了一个[描述]。这是您学到的内容：
+- **概念 A**：它如何工作以及何时使用它
+- **概念 B**：关键见解
 
-### Next Steps
+### 后续步骤
 
-- [Advanced tutorial: Add authentication](link)
-- [Reference: Full API docs](link)
-- [Example: Production-ready version](link)
+- [高级教程：添加身份验证]（链接）
+- [参考：完整API 文档]（链接）
+- [示例：生产就绪版本]（链接）
 ```
 
 ### Docusaurus 配置

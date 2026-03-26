@@ -32,22 +32,22 @@
 有用的 ICP 是可证伪的。如果它不排除公司，那么它就不是 ICP，而是 TAM 幻灯片。定义你的：
 
 ```
-FIRMOGRAPHIC FILTERS
-- Industry verticals (2-4 specific, not "enterprise")
-- Revenue range or employee count band
-- Geography (if relevant to your go-to-market)
-- Technology stack requirements (what must they already use?)
+固相过滤器
+- 垂直行业（2-4 个特定行业，而非“企业”）
+- 收入范围或员工人数范围
+- 地理位置（如果与您的市场推广相关）
+- 技术堆栈要求（他们必须已经使用什么？）
 
-BEHAVIORAL QUALIFIERS
-- What business event makes them a buyer right now?
-- What pain does your product solve that they cannot ignore?
-- Who inside the org feels that pain most acutely?
-- What does their current workaround look like?
+行为限定条件
+- 什么商业活动让他们现在成为买家？
+- 你的产品解决了哪些他们无法忽视的痛点？
+- 组织内部谁对这种痛苦感受最深？
+- 他们当前的解决方法是什么样的？
 
-DISQUALIFIERS (equally important)
-- What makes an account look good on paper but never close?
-- Industries or segments where your win rate is below 15%
-- Company stages where your product is premature or overkill
+取消资格（同样重要）
+- 是什么让一个账户在纸面上看起来很好但永远不会关闭？
+- 胜率低于 15% 的行业或细分市场
+- 产品处于不成熟或过度杀伤力的公司阶段
 ```
 
 ### 分层账户参与模型
@@ -92,16 +92,16 @@ DISQUALIFIERS (equally important)
 每一次触摸都必须增加一个新的值角度。用不同的词重复同样的问题并不是一个顺序——它很烦人。
 
 ```
-Touch 1 (Day 1, Email): Signal-based opening + specific value prop + soft CTA
-Touch 2 (Day 3, LinkedIn): Connection request with personalized note (no pitch)
-Touch 3 (Day 5, Email): Share relevant insight/data point tied to their situation
-Touch 4 (Day 8, Phone): Call with voicemail drop referencing email thread
-Touch 5 (Day 10, LinkedIn): Engage with their content or share relevant content
-Touch 6 (Day 14, Email): Case study from similar company/situation + clear CTA
-Touch 7 (Day 17, Video): 60-second personalized Loom showing something specific to them
-Touch 8 (Day 21, Email): New angle — different pain point or stakeholder perspective
-Touch 9 (Day 24, Phone): Final call attempt
-Touch 10 (Day 28, Email): Breakup email — honest, brief, leave the door open
+Touch 1（第一天，电子邮件）：基于信号的开盘+特定价值道具+软CTA
+接触 2（第 3 天，LinkedIn）：带有个性化注释的连接请求（无推介）
+第三次接触（第 5 天，电子邮件）：分享与其情况相关的相关见解/数据点
+第 4 次接触（第 8 天，电话）：通过引用电子邮件线程的语音信箱进行呼叫
+接触 5（第 10 天，LinkedIn）：参与他们的内容或分享相关内容
+接触 6（第 14 天，电子邮件）：类似公司/情况的案例研究 + 清晰的 CTA
+Touch 7（第 17 天，视频）：60 秒的个性化 Loom 展示针对他们的特定内容
+接触 8（第 21 天，电子邮件）：新角度 — 不同的痛点或利益相关者视角
+触摸 9（第 24 天，电话）：最后一次通话尝试
+Touch 10（第 28 天，电子邮件）：分手电子邮件——诚实、简短、敞开大门
 ```
 
 ### 撰写能得到回复的冷酷电子邮件
@@ -109,30 +109,30 @@ Touch 10 (Day 28, Email): Breakup email — honest, brief, leave the door open
 **高转化率冷电子邮件的剖析：**
 
 ```
-SUBJECT LINE
-- 3-5 words, lowercase, looks like an internal email
-- Reference signal or specificity: "re: the new data team"
-- Never clickbait, never ALL CAPS, never emoji
+主题行
+- 3-5 个单词，小写，看起来像内部电子邮件
+- 参考信号或特异性：“回复：新数据团队”
+- 绝不使用点击诱饵，绝不全部大写，绝不使用表情符号
 
-OPENING LINE (Personalized, Signal-Based)
-Bad:  "I hope this email finds you well."
-Bad:  "I'm reaching out because [company] helps companies like yours..."
-Good: "Saw you just hired 4 data engineers — scaling the analytics team
-       usually means the current tooling is hitting its ceiling."
+开场白（个性化，基于信号）
+坏：“我希望这封电子邮件对您有好处。”
+坏：“我伸出援手是因为[公司]帮助像你们这样的公司......”
+好：“看到您刚刚聘请了 4 名数据工程师 - 扩大了分析团队的规模
+       通常意味着当前的工具已达到上限。”
 
-VALUE PROPOSITION (In the Buyer's Language)
-- One sentence connecting their situation to an outcome they care about
-- Use their vocabulary, not your marketing copy
-- Specificity beats cleverness: numbers, timeframes, concrete outcomes
+价值主张（以买方的语言）
+- 用一句话将他们的处境与他们关心的结果联系起来
+- 使用他们的词汇，而不是你的营销文案
+- 特异性胜过聪明：数字、时间表、具体结果
 
-SOCIAL PROOF (Optional, One Line)
-- "[Similar company] cut their [metric] by [number] in [timeframe]"
-- Only include if it is genuinely relevant to their situation
+社会证明（可选，一行）
+-“[类似公司]在[时间范围]内将[指标]削减了[数量]”
+- 仅包含与他们的情况真正相关的内容
 
-CTA (Single, Clear, Low Friction)
-Bad:  "Would love to set up a 30-minute call to walk you through a demo"
-Good: "Worth a 15-minute conversation to see if this applies to your team?"
-Good: "Open to hearing how [similar company] handled this?"
+CTA（单一、透明、低摩擦）
+不好：“很乐意安排 30 分钟的通话来引导您完成演示”
+好：“值得进行 15 分钟的交谈，看看这是否适用于您的团队？”
+好：“愿意听听[类似公司]如何处理这个问题？”
 ```
 
 **按质量等级划分的回复率基准：**

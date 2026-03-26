@@ -3,85 +3,85 @@
 ### 播客节目计划模板
 
 ```markdown
-# Podcast Show Plan
+# 播客节目计划
 
-### Show Basics
+### 显示基础知识
 
-- Show name:
-- Show tagline: (one sentence that communicates the show's value)
-- Show format: Vertical knowledge / Interview conversation / Narrative storytelling / Casual chat
-- Target episode length: 30-45 min / 45-60 min / 60-90 min
-- Publishing cadence: Weekly / biweekly / monthly
-- Target listener: Age, occupation, interest tags, listening context
+- 显示名称：
+- 节目口号：（用一句话传达节目的价值）
+- 展示形式：垂直知识/访谈对话/叙事讲故事/休闲聊天
+- 目标剧集长度：30-45 分钟/45-60 分钟/60-90 分钟
+- 出版节奏：每周/双周/每月
+- 目标听众：年龄、职业、兴趣标签、聆听情境
 
-### Content Positioning
+### 内容定位
 
-- Core topic domain:
-- Differentiating angle: (what makes you unique among similar shows)
-- Content value proposition: (why should listeners subscribe?)
-- Benchmark show analysis: (list 3-5 comparable shows with pros/cons of each)
+- 核心主题域：
+- 差异化角度：（是什么让你在同类节目中独一无二）
+- 内容价值主张：（听众为什么要订阅？）
+- 基准节目分析：（列出 3-5 个可比较的节目，并说明每个节目的优缺点）
 
-### Content Roadmap (First Season - 12 Episodes)
+### 内容路线图（第一季 - 12 集）
 
-| Ep# | Topic Direction | Type | Guest (if any) | Expected Highlight |
-|-----|----------------|------|----------------|-------------------|
-| E01 | Launch intro + domain overview | Solo | None | Establish persona and show tone |
-| E02 | Core topic deep dive | Knowledge | None | Demonstrate domain depth |
-| E03 | Industry guest conversation | Interview | TBD | Guest endorsement + cross-promo |
+| EP# |主题方向 |类型 |访客（如果有）|期待亮点|
+|----------------|----------------|------|----------------|--------------------|
+| E01 |启动简介 + 域概述 |独奏|无 |塑造人物形象并展现基调|
+| E02 |核心主题深入探讨 |知识 |无 |展示领域深度 |
+| E03 |行业嘉宾对话|采访 |待定 |嘉宾背书+交叉促销 |
 | ... | ... | ... | ... | ... |
 
-### Production Standards
+### 生产标准
 
-- Recording equipment:
-- Recording environment:
-- Post-production spec: loudness -16 LUFS, filler word removal, transition sound effects
-- Cover art design style:
-- Shownotes template: timestamps + keywords + relevant links
+- 录音设备：
+- 录音环境：
+- 后期制作规格：响度-16 LUFS、填充词删除、过渡音效
+- 封面艺术设计风格：
+- Shownotes模板：时间戳+关键字+相关链接
 ```
 
 ### 剧集录制大纲模板
 
 ```markdown
-# Episode Recording Outline
+# 剧集录制大纲
 
-### Basic Info
+### 基本信息
 
-- Episode number / title:
-- Guest: (name, title, one-line introduction)
-- Estimated recording time: 50 minutes (target finished length: 40 minutes)
-- Recording method: In-person / Remote (each side records locally)
+- 集数/标题：
+- 嘉宾：（姓名、职务、一行介绍）
+- 预计录制时间：50 分钟（目标完成长度：40 分钟）
+- 录音方式：现场/远程（双方本地录音）
 
-### Content Structure
+### 内容结构
 
-### Opening (0:00-3:00)
-- Show intro (standard audio signature + host intro)
-- This episode's topic hook: open with a story / question / data point
-- Guest introduction (weave it in naturally; don't read a resume)
+### 开幕 (0:00-3:00)
+- 显示介绍（标准音频签名+主持人介绍）
+- 本集的主题钩子：以故事/问题/数据点开头
+- 嘉宾介绍（自然地融入其中；不要阅读简历）
 
-### Part 1 (3:00-15:00): [Topic Keyword]
-- Core question 1:
-- Planned follow-up directions:
-- Prepared examples / data:
+### 第 1 部分（3:00-15:00）：[主题关键词]
+- 核心问题1：
+- 计划的后续方向：
+- 准备的例子/数据：
 
-### Part 2 (15:00-30:00): [Topic Keyword]
-- Core question 2:
-- Planned follow-up directions:
-- Potential debate points / interesting angles:
+### 第二部分（15:00-30:00）：[主题关键词]
+- 核心问题2：
+- 计划的后续方向：
+- 潜在的争论点/有趣的角度：
 
-### Part 3 (30:00-40:00): [Topic Keyword]
-- Open discussion / personal perspective exchange
-- Actionable advice for listeners
+### 第三部分（30:00-40:00）：[主题关键词]
+- 公开讨论/个人观点交流
+- 为听众提供可行的建议
 
-### Wrap-Up (40:00-45:00)
-- One-sentence summary of the episode's key takeaway
-- Guest recommendations (book / podcast / tool / other resource)
-- Listener engagement prompt: suggested comment topic
-- Next episode teaser
-- Standard outro + audio signature
+### 总结（40:00-45:00）
+- 一句话概括这一集的要点
+- 来宾推荐（书籍/播客/工具/其他资源）
+- 听众参与提示：建议评论主题
+- 下一集预告片
+- 标准结尾+音频签名
 
-### Recording Notes
+### 录音笔记
 
-- Guest reminders: moderate speaking pace, avoid table-tapping, phone on silent
-- Backup topics (if recording finishes early or conversation stalls):
-- Topics to avoid:
+- 宾客提醒：适度说话速度、避免敲桌子、电话静音
+- 备份主题（如果录音提前完成或对话停止）：
+- 要避免的话题：
 ```

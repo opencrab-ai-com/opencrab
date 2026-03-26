@@ -2,51 +2,51 @@
 
 ### 严重性分类矩阵
 ```markdown
-# Incident Severity Framework
+# 事件严重性框架
 
-| Level | Name      | Criteria                                           | Response Time | Update Cadence | Escalation              |
-|-------|-----------|----------------------------------------------------|---------------|----------------|-------------------------|
-| SEV1  | Critical  | Full service outage, data loss risk, security breach | < 5 min       | Every 15 min   | VP Eng + CTO immediately |
-| SEV2  | Major     | Degraded service for >25% users, key feature down   | < 15 min      | Every 30 min   | Eng Manager within 15 min|
-| SEV3  | Moderate  | Minor feature broken, workaround available           | < 1 hour      | Every 2 hours  | Team lead next standup   |
-| SEV4  | Low       | Cosmetic issue, no user impact, tech debt trigger    | Next bus. day  | Daily          | Backlog triage           |
+|水平|名称 |标准|响应时间 |更新节奏 |升级 |
+|------|----------|----------------------------------------------------|----------------------------|----------------|------------------------------------|
+| SEV1 |关键|全面服务中断、数据丢失风险、安全漏洞 | < 5 分钟 |每 15 分钟 |立即担任工程副总裁 + 首席技术官 |
+| SEV2 |专业| >25% 用户的服务降级，关键功能下降 | < 15 分钟 |每 30 分钟 |工程经理 15 分钟内|
+| SEV3 |中等|小功能损坏，可用解决方法 | < 1 小时 |每 2 小时 |下一场站立会议由团队负责人 |
+| SEV4 |低|外观问题、无用户影响、技术债务触发 |下一班车。日 |每日 |积压分类 |
 
-### Escalation Triggers (auto-upgrade severity)
+### 升级触发器（自动升级严重性）
 
-- Impact scope doubles → upgrade one level
-- No root cause identified after 30 min (SEV1) or 2 hours (SEV2) → escalate to next tier
-- Customer-reported incidents affecting paying accounts → minimum SEV2
-- Any data integrity concern → immediate SEV1
+- 影响范围加倍→升级一级
+- 30 分钟 (SEV1) 或 2 小时 (SEV2) 后未发现根本原因 → 升级到下一级
+- 客户报告的影响支付账户的事件 → 最低 SEV2
+- 任何数据完整性问题 → 立即 SEV1
 ```
 
 ### 事件响应操作手册模板
 ```markdown
-# Runbook: [Service/Failure Scenario Name]
+# Runbook：[服务/故障场景名称]
 
-### Quick Reference
+### 快速参考
 
-- **Service**: [service name and repo link]
-- **Owner Team**: [team name, Slack channel]
-- **On-Call**: [PagerDuty schedule link]
-- **Dashboards**: [Grafana/Datadog links]
-- **Last Tested**: [date of last game day or drill]
+- **服务**：[服务名称和存储库链接]
+- **所有者团队**：[团队名称，Slack 频道]
+- **值班**：[PagerDuty 时间表链接]
+- **仪表板**：[Grafana/Datadog 链接]
+- **上次测试**：[最后一场比赛或训练的日期]
 
-### Detection
+### 检测
 
-- **Alert**: [Alert name and monitoring tool]
-- **Symptoms**: [What users/metrics look like during this failure]
-- **False Positive Check**: [How to confirm this is a real incident]
+- **警报**：[警报名称和监控工具]
+- **症状**：[在此故障期间用户/指标是什么样的]
+- **误报检查**：[如何确认这是真实事件]
 
-### Diagnosis
+### 诊断
 
-1. Check service health: `kubectl get pods -n <namespace> | grep <service>`
-2. Review error rates: [Dashboard link for error rate spike]
-3. Check recent deployments: `kubectl rollout history deployment/<service>`
-4. Review dependency health: [Dependency status page links]
+1. 检查服务运行状况：`kubectl get pods -n <namespace> | grep <服务>`
+2. 检查错误率：[错误率峰值的仪表板链接]
+3. 检查最近的部署：`kubectl rollout History部署/<service>`
+4. 检查依赖关系健康状况：[依赖关系状态页面链接]
 
-### Remediation
+### 补救措施
 
-### Option A: Rollback (preferred if deploy-related)
+### 选项 A：回滚（如果与部署相关则首选）
 ```bash
 # 识别最后一个已知的良好修订版本
 kubectl 推出历史部署/<service> -n 生产
@@ -94,77 +94,77 @@ kubectl 自动缩放部署/<服务> -n 生产 \
 
 ### 尸检文件模板
 ```markdown
-# Post-Mortem: [Incident Title]
+# 事后分析：[事件标题]
 
-**Date**: YYYY-MM-DD
-**Severity**: SEV[1-4]
-**Duration**: [start time] – [end time] ([total duration])
-**Author**: [name]
-**Status**: [Draft / Review / Final]
+**日期**：年-月-日
+**严重性**：SEV[1-4]
+**持续时间**：[开始时间] – [结束时间]（[总持续时间]）
+**作者**：[姓名]
+**状态**：[草案/审查/最终]
 
-### Executive Summary
+### 执行摘要
 
-[2-3 sentences: what happened, who was affected, how it was resolved]
+[2-3句话：发生了什么，谁受到影响，如何解决]
 
-### Impact
+### 影响
 
-- **Users affected**: [number or percentage]
-- **Revenue impact**: [estimated or N/A]
-- **SLO budget consumed**: [X% of monthly error budget]
-- **Support tickets created**: [count]
+- **受影响的用户**：[数量或百分比]
+- **收入影响**：[估计或不适用]
+- **消耗的 SLO 预算**：[每月错误预算的 X%]
+- **创建的支持票**：[计数]
 
-### Timeline (UTC)
+### 时间线（UTC）
 
-| Time  | Event                                           |
-|-------|--------------------------------------------------|
-| 14:02 | Monitoring alert fires: API error rate > 5%      |
-| 14:05 | On-call engineer acknowledges page               |
-| 14:08 | Incident declared SEV2, IC assigned              |
-| 14:12 | Root cause hypothesis: bad config deploy at 13:55|
-| 14:18 | Config rollback initiated                        |
-| 14:23 | Error rate returning to baseline                 |
-| 14:30 | Incident resolved, monitoring confirms recovery  |
-| 14:45 | All-clear communicated to stakeholders           |
+|时间 |活动 |
+|--------|--------------------------------------------------|
+| 14:02 | 14:02监控警报触发：API 错误率 > 5% |
+| 14:05 | 14:05待命工程师确认页面 |
+| 14:08 | 14:08事件宣布为 SEV2，IC 已分配 |
+| 14:12 | 14:12根本原因假设：13:55 部署错误配置|
+| 14:18 | 14:18配置回滚已启动 |
+| 14:23 | 14:23错误率回归基线 |
+| 14:30 | 14:30事件已解决，监控确认已恢复 |
+| 14:45 | 14:45已向利益相关者明确传达信息 |
 
-### Root Cause Analysis
+### 根本原因分析
 
-### What happened
-[Detailed technical explanation of the failure chain]
+###发生了什么
+[故障链详细技术讲解]
 
-### Contributing Factors
-1. **Immediate cause**: [The direct trigger]
-2. **Underlying cause**: [Why the trigger was possible]
-3. **Systemic cause**: [What organizational/process gap allowed it]
+### 影响因素
+1. **直接原因**：[直接触发]
+2. **根本原因**：[为什么触发是可能的]
+3. **系统性原因**：[什么组织/流程差距允许出现这种情况]
 
-### 5 Whys
-1. Why did the service go down? → [answer]
-2. Why did [answer 1] happen? → [answer]
-3. Why did [answer 2] happen? → [answer]
-4. Why did [answer 3] happen? → [answer]
-5. Why did [answer 4] happen? → [root systemic issue]
+### 5个为什么
+1. 为什么服务下降了？ → [答案]
+2. 为什么会出现[答案1]？ → [答案]
+3. 为什么会出现[答案2]？ → [答案]
+4. 为什么会发生[答案3]？ → [答案]
+5. 为什么会发生[答案4]？ → [根本系统问题]
 
-### What Went Well
+### 进展顺利
 
-- [Things that worked during the response]
-- [Processes or tools that helped]
+- [响应期间有效的事情]
+- [有帮助的流程或工具]
 
-### What Went Poorly
+### 哪些地方做得不好
 
-- [Things that slowed down detection or resolution]
-- [Gaps that were exposed]
+- [减缓检测或解决速度的事情]
+- [暴露的缝隙]
 
-### Action Items
+### 行动项目
 
-| ID | Action                                     | Owner       | Priority | Due Date   | Status      |
-|----|---------------------------------------------|-------------|----------|------------|-------------|
-| 1  | Add integration test for config validation  | @eng-team   | P1       | YYYY-MM-DD | Not Started |
-| 2  | Set up canary deploy for config changes     | @platform   | P1       | YYYY-MM-DD | Not Started |
-| 3  | Update runbook with new diagnostic steps    | @on-call    | P2       | YYYY-MM-DD | Not Started |
-| 4  | Add config rollback automation              | @platform   | P2       | YYYY-MM-DD | Not Started |
+|身份证 |行动|业主|优先|截止日期 |状态 |
+|----|---------------------------------------------------------|-------------|---------|------------|----------|
+| 1 |添加配置验证集成测试 | @eng-team | P1 |年-月-日 |尚未开始 |
+| 2 |设置金丝雀部署以进行配置更改 | @平台| P1 |年-月-日 |尚未开始 |
+| 3 |使用新的诊断步骤更新运行手册 | @随叫随到 | P2 |年-月-日 |尚未开始 |
+| 4 |添加配置回滚自动化 | @平台| P2 |年-月-日 |尚未开始 |
 
-### Lessons Learned
+### 经验教训
 
-[Key takeaways that should inform future architectural and process decisions]
+[应该为未来的架构和流程决策提供信息的关键要点]
 ```
 
 ### SLO/SLI 定义框架
@@ -231,33 +231,33 @@ error_budget_policy:
 
 ### 利益相关者沟通模板
 ```markdown
-# SEV1 — Initial Notification (within 10 minutes)
-**Subject**: [SEV1] [Service Name] — [Brief Impact Description]
+# SEV1 — 初始通知（10 分钟内）
+**主题**：[SEV1] [服务名称] — [简要影响描述]
 
-**Current Status**: We are investigating an issue affecting [service/feature].
-**Impact**: [X]% of users are experiencing [symptom: errors/slowness/inability to access].
-**Next Update**: In 15 minutes or when we have more information.
-
----
-
-# SEV1 — Status Update (every 15 minutes)
-**Subject**: [SEV1 UPDATE] [Service Name] — [Current State]
-
-**Status**: [Investigating / Identified / Mitigating / Resolved]
-**Current Understanding**: [What we know about the cause]
-**Actions Taken**: [What has been done so far]
-**Next Steps**: [What we're doing next]
-**Next Update**: In 15 minutes.
+**当前状态**：我们正在调查影响[服务/功能]的问题。
+**影响**：[X]% 的用户遇到[症状：错误/缓慢/无法访问]。
+**下次更新**：15 分钟后或当我们有更多信息时。
 
 ---
 
-# Incident Resolved
-**Subject**: [RESOLVED] [Service Name] — [Brief Description]
+# SEV1 — 状态更新（每 15 分钟一次）
+**主题**：[SEV1 更新] [服务名称] — [当前状态]
 
-**Resolution**: [What fixed the issue]
-**Duration**: [Start time] to [end time] ([total])
-**Impact Summary**: [Who was affected and how]
-**Follow-up**: Post-mortem scheduled for [date]. Action items will be tracked in [link].
+**状态**：[调查/确定/缓解/解决]
+**目前的理解**：[我们对原因的了解]
+**采取的行动**：[到目前为止已采取的行动]
+**后续步骤**：[我们接下来要做什么]
+**下次更新**：15 分钟后。
+
+---
+
+# 事件已解决
+**主题**：[已解决] [服务名称] — [简要说明]
+
+**解决方案**：[解决问题的方法]
+**持续时间**：[开始时间]至[结束时间]（[总计]）
+**影响摘要**：[谁受到影响以及如何受到影响]
+**后续行动**：尸检安排在[日期]。行动项目将在[链接]中跟踪。
 ```
 
 ### 待命轮换配置

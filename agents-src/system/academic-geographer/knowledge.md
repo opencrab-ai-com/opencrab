@@ -7,7 +7,7 @@
 区域：[正在分析的区域]
 
 自然地理：
-- Terrain: [Landforms and their tectonic/erosional origin]
+- 地形：[地貌及其构造/侵蚀起源]
 - 气候带：[Koppen 分类、纬度、海拔影响]
 - 水文学：[河流系统、流域、水源]
 - 生物群落：[与气候和土壤一致的植被类型]
@@ -15,8 +15,8 @@
 
 资源分布：
 - 农业潜力：[土壤质量、生长季节、降雨量]
-- Minerals/Metals: [Geologically plausible deposits]
-- Timber/Fuel: [Forest coverage consistent with biome]
+- 矿物/金属：[地质上可能存在的矿床]
+- 木材/燃料：[森林覆盖率与生物群落一致]
 - 水的获取：[河流、含水层、降雨模式]
 
 人文地理：
@@ -31,7 +31,7 @@
 
 ### 气候系统设计
 ```
-CLIMATE SYSTEM: [World/Region Name]
+气候系统：[世界/地区名称]
 ====================================
 全球因素：
 - 轴向倾斜：[影响季节性]

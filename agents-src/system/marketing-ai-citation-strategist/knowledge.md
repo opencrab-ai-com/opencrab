@@ -1,54 +1,54 @@
 ### 引文审核记分卡
 
 ```markdown
-# AI Citation Audit: [Brand Name]
+# AI 引文审核：[品牌名称]
 
-### Date: [YYYY-MM-DD]
+### 日期：[年-月-日]
 
-| Platform   | Prompts Tested | Brand Cited | Competitor Cited | Citation Rate | Gap    |
-|------------|---------------|-------------|-----------------|---------------|--------|
-| ChatGPT    | 40            | 12          | 28              | 30%           | -40%   |
-| Claude     | 40            | 8           | 31              | 20%           | -57.5% |
-| Gemini     | 40            | 15          | 25              | 37.5%         | -25%   |
-| Perplexity | 40            | 18          | 22              | 45%           | -10%   |
+|平台|已测试提示 |品牌被引用|引用竞争对手 |引用率 |差距|
+|------------|--------------|-------------|-----------------|----------------|--------|
+|聊天GPT | 40 | 40 12 | 12 28 | 28 30% | -40% |
+|克劳德| 40 | 40 8 | 31 | 20% | -57.5% |
+|双子座| 40 | 40 15 | 15 25 | 25 37.5% | -25% |
+|困惑| 40 | 40 18 | 18 22 | 22 45% | -10% |
 
-**Overall Citation Rate**: 33.1%
-**Top Competitor Rate**: 66.3%
-**Category Average**: 42%
+**总体引用率**：33.1%
+**顶级竞争对手率**：66.3%
+**类别平均**：42%
 ```
 
 ### 丢失提示分析
 
 ```markdown
-| Prompt | Platform | Who Gets Cited | Why They Win | Fix Priority |
-|--------|----------|---------------|--------------|-------------|
-| "Best [category] for [use case]" | All 4 | Competitor A | Comparison page with structured data | P1 |
-| "How to choose a [product type]" | ChatGPT, Gemini | Competitor B | FAQ page matching query pattern exactly | P1 |
-| "[Category] vs [category]" | Perplexity | Competitor A | Dedicated comparison with schema markup | P2 |
+|提示|平台|谁被引用 |他们为何获胜 |修复优先级 |
+|--------|----------|----------------|----------------|------------|
+| “[用例]的最佳[类别]”|全部 4 |竞争对手A |与结构化数据的比较页面 | P1 |
+| “如何选择[产品类型]”| ChatGPT，双子座 |竞争对手 B |与查询模式完全匹配的常见问题解答页面 | P1 |
+| “[类别] 与 [类别]”|困惑|竞争对手A |与模式标记的专门比较 | P2 |
 ```
 
 ### 修复包模板
 
 ```markdown
-# Fix Pack: [Brand Name]
+# 修复包：[品牌名称]
 
-### Priority 1 (Implement within 7 days)
+### 优先级 1（7 天内实施）
 
-### Fix 1: Add FAQ Schema to [Page]
-- **Target prompts**: 8 lost prompts related to [topic]
-- **Expected impact**: +15-20% citation rate on FAQ-style queries
-- **Implementation**:
-  - Add FAQPage schema markup
-  - Structure Q&A pairs to match exact prompt patterns
-  - Include entity references (brand name, product names, category terms)
+### 修复 1：将 FAQ 架构添加到 [页面]
+- **目标提示**：8个与[主题]相关的丢失提示
+- **预期影响**：常见问题解答样式查询的引用率增加 15-20%
+- **实施**：
+  - 添加 FAQPage 架构标记
+  - 构建问答对以匹配精确的提示模式
+  - 包括实体参考（品牌名称、产品名称、类别术语）
 
-### Fix 2: Create Comparison Content
-- **Target prompts**: 6 lost prompts where competitors win with comparison pages
-- **Expected impact**: +10-15% citation rate on comparison queries
-- **Implementation**:
-  - Create "[Brand] vs [Competitor]" pages
-  - Use structured data (Product schema with reviews)
-  - Include objective feature-by-feature tables
+### 修复 2：创建比较内容
+- **目标提示**：6 个丢失的提示，竞争对手通过比较页面获胜
+- **预期影响**：比较查询的引用率增加 10-15%
+- **实施**：
+  - 创建“[品牌] vs [竞争对手]”页面
+  - 使用结构化数据（带评论的产品架构）
+  - 包括客观的逐个特征表
 ```
 
 # 工作流程

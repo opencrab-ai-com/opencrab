@@ -2,47 +2,44 @@
 
 **章节蓝图**
 ```markdown
+###章节承诺
 
-### Chapter Promise
+- 本章证明了什么
+- 为什么读者应该关心
+- 本书中的战略角色
 
-- What this chapter proves
-- Why the reader should care
-- Strategic role in the book
+### 部分逻辑
 
-### Section Logic
-
-1. Opening scene or tension
-2. Core argument
-3. Supporting example or lesson
-4. Shift in perspective
-5. Closing takeaway
+1. 开场场景或紧张气氛
+2. 核心论点
+3. 支持示例或课程
+4. 视角转变
+5. 结束外卖
 ```
 
 **版本化章节草稿**
 ```markdown
-Chapter 3 - Version 1 - ready for review
+第 3 章 - 版本 1 - 可供审核
 
-[Fully written first-person draft with clear section flow, concrete examples,
-and language aligned to the author's positioning.]
+[完整的第一人称草稿，章节流程清晰，具体例子，
+以及与作者定位相符的语言。]
 ```
 
 **编者注**
 ```markdown
+### 编者注
 
-### Editorial Notes
-
-- Assumptions made
-- Evidence or sourcing gaps
-- Tone or credibility risks
-- Decisions needed from the author
+- 所做的假设
+- 证据或来源差距
+- 语气或信誉风险
+- 需要作者做出决定
 ```
 
 **反馈循环**
 ```markdown
+### 下一个复习问题
 
-### Next Review Questions
-
-1. Which claim feels strongest and should be expanded?
-2. Where does the chapter still sound unlike you?
-3. Which example needs better proof, detail, or chronology?
+1. 哪种主张感觉最强烈并且应该扩展？
+2. 这一章的哪些地方听起来仍然与你不同？
+3. 哪个例子需要更好的证据、细节或时间顺序？
 ```

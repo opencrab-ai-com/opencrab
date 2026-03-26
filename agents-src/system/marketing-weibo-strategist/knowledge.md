@@ -3,71 +3,71 @@
 ### 热门话题活动模板
 
 ```markdown
-# Weibo Trending Topic Campaign Plan
+#微博热门话题活动策划
 
-### Basic Info
+### 基本信息
 
-- Topic name: #Brand + Core Keyword#
-- Topic type: Brand marketing / Event newsjacking / Holiday marketing
-- Target trending position: Top 30 / Top 10
-- Expected impressions: > 50 million
+- 主题名称：#品牌+核心关键词#
+- 主题类型：品牌营销/事件新闻劫持/节日营销
+- 目标趋势位置：前 30 名/前 10 名
+- 预期展示次数：> 5000万次
 
-### Topic Design
+### 主题设计
 
-### Topic Naming Principles
-- Short and punchy (4-8 characters is ideal)
-- Contains suspense or controversy ("Did XXX just flop?" beats "XXX New Product Launch")
-- Includes emotional trigger words (shocking / unexpected / the truth / actually)
+### 主题命名原则
+- 简短而有力（4-8 个字符是理想的）
+- 包含悬念或争议（“XXX 刚刚失败了吗？”胜过“XXX 新产品发布”）
+- 包括情感触发词（令人震惊/意外/真相/实际上）
 
-### Distribution Cadence
-| Phase | Timing | Action | Participants |
-|-------|--------|--------|-------------|
-| Warm-up | T-1 day | Teaser poster + preview post | Official account |
-| Ignition | T-day 0-2h | Core topic launch + KOL first movers | 3-5 top-tier KOLs |
-| Amplification | T-day 2-6h | Mid-tier creators follow up + grassroots UGC | 20-30 mid-tier KOLs |
-| Consolidation | T-day 6-24h | Topic wrap-up + secondary distribution assets | Official account + media accounts |
+### 分发节奏
+|相|时间 |行动|参与者|
+|--------|--------|--------|-------------|
+|热身| T-1 天 |预告海报 + 预览帖 |公众号 |
+|点火| T 天 0-2 小时 |核心话题发布+KOL先行者| 3-5位顶级KOL |
+|放大| T 天 2-6 小时 |中线创作者跟进+草根UGC | 20-30 名中层 KOL |
+|整合| T 日 6-24 小时 |主题总结+二次发行资产 |公众号+媒体号 |
 
-### Supporting Materials Checklist
-- [ ] Key visual poster (horizontal + vertical)
-- [ ] KOL brief document
-- [ ] Comment section seeding copy (5-10 lines)
-- [ ] Prepared response scripts (positive / negative / controversial)
-- [ ] Topic data tracking sheet
+### 支持材料清单
+- [ ] 主视觉海报（横向+纵向）
+- [ ] KOL简档
+- [ ] 评论部分播种文案（5-10行）
+- [ ] 准备好的回应脚本（正面/负面/有争议）
+- [ ] 主题数据追踪表
 ```
 
 ### 危机应对模板
 
 ```markdown
-# Weibo Crisis Response Playbook
+#微博危机应对手册
 
-### Severity Classification
+### 严重程度分类
 
-| Level | Criteria | Response Time | Response Team |
-|-------|----------|---------------|--------------|
-| Blue (Monitor) | Negative mentions < 100 | Within 4 hours | Operations team |
-| Yellow (Alert) | Negative mentions 100-500 | Within 2 hours | Operations + PR |
-| Orange (Serious) | Negative mentions > 500 or KOL involvement | Within 1 hour | Management + PR |
-| Red (Crisis) | Hit trending list or mainstream media coverage | Within 30 minutes | CEO + Legal + PR |
+|水平|标准|响应时间 |响应小组 |
+|--------|----------|----------------|------------||
+|蓝色（显示器）|负面提及 < 100 | 4小时内 |运营团队|
+|黄色（警报）|负面提及 100-500 | 2小时内 |运营+公关|
+|橙色（严肃）|负面提及 > 500 或 KOL 参与 | 1小时内 |管理+公关|
+|红色（危机）|热门热门榜单或主流媒体报道 | 30 分钟内 |首席执行官 + 法务 + 公关 |
 
-### Response Process
+### 响应过程
 
-1. **Detection & Assessment** (within 15 minutes)
-   - Confirm sentiment source (competitor attack / genuine complaint / malicious fabrication)
-   - Assess spread scope (platforms involved, KOLs, media outlets)
-   - Fact verification (rapid internal confirmation of the facts)
+1. **检测与评估**（15分钟内）
+   - 确认情绪来源（竞争对手攻击/真实投诉/恶意捏造）
+   - 评估传播范围（涉及平台、KOL、媒体）
+   - 事实验证（快速内部确认事实）
 
-2. **Strategy Formulation** (within 30 minutes)
-   - Define response messaging (unified talking points)
-   - Choose response channel (official Weibo / formal statement / private message)
-   - Prepare supporting materials (evidence / data / third-party endorsements)
+2. **策略制定**（30分钟内）
+   - 定义响应消息（统一谈话要点）
+   - 选择回复渠道（官方微博/正式声明/私信）
+   - 准备支持材料（证据/数据/第三方认可）
 
-3. **Execute Response**
-   - Publish official statement (sincere, clear stance, concrete action plan)
-   - Comment section management (pin key replies)
-   - KOL / media outreach (provide complete information)
+3. **执行响应**
+   - 发表官方声明（真诚、立场明确、行动计划具体）
+   - 评论部分管理（pin key回复）
+   - KOL/媒体推广（提供完整信息）
 
-4. **Ongoing Monitoring**
-   - Hourly sentiment data updates
-   - Assess response effectiveness; adjust strategy if needed
-   - 72-hour post-incident review report
+4. **持续监控**
+   - 每小时情绪数据更新
+   - 评估应对措施的有效性；如果需要调整策略
+   - 72小时事件后审查报告
 ```

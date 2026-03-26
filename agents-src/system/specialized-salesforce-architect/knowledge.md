@@ -1,45 +1,44 @@
 ### 架构决策记录 (ADR)
 
 ```markdown
-# ADR-[NUMBER]: [TITLE]
+# ADR-[数字]：[标题]
 
-### Context
+### 上下文
 
-[Business driver and technical constraint that forced this decision]
+[迫使做出此决定的业务驱动因素和技术限制]
 
-### Decision
+### 决定
 
-[What we decided and why]
+[我们决定什么以及为什么]
 
-### Alternatives Considered
+### 考虑的替代方案
 
-| Option | Pros | Cons | Governor Impact |
+|选项 |优点 |缺点 |州长影响|
 |--------|------|------|-----------------|
-| A      |      |      |                 |
-| B      |      |      |                 |
+|一个 |      |      |                 |
+|乙|      |      |                 |
 
-### Consequences
+### 后果
 
-- Positive: [benefits]
-- Negative: [trade-offs we accept]
-- Governor limits affected: [specific limits and headroom remaining]
+- 正面：[好处]
+- 负面：[我们接受的权衡]
+- 受影响的调速限制：[具体限制和剩余空间]
 
-### Review Date: [when to revisit]
-
+### 审核日期：[何时重访]
 ```
 
 ### 集成模式模板
 
 ```
-┌──────────────┐     ┌───────────────┐     ┌──────────────┐
-│  Source       │────▶│  Middleware    │────▶│  Salesforce   │
-│  System       │     │  (MuleSoft)   │     │  (Platform    │
-│              │◀────│               │◀────│   Events)     │
-└──────────────┘     └───────────────┘     └──────────────┘
-         │                    │                      │
-    [Auth: OAuth2]    [Transform: DataWeave]  [Trigger → Handler]
-    [Format: JSON]    [Retry: 3x exp backoff] [Bulk: 200/batch]
-    [Rate: 100/min]   [DLQ: error__c object]  [Async: Queueable]
+┌──────────────┐ ┐────────────────┐ ┌──────────────┐
+│ 来源 │────▶│ 中间件 │────▶│ Salesforce │
+│ 系统 │ │ (MuleSoft) │ │ (平台 │
+│ │◀────│ │◀────│ 活动) │
+└──────────────┘ └────────────────┘ └──────────────┘
+         │ │ │
+    [验证：OAuth2] [转换：DataWeave] [触发器 → 处理程序]
+    [格式：JSON] [重试：3x exp backoff] [批量：200/批次]
+    [速率：100/分钟] [DLQ：error__c 对象] [异步：可排队]
 ```
 
 ### 数据模型审查清单
@@ -55,13 +54,13 @@
 ### 州长限制预算
 
 ```
-Transaction Budget (Synchronous):
-├── SOQL Queries:     100 total │ Used: __ │ Remaining: __
-├── DML Statements:   150 total │ Used: __ │ Remaining: __
-├── CPU Time:      10,000ms     │ Used: __ │ Remaining: __
-├── Heap Size:     6,144 KB     │ Used: __ │ Remaining: __
-├── Callouts:          100      │ Used: __ │ Remaining: __
-└── Future Calls:       50      │ Used: __ │ Remaining: __
+交易预算（同步）：
+├── SOQL 查询：共 100 次 │ 已用：__ │ 剩余：__
+├── DML语句：共150条 │ 已用：__ │ 剩余：__
+├── CPU时间: 10,000ms │ 已用: __ │ 剩余: __
+├── 堆大小：6,144 KB │ 已用：__ │ 剩余：__
+├── 标注数：100 │已用：__ │剩余：__
+└── 未来调用：50 │ 已用：__ │ 剩余：__
 ```
 
 # 🔄 您的工作流程

@@ -2,162 +2,162 @@
 
 ### 无障碍审核报告模板
 ```markdown
-# Accessibility Audit Report
+# 无障碍审核报告
 
-### Audit Overview
+### 审计概述
 
-**Product/Feature**: [Name and scope of what was audited]
-**Standard**: WCAG 2.2 Level AA
-**Date**: [Audit date]
-**Auditor**: AccessibilityAuditor
-**Tools Used**: [axe-core, Lighthouse, screen reader(s), keyboard testing]
+**产品/功能**：[审核内容的名称和范围]
+**标准**：WCAG 2.2 AA 级
+**日期**：[审核日期]
+**审核员**：辅助功能审核员
+**使用的工具**：[axe-core、Lighthouse、屏幕阅读器、键盘测试]
 
-### Testing Methodology
+### 测试方法
 
-**Automated Scanning**: [Tools and pages scanned]
-**Screen Reader Testing**: [VoiceOver/NVDA/JAWS — OS and browser versions]
-**Keyboard Testing**: [All interactive flows tested keyboard-only]
-**Visual Testing**: [Zoom 200%/400%, high contrast, reduced motion]
-**Cognitive Review**: [Reading level, error recovery, consistency]
+**自动扫描**：[扫描的工具和页面]
+**屏幕阅读器测试**：[VoiceOver/NVDA/JAWS — 操作系统和浏览器版本]
+**键盘测试**：[所有交互式流程仅测试键盘]
+**视觉测试**：[缩放200%/400%，高对比度，减少运动]
+**认知复习**：[阅读水平、错误恢复、一致性]
 
-### Summary
+### 总结
 
-**Total Issues Found**: [Count]
-- Critical: [Count] — Blocks access entirely for some users
-- Serious: [Count] — Major barriers requiring workarounds
-- Moderate: [Count] — Causes difficulty but has workarounds
-- Minor: [Count] — Annoyances that reduce usability
+**发现的问题总数**：[计数]
+- 严重：[计数] — 完全阻止某些用户的访问
+- 严重：[计数] — 需要解决方法的主要障碍
+- 中等：[计数] — 造成困难，但有解决方法
+- 次要：[计数] — 降低可用性的烦恼
 
-**WCAG Conformance**: DOES NOT CONFORM / PARTIALLY CONFORMS / CONFORMS
-**Assistive Technology Compatibility**: FAIL / PARTIAL / PASS
+**WCAG 一致性**：不符合/部分符合/符合
+**辅助技术兼容性**：失败/部分/通过
 
-### Issues Found
+### 发现问题
 
-### Issue 1: [Descriptive title]
-**WCAG Criterion**: [Number — Name] (Level A/AA/AAA)
-**Severity**: Critical / Serious / Moderate / Minor
-**User Impact**: [Who is affected and how]
-**Location**: [Page, component, or element]
-**Evidence**: [Screenshot, screen reader transcript, or code snippet]
-**Current State**:
+### 第 1 期：[描述性标题]
+**WCAG 标准**：[编号 — 名称]（A/AA/AAA 级）
+**严重性**：严重/严重/中等/轻微
+**用户影响**：[谁受到影响以及如何受到影响]
+**位置**：[页面、组件或元素]
+**证据**：[屏幕截图、屏幕阅读器脚本或代码片段]
+**当前状态**：
 
-    <!-- What exists now -->
+    <!-- 现在存在什么 -->
 
-**Recommended Fix**:
+**建议修复**：
 
-    <!-- What it should be -->
-**Testing Verification**: [How to confirm the fix works]
+    <!-- 应该是什么 -->
+**测试验证**：[如何确认修复有效]
 
-[Repeat for each issue...]
+[对每个问题重复...]
 
-### What's Working Well
+### 什么是有效的
 
-- [Positive findings — reinforce good patterns]
-- [Accessible patterns worth preserving]
+- [积极的发现——强化良好的模式]
+- [值得保留的无障碍模式]
 
-### Remediation Priority
+### 修复优先级
 
-### Immediate (Critical/Serious — fix before release)
-1. [Issue with fix summary]
-2. [Issue with fix summary]
+### 立即（严重/严重 - 发布前修复）
+1.[问题修复总结]
+2.[问题修复总结]
 
-### Short-term (Moderate — fix within next sprint)
-1. [Issue with fix summary]
+### 短期（中等 - 在下一个冲刺内修复）
+1.[问题修复总结]
 
-### Ongoing (Minor — address in regular maintenance)
-1. [Issue with fix summary]
+### 正在进行（次要 — 定期维护中的地址）
+1.[问题修复总结]
 
-### Recommended Next Steps
+### 建议的后续步骤
 
-- [Specific actions for developers]
-- [Design system changes needed]
-- [Process improvements for preventing recurrence]
-- [Re-audit timeline]
+- [开发者具体行动]
+- [需要改变设计系统]
+- [防止再次发生的流程改进]
+- [重新审核时间表]
 ```
 
 ### 屏幕阅读器测试协议
 ```markdown
-# Screen Reader Testing Session
+# 屏幕阅读器测试会话
 
-### Setup
+### 设置
 
-**Screen Reader**: [VoiceOver / NVDA / JAWS]
-**Browser**: [Safari / Chrome / Firefox]
-**OS**: [macOS / Windows / iOS / Android]
+**屏幕阅读器**：[VoiceOver / NVDA / JAWS]
+**浏览器**：[Safari / Chrome / Firefox]
+**操作系统**：[macOS / Windows / iOS / Android]
 
-### Navigation Testing
+### 导航测试
 
-**Heading Structure**: [Are headings logical and hierarchical? h1 → h2 → h3?]
-**Landmark Regions**: [Are main, nav, banner, contentinfo present and labeled?]
-**Skip Links**: [Can users skip to main content?]
-**Tab Order**: [Does focus move in a logical sequence?]
-**Focus Visibility**: [Is the focus indicator always visible and clear?]
+**标题结构**：[标题是否符合逻辑和层次？ h1 → h2 → h3？]
+**地标区域**：[主要、导航、横幅、内容信息是否存在并标记？]
+**跳过链接**：[用户可以跳到主要内容吗？]
+**Tab 顺序**：[焦点是否按逻辑顺序移动？]
+**焦点可见性**：[焦点指示器是否始终可见且清晰？]
 
-### Interactive Component Testing
+### 交互式组件测试
 
-**Buttons**: [Announced with role and label? State changes announced?]
-**Links**: [Distinguishable from buttons? Destination clear from label?]
-**Forms**: [Labels associated? Required fields announced? Errors identified?]
-**Modals/Dialogs**: [Focus trapped? Escape closes? Focus returns on close?]
-**Custom Widgets**: [Tabs, accordions, menus — proper ARIA roles and keyboard patterns?]
+**按钮**：[公布角色和标签？宣布状态变化？]
+**链接**：[与按钮区别？标签上清楚显示目的地吗？]
+**表格**：[相关标签？已公布必填字段？发现错误了吗？]
+**模态/对话框**：[焦点被困？逃亡关闭？焦点返回关闭？]
+**自定义小部件**：[选项卡、手风琴、菜单 - 正确的 ARIA 角色和键盘模式？]
 
-### Dynamic Content Testing
+### 动态内容测试
 
-**Live Regions**: [Status messages announced without focus change?]
-**Loading States**: [Progress communicated to screen reader users?]
-**Error Messages**: [Announced immediately? Associated with the field?]
-**Toast/Notifications**: [Announced via aria-live? Dismissible?]
+**实时区域**：[在焦点未改变的情况下宣布状态消息？]
+**加载状态**：[向屏幕阅读器用户传达进度？]
+**错误消息**：[立即公布？与领域相关吗？]
+**祝酒/通知**：[通过 aria-live 宣布？可以驳回吗？]
 
-### Findings
+### 调查结果
 
-| Component | Screen Reader Behavior | Expected Behavior | Status |
-|-----------|----------------------|-------------------|--------|
-| [Name]    | [What was announced] | [What should be]  | PASS/FAIL |
+|组件|屏幕阅读器行为 |预期行为 |状态 |
+|------------|--------------------------------|--------------------|--------|
+| [姓名] | [宣布了什么] | [应该是什么] |通过/失败 |
 ```
 
 ### 键盘导航审核
 ```markdown
-# Keyboard Navigation Audit
+# 键盘导航审核
 
-### Global Navigation
+### 全球导航
 
-- [ ] All interactive elements reachable via Tab
-- [ ] Tab order follows visual layout logic
-- [ ] Skip navigation link present and functional
-- [ ] No keyboard traps (can always Tab away)
-- [ ] Focus indicator visible on every interactive element
-- [ ] Escape closes modals, dropdowns, and overlays
-- [ ] Focus returns to trigger element after modal/overlay closes
+- [ ] 所有交互元素均可通过 Tab 访问
+- [ ] Tab 键顺序遵循视觉布局逻辑
+- [ ] 跳过导航链接的存在和功能
+- [ ] 无键盘陷阱（始终可以按 Tab 键离开）
+- [ ] 焦点指示器在每个交互元素上可见
+- [ ] Escape 关闭模态框、下拉菜单和叠加层
+- [ ] 模态/叠加关闭后焦点返回到触发元素
 
-### Component-Specific Patterns
+### 特定于组件的模式
 
-### Tabs
-- [ ] Tab key moves focus into/out of the tablist and into the active tabpanel content
-- [ ] Arrow keys move between tab buttons
-- [ ] Home/End move to first/last tab
-- [ ] Selected tab indicated via aria-selected
+### 标签
+- [ ] Tab 键将焦点移入/移出选项卡列表以及活动选项卡面板内容
+- [ ] 箭头键在选项卡按钮之间移动
+- [ ] Home/End 移至第一个/最后一个选项卡
+- [ ] 通过 aria-select 指示选定的选项卡
 
-### Menus
-- [ ] Arrow keys navigate menu items
-- [ ] Enter/Space activates menu item
-- [ ] Escape closes menu and returns focus to trigger
+### 菜单
+- [ ] 箭头键导航菜单项
+- [ ] Enter/Space 激活菜单项
+- [ ] Escape 关闭菜单并将焦点返回到触发器
 
-### Carousels/Sliders
-- [ ] Arrow keys move between slides
-- [ ] Pause/stop control available and keyboard accessible
-- [ ] Current position announced
+### 旋转木马/滑块
+- [ ] 箭头键在幻灯片之间移动
+- [ ] 可用暂停/停止控制并可使用键盘
+- [ ] 当前职位公布
 
-### Data Tables
-- [ ] Headers associated with cells via scope or headers attributes
-- [ ] Caption or aria-label describes table purpose
-- [ ] Sortable columns operable via keyboard
+### 数据表
+- [ ] 通过范围或标题属性与单元格关联的标题
+- [ ] 标题或 aria-label 描述表格用途
+- [ ] 可通过键盘操作的可排序列
 
-### Results
+### 结果
 
-**Total Interactive Elements**: [Count]
-**Keyboard Accessible**: [Count] ([Percentage]%)
-**Keyboard Traps Found**: [Count]
-**Missing Focus Indicators**: [Count]
+**互动元素总数**：[计数]
+**键盘可访问**：[计数]（[百分比]%）
+**发现键盘陷阱**：[计数]
+**缺少焦点指示器**：[计数]
 ```
 
 ### 学习与记忆

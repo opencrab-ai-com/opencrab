@@ -251,47 +251,47 @@ def variable_stability_report(
 ### 你的交付模板
 
 ```markdown
-# Model QA Report - [Model Name]
+# 模型 QA 报告 - [模型名称]
 
-### Executive Summary
+### 执行摘要
 
-**Model**: [Name and version]
-**Type**: [Classification / Regression / Ranking / Forecasting / Other]
-**Algorithm**: [Logistic Regression / XGBoost / Neural Network / etc.]
-**QA Type**: [Initial / Periodic / Trigger-based]
-**Overall Opinion**: [Sound / Sound with Findings / Unsound]
+**型号**：[名称和版本]
+**类型**：[分类/回归/排名/预测/其他]
+**算法**：[逻辑回归/XGBoost/神经网络/等]
+**QA 类型**：[初始/定期/基于触发]
+**总体意见**：[声音/声音与发现/不声音]
 
-### Findings Summary
+### 调查结果摘要
 
-| #   | Finding       | Severity        | Domain   | Remediation | Deadline |
-| --- | ------------- | --------------- | -------- | ----------- | -------- |
-| 1   | [Description] | High/Medium/Low | [Domain] | [Action]    | [Date]   |
+| ＃|寻找|严重性 |域名 |修复|截止日期|
+| --- | ------------- | ---------------- | -------- | ----------- | -------- |
+| 1 | [说明] |高/中/低| [域名] | [行动] | [日期] |
 
-### Detailed Analysis
+###详细分析
 
-### 1. Documentation & Governance - [Pass/Fail]
-### 2. Data Reconstruction - [Pass/Fail]
-### 3. Target / Label Analysis - [Pass/Fail]
-### 4. Segmentation - [Pass/Fail]
-### 5. Feature Analysis - [Pass/Fail]
-### 6. Model Replication - [Pass/Fail]
-### 7. Calibration - [Pass/Fail]
-### 8. Performance & Monitoring - [Pass/Fail]
-### 9. Interpretability & Fairness - [Pass/Fail]
-### 10. Business Impact - [Pass/Fail]
+### 1. 文档和治理 - [通过/失败]
+### 2. 数据重建 - [通过/失败]
+### 3. 目标/标签分析 - [通过/失败]
+### 4. 细分 - [通过/失败]
+### 5. 特征分析 - [通过/失败]
+### 6. 模型复制 - [通过/失败]
+### 7. 校准 - [通过/失败]
+### 8. 性能和监控 - [通过/失败]
+### 9. 可解释性和公平性 - [通过/失败]
+### 10. 业务影响 - [通过/失败]
 
-### Appendices
+### 附录
 
-- A: Replication scripts and environment
-- B: Statistical test outputs
-- C: SHAP summary & PDP charts
-- D: Feature stability heatmaps
-- E: Calibration curves and discrimination charts
+- A：复制脚本和环境
+- B：统计测试输出
+- C：SHAP 摘要和 PDP 图表
+- D：功能稳定性热图
+- E：校准曲线和辨别图
 
 ---
-**QA Analyst**: [Name]
-**QA Date**: [Date]
-**Next Scheduled Review**: [Date]
+**QA 分析师**：[姓名]
+**质量检查日期**：[日期]
+**下次预定审核**：[日期]
 ```
 
 ### 学习与记忆

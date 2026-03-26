@@ -47,36 +47,36 @@
 
 ### POC 执行模板
 ```markdown
-# Proof of Concept: [Account Name]
+# 概念证明：[帐户名称]
 
-### Problem Statement
+### 问题陈述
 
-[One sentence: what this POC will prove]
+[一句话：这个POC将证明什么]
 
-### Success Criteria (agreed with buyer before start)
+### 成功标准（开始前与买家商定）
 
-| Criterion                        | Target              | Measurement Method         |
-|----------------------------------|---------------------|----------------------------|
-| [Specific capability]            | [Quantified target] | [How it will be measured]  |
-| [Integration requirement]        | [Pass/Fail]         | [Test scenario]            |
-| [Performance benchmark]          | [Threshold]         | [Load test / timing]       |
+|标准|目标|测量方法|
+|----------------------------------|--------------------------------|----------------------------|
+| [具体能力] | [量化目标]| [如何衡量] |
+| [集成要求] | [通过/失败] | [测试场景]|
+| [性能基准]| [阈值] | [负载测试/计时] |
 
-### Scope — In / Out
+### 范围 — 输入/输出
 
-**In scope**: [Specific features, integrations, workflows]
-**Explicitly out of scope**: [What we're NOT testing and why]
+**范围**：[特定功能、集成、工作流程]
+**明显超出范围**：[我们没有测试什么以及为什么]
 
-### Timeline
+### 时间轴
 
-- Day 1-2: Environment setup and configuration
-- Day 3-7: Core use case implementation
-- Day 8: Midpoint review with buyer
-- Day 9-12: Refinement and edge case testing
-- Day 13-14: Final readout and decision meeting
+- 第 1-2 天：环境设置和配置
+- 第 3-7 天：核心用例实施
+- 第 8 天：与买家进行中点审查
+- 第 9-12 天：细化和边缘情况测试
+- 第 13-14 天：最终宣读和决策会议
 
-### Decision Gate
+### 决策门
 
-At the final readout, the buyer will make a GO / NO-GO decision based on the success criteria above.
+在最终读数时，买方将根据上述成功标准做出继续/不继续的决定。
 ```
 
 ### 竞争技术定位
@@ -115,38 +115,38 @@ At the final readout, the buyer will make a GO / NO-GO decision based on the suc
 为每笔活跃交易维护结构化的评估记录。这些是您的战术记忆，也是每个演示、POC 和竞争响应的基础。
 
 ```markdown
-# Evaluation Notes: [Account Name]
+# 评估备注：[账户名称]
 
-### Technical Environment
+### 技术环境
 
-- **Stack**: [Languages, frameworks, infrastructure]
-- **Integration Points**: [APIs, databases, middleware]
-- **Security Requirements**: [SSO, SOC 2, data residency, encryption]
-- **Scale**: [Users, data volume, transaction throughput]
+- **堆栈**：[语言、框架、基础设施]
+- **集成点**：[API、数据库、中间件]
+- **安全要求**：[SSO、SOC 2、数据驻留、加密]
+- **规模**：[用户、数据量、交易吞吐量]
 
-### Technical Decision Makers
+### 技术决策者
 
-| Name          | Role                  | Priority           | Disposition |
-|---------------|-----------------------|--------------------|-------------|
-| [Name]        | [Title]               | [What they care about] | [Favorable / Neutral / Skeptical] |
+|名称 |角色 |优先|处置 |
+|--------------|------------------------|--------------------|------------------------|
+| [姓名] | [标题] | [他们关心什么]| [赞成/中立/怀疑] |
 
-### Discovery Findings
+### 发现结果
 
-- [Key technical requirement and why it matters to them]
-- [Integration constraint that shapes solution design]
-- [Performance requirement with specific threshold]
+- [关键技术要求以及为什么它对他们很重要]
+- [塑造解决方案设计的集成约束]
+- [具有特定阈值的性能要求]
 
-### Competitive Landscape (Technical)
+### 竞争格局（技术）
 
-- **[Competitor]**: [Their technical positioning in this deal]
-- **Technical Differentiators to Emphasize**: [Mapped to buyer priorities]
-- **Landmine Questions Deployed**: [What we asked and what we learned]
+- **[竞争对手]**：[他们在这笔交易中的技术定位]
+- **需要强调的技术差异**：[映射到买家优先事项]
+- **部署地雷问题**：[我们问了什么以及我们学到了什么]
 
-### Demo / POC Strategy
+### 演示/POC 策略
 
-- **Primary narrative**: [The story arc for this buyer]
-- **Aha moment target**: [Which capability will land hardest]
-- **Risk areas**: [Where we need to prepare objection handling]
+- **主要叙述**：[该买家的故事线]
+- **顿悟时刻目标**：[哪种能力最难落地]
+- **风险领域**：[我们需要准备异议处理的地方]
 ```
 
 ### 异议处理——技术层

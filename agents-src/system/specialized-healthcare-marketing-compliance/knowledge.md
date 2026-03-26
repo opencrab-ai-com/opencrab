@@ -3,88 +3,88 @@
 ### 医疗保健营销内容审查清单
 
 ```markdown
-# Healthcare Marketing Content Compliance Review Form
+# 医疗保健营销内容合规审查表
 
-### Basic Information
+### 基本信息
 
-- Content type: (Advertisement / Health education / Patient education / Academic promotion / Brand publicity)
-- Publishing channel: (TV / Newspaper / Official account / Douyin / Xiaohongshu / Website / Offline materials)
-- Product category involved: (Drug / Device / Medical aesthetics procedure / Health supplement / Medical service)
-- Review date:
-- Reviewer:
+- 内容类型：（广告/健康教育/患者教育/学术推广/品牌宣传）
+- 发布渠道：（电视/报纸/公众号/抖音/小红书/网站/线下素材）
+- 涉及产品类别：（药品/器械/医学美容/保健品/医疗服务）
+- 审核日期：
+- 审稿人：
 
-### Qualification Compliance (Disqualification Items — verify each one)
+### 资格合规性（取消资格项目 — 验证每一项）
 
-- [ ] Is the advertising review certificate / approval number valid?
-- [ ] Does the publishing entity have complete qualifications (Medical Institution Practice License, Drug Business License, etc.)?
-- [ ] Has platform industry certification been completed?
-- [ ] For physician appearances, have the Medical Practitioner Qualification Certificate and Practice Certificate been verified?
+- [ ] 广告审核证明/批准文号是否有效？
+- [ ] 发布单位资质是否齐全（医疗机构执业许可证、药品经营许可证等）？
+- [ ] 平台行业认证完成了吗？
+- [ ] 对于医生出诊，执业医师资格证书和执业证书是否经过验证？
 
-### Content Compliance
+### 内容合规性
 
-- [ ] Any absolute claims ("best," "complete cure," "100%")?
-- [ ] Any guarantee promises ("refund if ineffective," "guaranteed cure")?
-- [ ] Any improper comparisons (efficacy comparison with competitors, before-and-after comparison)?
-- [ ] Any patient endorsements/testimonials?
-- [ ] Do indications/scope of use match the registration certificate?
-- [ ] Is prescription drug information limited to professional channels?
-- [ ] Does health supplement content include required declaration statements?
-- [ ] Any "appearance anxiety" language (medical aesthetics)?
-- [ ] Are clinical data citations complete, accurate, and sourced?
-- [ ] Are advisory statements / risk disclosures complete?
+- [ ] 有绝对的说法（“最好”、“完全治愈”、“100%”）吗？
+- [ ] 有保证承诺吗（“无效退款”、“保证治愈”）？
+- [ ] 是否存在不当比较（与竞争对手的功效比较、前后比较）？
+- [ ] 有患者认可/感言吗？
+- [ ] 适应症/使用范围是否与注册证书相符？
+- [ ] 处方药信息是否仅限于专业渠道？
+- [ ] 保健品内容是否包含必需的声明声明？
+- [ ]有什么“外表焦虑”的语言（医学美学）吗？
+- [ ] 临床数据引用是否完整、准确且有来源？
+- [ ] 咨询声明/风险披露是否完整？
 
-### Data Privacy Compliance
+### 数据隐私合规性
 
-- [ ] Does it involve patient personal information — if so, has separate consent been obtained?
-- [ ] Have patient cases been sufficiently de-identified?
-- [ ] Does it involve health data collection — if so, does it follow the minimum necessary principle?
-- [ ] Does data storage and processing meet security requirements?
+- [ ] 是否涉及患者个人信息——如果涉及，是否已获得单独同意？
+- [ ] 患者病例是否已充分去识别化？
+- [ ] 是否涉及健康数据收集——如果是，是否遵循最低必要原则？
+- [ ] 数据存储和处理是否满足安全要求？
 
-### Review Conclusion
+### 回顾结论
 
-- Review result: (Approved / Approved with modifications / Rejected)
-- Modification notes:
-- Final approver:
+- 审核结果：（批准/修改后批准/拒绝）
+- 修改说明：
+- 最终批准者：
 ```
 
 ### 常见违规行为和合规替代方案
 
 ```markdown
-# Violation Expression Reference Table
+# 违规表达式参考表
 
-### Medical Aesthetics
+### 医学美容
 
-| Violation | Reason | Compliant Alternative |
-|-----------|--------|----------------------|
-| "Start your beauty journey now" | Creates appearance anxiety | Introduce procedure principles and technical features |
-| "Before-and-after comparison photos" | Explicitly prohibited | Display technical principle diagrams |
-| "Celebrity-inspired nose" | Celebrity effect exploitation | Introduce procedure characteristics and suitable candidates |
-| "Limited-time sale on double eyelid surgery" | Price promotion inducement | Showcase facility qualifications and physician team |
+|违规|原因 |合规替代方案 |
+|------------|--------|----------------------|
+| “现在就开始你的美丽之旅” |造成外表焦虑|介绍流程原理及技术特点 |
+| 「前后对比照片」|明确禁止 |显示技术原理图|
+| “名人鼻子”|名人效应利用|介绍程序特点及合适人选|
+| 「双眼皮手术限时特卖」|价格促销诱导|展示设施资质和医师团队|
 
-### Health Supplements
+### 保健品
 
-| Violation | Reason | Compliant Alternative |
-|-----------|--------|----------------------|
-| "Lowers blood pressure" | Claims therapeutic function | "Assists in lowering blood pressure" (must be within approved functions) |
-| "Treats insomnia" | Claims therapeutic function | "Improves sleep" (must be within approved functions) |
-| "All natural, no side effects" | False safety claim | "This product cannot replace medication" |
-| "Anti-cancer / cancer prevention" | Exceeds approved function scope | Only promote within approved health functions |
+|违规|原因 |合规替代方案 |
+|------------|--------|----------------------|
+| “降低血压” |声称有治疗功能| “协助降低血压”（必须在批准的功能范围内）|
+| “治疗失眠”|声称有治疗功能| “改善睡眠”（必须在批准的功能范围内）|
+| “纯天然，无副作用”|虚假安全声明 | “该产品不能替代药物”|
+| 「抗癌/预防癌症」|超出批准的职能范围 |仅在批准的健康职能范围内进行推广 |
 ```
 
 ### 医疗保健营销合规风险评级矩阵
 
 ```markdown
-# Compliance Risk Rating Matrix
+# 合规风险评级矩阵
 
-| Risk Level | Violation Type | Potential Consequences | Recommended Action |
-|------------|---------------|----------------------|-------------------|
-| Critical | Prescription drug advertising to public | Fine + revocation of ad approval number + criminal liability | Immediate cessation, activate crisis response |
-| Critical | Medical ad published without review certificate | Cease and desist + fine of 200K-1M yuan | Immediate takedown, initiate review procedures |
-| Critical | Illegal processing of patient sensitive personal info | Fine up to 50M yuan or 5% of annual revenue | Immediate remediation, activate data security emergency plan |
-| High | Health supplement claiming therapeutic function | Fine + product delisting + media exposure | Revise all promotional materials within 48 hours |
-| High | Medical aesthetics ad using before-and-after comparison | Fine + platform account ban + industry notice | Take down related content within 24 hours |
-| Medium | Use of absolute claims | Fine + warning | Complete self-inspection and remediation within 72 hours |
-| Medium | Health education content with covert product placement | Platform penalty + content takedown | Revise content, clearly label promotional nature |
-| Low | Missing advisory/declaration statements | Warning + order to rectify | Add required declaration statements |
-| Low | Non-standard literature citation format | Internal compliance deduction | Correct citation format |
+|风险等级|违规类型 |潜在后果|建议行动 |
+|------------|--------------|------------------------|--------------------|
+|关键|向公众发布处方药广告|罚款+撤销广告批准文号+刑事责任 |立即停工，启动危机应对|
+|关键|无审核证明发布医疗广告|制止+20万-100万元罚款 |立即下架，启动审查程序|
+|关键|非法处理患者敏感个人信息 |最高罚款5000万元或年收入5%|立即修复，启动数据安全应急预案|
+|高|声称具有治疗功能的保健品|罚款+产品下架+媒体曝光| 48小时内修改所有宣传资料 |
+|高|医美广告使用前后对比|罚款+平台账号封禁+行业通知| 24小时内删除相关内容 |
+|中等|绝对声明的使用 |罚款+警告| 72小时内完成自查整改|
+|中等|带有隐蔽植入式广告的健康教育内容|平台处罚+内容下架 |修改内容，明确标注促销性质 |
+|低|缺少咨询/声明声明|警告+责令改正|添加所需的声明语句 |
+|低|非标准文献引用格式|内部合规扣除 |正确的引文格式 |
 ```

@@ -2,41 +2,41 @@
 
 ### 心理概况
 ```
-PSYCHOLOGICAL PROFILE: [Character Name]
+心理概况：[角色名称]
 ========================================
-Framework: [Primary model used — e.g., Big Five, Attachment, Psychodynamic]
+框架：[使用的主要模型——例如大五、依恋、心理动力学]
 
-Core Traits:
-- Openness: [High/Mid/Low — behavioral manifestation]
-- Conscientiousness: [High/Mid/Low — behavioral manifestation]
-- Extraversion: [High/Mid/Low — behavioral manifestation]
-- Agreeableness: [High/Mid/Low — behavioral manifestation]
-- Neuroticism: [High/Mid/Low — behavioral manifestation]
+核心特征：
+- 开放性：[高/中/低——行为表现]
+- 责任心：[高/中/低——行为表现]
+- 外向性：[高/中/低——行为表现]
+- 宜人性：[高/中/低——行为表现]
+- 神经质：[高/中/低——行为表现]
 
-Attachment Style: [Secure / Anxious-Preoccupied / Dismissive-Avoidant / Fearful-Avoidant]
-- Behavioral pattern in relationships: [specific manifestation]
-- Triggered by: [specific situations]
+依恋风格：[安全型/焦虑型/轻视型/回避型/恐惧型]
+- 人际关系中的行为模式：[具体表现]
+- 触发方式：[特定情况]
 
-Defense Mechanisms (Vaillant's hierarchy):
-- Primary: [e.g., intellectualization, projection, humor]
-- Under stress: [regression pattern]
+防御机制（威能层次结构）：
+- 主要：[例如，智力化、投射、幽默]
+- 压力下：[回归模式]
 
-Core Wound: [Psychological origin of maladaptive patterns]
-Coping Strategy: [How they manage — adaptive and maladaptive]
-Blind Spot: [What they cannot see about themselves]
+核心伤口：[适应不良模式的心理根源]
+应对策略：[他们如何应对——适应性和适应不良]
+盲点：[他们看不到自己的东西]
 ```
 
 ### 人际动态分析
 ```
-RELATIONAL DYNAMICS: [Character A] ↔ [Character B]
+关系动态：[角色 A] ↔ [角色 B]
 ===================================================
-Model: [Attachment / Transactional Analysis / Drama Triangle / Other]
+模型：[附件/交易分析/戏剧三角/其他]
 
-Power Dynamic: [Symmetrical / Complementary / Shifting]
-Communication Pattern: [Direct / Passive-aggressive / Avoidant / etc.]
+动力动态：[对称/互补/平移]
+沟通模式：[直接/被动攻击/回避/等]
 Unspoken Contract: [What each implicitly expects from the other]
-Trigger Points: [What specific behaviors escalate conflict]
-Growth Edge: [What would a healthier version of this relationship look like]
+触发点：[哪些具体行为会加剧冲突]
+成长边缘：[这种关系的更健康版本会是什么样子]
 ```
 
 ### 学习与记忆

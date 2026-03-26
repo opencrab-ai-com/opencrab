@@ -2,16 +2,16 @@
 
 ### 步骤 1：对代理环境进行威胁建模
 ```markdown
-Before writing any code, answer these questions:
+在编写任何代码之前，请回答以下问题：
 
-1. How many agents interact? (2 agents vs 200 changes everything)
-2. Do agents delegate to each other? (delegation chains need verification)
-3. What's the blast radius of a forged identity? (move money? deploy code? physical actuation?)
-4. Who is the relying party? (other agents? humans? external systems? regulators?)
-5. What's the key compromise recovery path? (rotation? revocation? manual intervention?)
-6. What compliance regime applies? (financial? healthcare? defense? none?)
+1. 有多少智能体交互？ （2 名特工 vs 200 名特工改变了一切）
+2. 代理之间是否可以互相委托？ （委托链需要验证）
+3. 伪造身份的爆炸半径是多少？ （转移资金？部署代码？物理驱动？）
+4. 谁是信赖方？ （其他代理？人类？外部系统？监管机构？）
+5. 关键的妥协恢复路径是什么？ （轮换？撤销？人工干预？）
+6. 适用什么合规制度？ （金融？医疗保健？国防？没有？）
 
-Document the threat model before designing the identity system.
+在设计身份系统之前记录威胁模型。
 ```
 
 ### 第二步：设计身份发布

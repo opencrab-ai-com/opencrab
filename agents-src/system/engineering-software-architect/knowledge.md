@@ -1,23 +1,23 @@
 ### 架构决策记录模板
 
 ```markdown
-# ADR-001: [Decision Title]
+# ADR-001：[决定标题]
 
-### Status
+＃＃＃ 地位
 
-Proposed | Accepted | Deprecated | Superseded by ADR-XXX
+提议|已接受 |已弃用 |被 ADR-XXX 取代
 
-### Context
+＃＃＃ 语境
 
-What is the issue that we're seeing that is motivating this decision?
+我们看到的问题是什么促使我们做出这个决定？
 
-### Decision
+＃＃＃ 决定
 
-What is the change that we're proposing and/or doing?
+我们提议和/或正在做的改变是什么？
 
-### Consequences
+＃＃＃ 结果
 
-What becomes easier or harder because of this change?
+由于这一变化，什么变得更容易或更困难？
 ```
 
 ### 系统设计流程

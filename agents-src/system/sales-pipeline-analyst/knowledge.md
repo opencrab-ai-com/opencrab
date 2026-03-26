@@ -2,101 +2,101 @@
 
 ### 管道健康仪表板
 ```markdown
-# Pipeline Health Report: [Period]
+# 管道健康报告：[期间]
 
-### Velocity Metrics
+### 速度指标
 
-| Metric                  | Current    | Prior Period | Trend | Benchmark |
-|-------------------------|------------|-------------|-------|-----------|
-| Pipeline Velocity       | $[X]/day   | $[Y]/day    | [+/-] | $[Z]/day  |
-| Qualified Opportunities | [N]        | [N]         | [+/-] | [N]       |
-| Average Deal Size       | $[X]       | $[Y]        | [+/-] | $[Z]      |
-| Win Rate (overall)      | [X]%       | [Y]%        | [+/-] | [Z]%      |
-| Sales Cycle Length       | [X] days   | [Y] days    | [+/-] | [Z] days  |
+|公制|当前|前期 |趋势 |基准|
+|------------------------|------------|-------------|--------|------------|
+|管道速度| $[X]/天 | $[Y]/天 | [+/-] | $[Z]/天 |
+|合格的机会| [N] | [N] | [+/-] | [N] |
+|平均交易规模| $[X]| $[Y] | [+/-] | $[Z]|
+|胜率（总体）| [X]% | [是]% | [+/-] | [Z]% |
+|销售周期长度| [X] 天 | [Y] 天 | [+/-] | [Z] 天 |
 
-### Coverage Analysis
+### 覆盖率分析
 
-| Segment     | Quota Remaining | Weighted Pipeline | Coverage Ratio | Quality-Adjusted |
-|-------------|-----------------|-------------------|----------------|------------------|
-| [Segment A] | $[X]            | $[Y]              | [N]x           | [N]x             |
-| [Segment B] | $[X]            | $[Y]              | [N]x           | [N]x             |
-| **Total**   | $[X]            | $[Y]              | [N]x           | [N]x             |
+|细分 |剩余配额 |加权管道|覆盖率|质量调整 |
+|------------------------|-----------------|--------------------------------|----------------|------------------|
+| [A段]| $[X]| $[Y] | [N]x | [N]x |
+| [B 段] | $[X]| $[Y] | [N]x | [N]x |
+| **总计** | $[X]| $[Y] | [N]x | [N]x |
 
-### Stage Conversion Funnel
+### 阶段转换漏斗
 
-| Stage          | Deals In | Converted | Lost | Conversion Rate | Avg Days in Stage | Benchmark Days |
-|----------------|----------|-----------|------|-----------------|-------------------|----------------|
-| Discovery      | [N]      | [N]       | [N]  | [X]%            | [N]               | [N]            |
-| Qualification  | [N]      | [N]       | [N]  | [X]%            | [N]               | [N]            |
-| Evaluation     | [N]      | [N]       | [N]  | [X]%            | [N]               | [N]            |
-| Proposal       | [N]      | [N]       | [N]  | [X]%            | [N]               | [N]            |
-| Negotiation    | [N]      | [N]       | [N]  | [X]%            | [N]               | [N]            |
+|舞台|优惠 |转换 |迷失|转化率|平均舞台天数|基准日|
+|----------------|----------|------------|------|------------------|--------------------------------|----------------|
+|发现 | [N] | [N] | [N] | [X]% | [N] | [N] |
+|资质 | [N] | [N] | [N] | [X]% | [N] | [N] |
+|评价| [N] | [N] | [N] | [X]% | [N] | [N] |
+|提案| [N] | [N] | [N] | [X]% | [N] | [N] |
+|洽谈| [N] | [N] | [N] | [X]% | [N] | [N] |
 
-### Deals Requiring Intervention
+### 需要干预的交易
 
-| Deal Name | Stage | Days Stalled | MEDDPICC Score | Risk Signal | Recommended Action |
-|-----------|-------|-------------|----------------|-------------|-------------------|
-| [Deal A]  | [X]   | [N]         | [N]/8          | [Signal]    | [Action]          |
-| [Deal B]  | [X]   | [N]         | [N]/8          | [Signal]    | [Action]          |
+|交易名称 |舞台|停滞的日子| MEDDPICC 评分 |风险信号|建议行动 |
+|------------|---------|-------------|----------------|------------------------|--------------------|
+| [交易A] | [X]| [N] | [N]/8 | [信号] | [行动]|
+| [交易B] | [X]| [N] | [N]/8 | [信号] | [行动]|
 ```
 
 ### 预测模型
 ```markdown
-# Revenue Forecast: [Period]
+# 收入预测：[期间]
 
-### Forecast Summary
+### 预测摘要
 
-| Category   | Amount   | Confidence | Key Assumptions                          |
-|------------|----------|------------|------------------------------------------|
-| Commit     | $[X]     | >90%       | [Deals with signed contracts or verbal]  |
-| Best Case  | $[X]     | >60%       | [Commit + high-velocity qualified deals] |
-| Upside     | $[X]     | <60%       | [Best Case + early-stage high-potential] |
+|类别 |金额 |信心|关键假设|
+|------------|----------|------------|--------------------------------------------------------|
+|提交 | $[X]| >90% | [签订合同或口头处理] |
+|最佳案例| $[X]| >60% | [承诺+高速合格交易] |
+|上行空间 | $[X]| <60% | [最佳案例+早期高潜]|
 
-### Forecast vs. Stage-Weighted Comparison
+### 预测与阶段加权比较
 
-| Method                    | Forecast Amount | Variance from Commit |
-|---------------------------|-----------------|---------------------|
-| Stage-Weighted (CRM)      | $[X]            | [+/-]$[Y]           |
-| Velocity-Adjusted         | $[X]            | [+/-]$[Y]           |
-| Engagement-Adjusted       | $[X]            | [+/-]$[Y]           |
-| Historical Pattern Match  | $[X]            | [+/-]$[Y]           |
+|方法|预测金额 |与提交的差异|
+|----------------------------|-----------------|---------------------|
+|阶段加权 (CRM) | $[X]| [+/-]$[Y] |
+|速度调整 | $[X]| [+/-]$[Y] |
+|参与度调整| $[X]| [+/-]$[Y] |
+|历史模式匹配| $[X]| [+/-]$[Y] |
 
-### Risk Factors
+### 风险因素
 
-- [Specific risk 1 with quantified impact: "$X at risk if [condition]"]
-- [Specific risk 2 with quantified impact]
-- [Data quality caveat if applicable]
+- [具有量化影响的特定风险 1：“如果 [条件]，$X 面临风险”]
+- [具有量化影响的特定风险2]
+- [数据质量警告（如果适用）]
 
-### Upside Opportunities
+### 上行机会
 
-- [Specific opportunity with probability and potential amount]
+- [特定机会的概率和潜在金额]
 ```
 
 ### 交易记分卡
 ```markdown
-# Deal Score: [Opportunity Name]
+# 交易得分：[机会名称]
 
-### MEDDPICC Assessment
+### MEDDPICC 评估
 
-| Criteria         | Status      | Score | Evidence / Gap                         |
+|标准|状态 |分数 |证据/差距|
 |------------------|-------------|-------|----------------------------------------|
-| Metrics          | [G/Y/R]     | [0-2] | [What's known or missing]              |
-| Economic Buyer   | [G/Y/R]     | [0-2] | [Identified? Engaged? Accessible?]     |
-| Decision Criteria| [G/Y/R]     | [0-2] | [Known? Favorable? Confirmed?]         |
-| Decision Process | [G/Y/R]     | [0-2] | [Mapped? Timeline confirmed?]          |
-| Paper Process    | [G/Y/R]     | [0-2] | [Legal/security/procurement mapped?]   |
-| Implicated Pain  | [G/Y/R]     | [0-2] | [Business outcome tied to pain?]       |
-| Champion         | [G/Y/R]     | [0-2] | [Identified? Tested? Active?]          |
-| Competition      | [G/Y/R]     | [0-2] | [Known? Position assessed?]            |
+|指标| [G/Y/R] | [0-2] | [已知或缺失的内容] |
+|经济买家| [G/Y/R] | [0-2] | [确定了？已订婚的？可以访问吗？
+|决策标准| [G/Y/R] | [0-2] | [已知？有利？确认了吗？] |
+|决策过程| [G/Y/R] | [0-2] | [映射？时间表确定了吗？] |
+|造纸工艺 | [G/Y/R] | [0-2] | [法律/安全/采购映射？] |
+|牵连疼痛| [G/Y/R] | [0-2] | [业务成果与痛苦挂钩？] |
+|冠军| [G/Y/R] | [0-2] | [确定了？测试过吗？活跃吗？
+|竞赛| [G/Y/R] | [0-2] | [已知？职位评估？] |
 
-**Qualification Score**: [N]/16
-**Engagement Score**: [N]/10 (based on recency, breadth, buyer-initiated activity)
-**Velocity Score**: [N]/10 (based on stage progression vs. benchmark)
-**Composite Deal Health**: [N]/36
+**资格分数**：[N]/16
+**参与度得分**：[N]/10（基于新近度、广度、买家发起的活动）
+**速度得分**：[N]/10（基于阶段进展与基准）
+**综合交易健康度**：[N]/36
 
-### Recommendation
+###推荐
 
-[Advance / Intervene / Nurture / Disqualify] — [Specific reasoning and next action]
+[推进/介入/培育/取消资格]——[具体推理及下一步行动]
 ```
 
 ### 学习与记忆

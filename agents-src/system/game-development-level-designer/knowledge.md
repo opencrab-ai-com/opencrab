@@ -2,36 +2,36 @@
 
 ### 关卡设计文档
 ```markdown
-# Level: [Name/ID]
+# 等级：[姓名/ID]
 
-### Intent
+### 意图
 
-**Player Fantasy**: [What the player should feel in this level]
-**Pacing Arc**: Tension → Release → Escalation → Climax → Resolution
-**New Mechanic Introduced**: [If any — how is it taught spatially?]
-**Narrative Beat**: [What story moment does this level carry?]
+**玩家幻想**：[玩家在这个关卡中应该感受到什么]
+**起搏弧**：紧张→释放→升级→高潮→解决
+**引入新机制**：[如果有的话——它是如何在空间上教授的？]
+**叙事节拍**：[这个关卡有什么故事时刻？]
 
-### Layout Specification
+### 布局规范
 
-**Shape Language**: [Linear / Hub / Open / Labyrinth]
-**Estimated Playtime**: [X–Y minutes]
-**Critical Path Length**: [Meters or node count]
-**Optional Areas**: [List with rewards]
+**形状语言**：[线性/轮毂/开放/迷宫]
+**预计游戏时间**：[X–Y 分钟]
+**关键路径长度**：[米或节点数]
+**可选区域**：[奖励列表]
 
-### Encounter List
+### 遭遇列表
 
-| ID  | Type     | Enemy Count | Tactical Options | Fallback Position |
-|-----|----------|-------------|------------------|-------------------|
-| E01 | Ambush   | 4           | Flank / Suppress | Door archway      |
-| E02 | Arena    | 8           | 3 cover positions| Elevated platform |
+|身份证 |类型 |敌人数量 |战术选择|后备位置|
+|-----|----------|-------------|------------------|--------------------|
+| E01 |伏击| 4 |侧翼/压制|门拱门|
+| E02 |竞技场 | 8 | 3个掩护位置|高架平台|
 
-### Flow Diagram
+### 流程图
 
-[Entry] → [Tutorial beat] → [First encounter] → [Exploration fork]
-                                                        ↓           ↓
-                                               [Optional loot]  [Critical path]
-                                                        ↓           ↓
-                                                   [Merge] → [Boss/Exit]
+[入门]→[教程节拍]→[初次遭遇]→[探索岔路]
+                                                        ↓ ↓
+                                               [可选战利品] [关键路径]
+                                                        ↓ ↓
+                                                   [合并] → [Boss/退出]
 ```
 
 ### 进度表
@@ -47,49 +47,47 @@ Time    | Activity Type  | Tension Level | Notes
 
 ### 封锁规范
 ```markdown
+### 房间：[ID] — [名称]
 
-### Room: [ID] — [Name]
+**尺寸**：~[W]m × [D]m × [H]m
+**主要功能**：[战斗/穿越/故事/奖励]
 
-**Dimensions**: ~[W]m × [D]m × [H]m
-**Primary Function**: [Combat / Traversal / Story / Reward]
+**覆盖对象**：
+- 2×低覆盖（腰部高度）-中心集群
+- 1× 可破坏的柱子 — 左翼
+- 1× 升高位置 — 右后（可通过板条箱堆进入）
 
-**Cover Objects**:
-- 2× low cover (waist height) — center cluster
-- 1× destructible pillar — left flank
-- 1× elevated position — rear right (accessible via crate stack)
+**照明**：
+- 主要：从[方向]开始的温暖方向——引导眼睛朝向出口
+- 次要：来自窗户的冷填充——对比以提高可读性
+- 强调：目标标记上闪烁[颜色]
 
-**Lighting**:
-- Primary: warm directional from [direction] — guides eye toward exit
-- Secondary: cool fill from windows — contrast for readability
-- Accent: flickering [color] on objective marker
+**进入/退出**：
+- 入口：[门类型、入口可见度]
+- 出口：[从入口处可见？是/否——如果是，为什么？]
 
-**Entry/Exit**:
-- Entry: [Door type, visibility on entry]
-- Exit: [Visible from entry? Y/N — if N, why?]
-
-**Environmental Story Beat**:
-[What does this room's prop placement tell the player about the world?]
+**环境故事节拍**：
+[这个房间的道具放置告诉了玩家关于这个世界的什么信息？]
 ```
 
 ### 导航可供性清单
 ```markdown
+### 可读性审查
 
-### Readability Review
+关键路径
+- [ ] 进入房间后 3 秒内可见出口
+- [ ] 关键路径比可选路径更亮
+- [ ] 没有看起来像出口的死胡同
 
-Critical Path
-- [ ] Exit visible within 3 seconds of entering room
-- [ ] Critical path lit brighter than optional paths
-- [ ] No dead ends that look like exits
+战斗
+- [ ] 玩家进入交战范围前所有敌人可见
+- [ ] 起始位置至少有 2 个战术选项
+- [ ] 后备位置存在并且在空间上很明显
 
-Combat
-- [ ] All enemies visible before player enters engagement range
-- [ ] At least 2 tactical options from entry position
-- [ ] Fallback position exists and is spatially obvious
-
-Exploration
-- [ ] Optional areas marked by distinct lighting or color
-- [ ] Reward visible from the choice point (temptation design)
-- [ ] No navigation ambiguity at junctions
+探索
+- [ ] 用不同的灯光或颜色标记的可选区域
+- [ ] 从选择点可见奖励（诱惑设计）
+- [ ] 路口处无导航歧义
 ```
 
 ### 高级能力

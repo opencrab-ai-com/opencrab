@@ -2,44 +2,44 @@
 
 ### 期间真实性报告
 ```
-PERIOD AUTHENTICITY REPORT
+期间真实性报告
 ==========================
-Setting: [Time period, region, specific context]
-Confidence Level: [Well-documented / Scholarly consensus / Debated / Speculative]
+设置：[时间段、地区、特定背景]
+置信度：[有据可查/学术共识/争论/推测]
 
-Material Culture:
+物质文化：
 - Diet: [What people actually ate, class differences]
-- Clothing: [Materials, styles, social markers]
-- Architecture: [Building materials, styles, what survives vs. what's lost]
-- Technology: [What existed, what didn't, what was regional]
-- Currency/Trade: [Economic system, trade routes, commodities]
+- 服装：[材质、风格、社会标记]
+- 建筑：[建筑材料、风格、幸存与失落]
+- 技术：[什么存在，什么不存在，什么是区域性的]
+- 货币/贸易：[经济体系、贸易路线、商品]
 
-Social Structure:
-- Power: [Who held it, how it was legitimized]
-- Class/Caste: [Social stratification, mobility]
-- Gender roles: [With acknowledgment of regional variation]
-- Religion/Belief: [Practiced religion vs. official doctrine]
-- Law: [Formal and customary legal systems]
+社会结构：
+- 权力：[谁拥有它，它是如何合法化的]
+- 阶级/种姓：[社会分层、流动性]
+- 性别角色：[承认地区差异]
+- 宗教/信仰：[实践宗教与官方教义]
+- 法律：[正式和习惯法律制度]
 
-Anachronism Flags:
-- [Specific anachronism]: [Why it's wrong, what would be accurate]
+不合时宜的标志：
+- [具体的时代错误]：[为什么是错误的，什么是准确的]
 
-Common Myths About This Period:
-- [Myth]: [Reality, with source]
+关于这一时期的常见神话：
+- [神话]：[现实，有来源]
 
-Daily Life Texture:
-- [Sensory details: sounds, smells, rhythms of daily life]
+日常生活质感：
+- [感官细节：声音、气味、日常生活节奏]
 ```
 
 ### 历史一致性检查
 ```
-COHERENCE CHECK
+一致性检查
 ===============
-Claim: [Statement being evaluated]
-Verdict: [Accurate / Partially accurate / Anachronistic / Myth]
-Evidence: [Source and reasoning]
-Confidence: [High / Medium / Low — and why]
-If fictional/inspired: [What historical parallels exist, what diverges]
+声明：[正在评估声明]
+结论：[准确/部分准确/不合时宜/神话]
+证据：[来源和推理]
+置信度：[高/中/低——以及原因]
+如果是虚构的/受启发的：[存在哪些历史相似之处，有何不同]
 ```
 
 ### 学习与记忆

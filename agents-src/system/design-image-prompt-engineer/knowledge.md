@@ -36,49 +36,49 @@
 
 #### 人像摄影
 ```
-[Subject description with age, ethnicity, expression, attire] |
-[Pose and body language] |
-[Background treatment] |
-[Lighting setup: key, fill, rim, hair light] |
-[Camera: 85mm lens, f/1.4, eye-level] |
-[Style: editorial/fashion/corporate/artistic] |
-[Color palette and mood] |
-[Reference photographer style]
+[主题描述，包括年龄、种族、表情、着装] |
+[姿势和肢体语言] |
+[背景处理]|
+[灯光设置：主光、补光、边缘、发光] |
+[相机：85mm 镜头，f/1.4，视平线] |
+[风格：社论/时尚/企业/艺术] |
+[调色板和心情] |
+[参考摄影师风格]
 ```
 
 #### 产品摄影
 ```
-[Product description with materials and details] |
-[Surface/backdrop description] |
-[Lighting: softbox positions, reflectors, gradients] |
-[Camera: macro/standard, angle, distance] |
-[Hero shot/lifestyle/detail/scale context] |
-[Brand aesthetic alignment] |
-[Post-processing: clean/moody/vibrant]
+[产品描述与材料和细节] |
+[表面/背景描述] |
+[照明：柔光箱位置、反光板、渐变] |
+[相机：微距/标准、角度、距离] |
+[英雄镜头/生活方式/细节/规模背景] |
+[品牌审美定位]|
+[后期处理：干净/喜怒无常/充满活力]
 ```
 
 #### 风景摄影
 ```
-[Location and geological features] |
-[Time of day and atmospheric conditions] |
-[Weather and sky treatment] |
-[Foreground, midground, background elements] |
-[Camera: wide angle, deep focus, panoramic] |
-[Light quality and direction] |
-[Color palette: natural/enhanced/dramatic] |
-[Style: documentary/fine art/ethereal]
+[位置及地质特征] |
+[一天中的时间和大气条件] |
+[天气天空处理]|
+[前景、中景、背景元素]|
+[摄像头：广角、深焦、全景]|
+[光质与方向] |
+[调色板：自然/增强/戏剧] |
+[风格：纪实/美术/空灵]
 ```
 
 #### 时尚摄影
 ```
-[Model description and expression] |
-[Wardrobe details and styling] |
-[Hair and makeup direction] |
-[Location/set design] |
-[Pose: editorial/commercial/avant-garde] |
-[Lighting: dramatic/soft/mixed] |
-[Camera movement suggestion: static/dynamic] |
-[Magazine/campaign aesthetic reference]
+[模型描述及表达]|
+[衣柜细节与造型]|
+[发型化妆方向]|
+[地点/布景设计] |
+[姿势：社论/商业/前卫] |
+[灯光：戏剧性/柔和/混合]|
+[相机移动建议：静态/动态] |
+[杂志/活动审美参考]
 ```
 
 ### 高级能力
@@ -105,33 +105,33 @@
 
 ### 电影肖像
 ```
-Dramatic portrait of [subject], [age/appearance], wearing [attire],
-[expression/emotion], photographed with cinematic lighting setup:
+[主题]、[年龄/外貌]、穿着[服装]的戏剧性肖像，
+[表情/情感]，采用电影灯光设置拍摄：
 strong key light from 45 degrees camera left creating Rembrandt
 triangle, subtle fill, rim light separating from [background type],
-shot on 85mm f/1.4 lens at eye level, shallow depth of field with
-creamy bokeh, [color palette] color grade, inspired by [photographer],
-[film stock] aesthetic, 8k resolution, editorial quality
+使用 85mm f/1.4 镜头在眼睛水平位置拍摄，景深较浅
+奶油色散景，[调色板]颜色等级，灵感来自[摄影师]，
+[胶片库存] 美观、8k 分辨率、编辑质量
 ```
 
 ### 奢侈品
 ```
-[Product name] hero shot, [material/finish description], positioned
-on [surface description], studio lighting with large softbox overhead
-creating gradient, two strip lights for edge definition, [background
-treatment], shot at [angle] with [lens] lens, focus stacked for
-complete sharpness, [brand aesthetic] style, clean post-processing
-with [color treatment], commercial advertising quality
+[产品名称]英雄射击，[材料/完成描述]，定位
+在[表面描述]上，工作室照明与头顶上的大型柔光箱
+创建渐变，两个条形灯用于边缘定义，[背景
+处理]，使用[镜头]镜头以[角度]拍摄，焦点堆叠
+锐度完整、[品牌审美]风格、后期处理干净
+具有[色彩处理]，商业广告品质
 ```
 
 ### 环境肖像
 ```
-[Subject description] in [location], [activity/context], natural
+[主题描述]在[地点]、[活动/背景]、自然
 [time of day] lighting with [quality description], environmental
-context showing [background elements], shot on [focal length] lens
+显示[背景元素]的上下文，使用[焦距]镜头拍摄
 at f/[aperture] for [depth of field description], [composition
-technique], candid/posed feel, [color palette], documentary style
-inspired by [photographer], authentic and unretouched aesthetic
+技术]、坦率/摆姿势的感觉、[调色板]、纪实风格
+灵感来自[摄影师]，真实且未经修饰的美学
 ```
 
 ---

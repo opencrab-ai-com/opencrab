@@ -363,90 +363,90 @@ class KnowledgeBaseManager:
 ### 您的客户互动模板
 
 ```markdown
-# Customer Support Interaction Report
+# 客户支持互动报告
 
-### Customer Information
+### 客户信息
 
-### Contact Details
-**Customer Name**: [Name]
-**Account Type**: [Free/Premium/Enterprise]
-**Contact Method**: [Email/Chat/Phone/Social]
-**Priority Level**: [Low/Medium/High/Critical]
-**Previous Interactions**: [Number of recent tickets, satisfaction scores]
+### 联系方式
+**客户姓名**：[姓名]
+**帐户类型**：[免费/高级/企业]
+**联系方式**：[电子邮件/聊天/电话/社交]
+**优先级**：[低/中/高/严重]
+**之前的互动**：[最近的票数、满意度得分]
 
-### Issue Summary
-**Issue Category**: [Technical/Billing/Account/Feature Request]
-**Issue Description**: [Detailed description of customer problem]
-**Impact Level**: [Business impact and urgency assessment]
-**Customer Emotion**: [Frustrated/Confused/Neutral/Satisfied]
+### 问题摘要
+**问题类别**：[技术/计费/帐户/功能请求]
+**问题描述**：[客户问题详细描述]
+**影响级别**：[业务影响和紧迫性评估]
+**客户情绪**：[沮丧/困惑/中立/满意]
 
-### Resolution Process
+### 解决过程
 
-### Initial Assessment
-**Problem Analysis**: [Root cause identification and scope assessment]
-**Customer Needs**: [What the customer is trying to accomplish]
-**Success Criteria**: [How customer will know the issue is resolved]
-**Resource Requirements**: [What tools, access, or specialists are needed]
+### 初步评估
+**问题分析**：[根本原因识别和范围评估]
+**客户需求**：[客户想要实现的目标]
+**成功标准**：[客户如何知道问题已解决]
+**资源要求**：[需要什么工具、访问权限或专家]
 
-### Solution Implementation
-**Steps Taken**: 
-1. [First action taken with result]
-2. [Second action taken with result]
-3. [Final resolution steps]
+### 解决方案实施
+**采取的步骤**： 
+1. [采取的第一个行动并取得成果]
+2. [第二次行动并取得成果]
+3.[最终解决步骤]
 
-**Collaboration Required**: [Other teams or specialists involved]
-**Knowledge Base References**: [Articles used or created during resolution]
-**Testing and Validation**: [How solution was verified to work correctly]
+**需要协作**：[涉及的其他团队或专家]
+**知识库参考**：[解决期间使用或创建的文章]
+**测试和验证**：[如何验证解决方案是否正常工作]
 
-### Customer Communication
-**Explanation Provided**: [How the solution was explained to the customer]
-**Education Delivered**: [Preventive advice or training provided]
-**Follow-up Scheduled**: [Planned check-ins or additional support]
-**Additional Resources**: [Documentation or tutorials shared]
+### 客户沟通
+**提供的说明**：[如何向客户解释解决方案]
+**提供的教育**：[提供预防性建议或培训]
+**后续计划**：[计划签到或额外支持]
+**其他资源**：[共享文档或教程]
 
-### Outcome and Metrics
+### 结果和指标
 
-### Resolution Results
-**Resolution Time**: [Total time from initial contact to resolution]
-**First Contact Resolution**: [Yes/No - was issue resolved in initial interaction]
-**Customer Satisfaction**: [CSAT score and qualitative feedback]
-**Issue Recurrence Risk**: [Low/Medium/High likelihood of similar issues]
+### 解决结果
+**解决时间**：[从初次联系到解决的总时间]
+**首次联系解决方案**：[是/否 - 问题在初次互动中得到解决]
+**客户满意度**：[CSAT 分数和定性反馈]
+**问题重复风险**：[类似问题的低/中/高可能性]
 
-### Process Quality
-**SLA Compliance**: [Met/Missed response and resolution time targets]
-**Escalation Required**: [Yes/No - did issue require escalation and why]
-**Knowledge Gaps Identified**: [Missing documentation or training needs]
-**Process Improvements**: [Suggestions for better handling similar issues]
+### 过程质量
+**SLA 合规性**：[达到/未达到的响应和解决时间目标]
+**需要升级**：[是/否 - 问题是否需要升级以及原因]
+**发现的知识差距**：[缺少文档或培训需求]
+**流程改进**：[更好处理类似问题的建议]
 
-### Follow-up Actions
+### 后续行动
 
-### Immediate Actions (24 hours)
-**Customer Follow-up**: [Planned check-in communication]
-**Documentation Updates**: [Knowledge base additions or improvements]
-**Team Notifications**: [Information shared with relevant teams]
+### 立即行动（24 小时）
+**客户跟进**：[计划入住沟通]
+**文档更新**：[知识库添加或改进]
+**团队通知**：[与相关团队共享的信息]
 
-### Process Improvements (7 days)
-**Knowledge Base**: [Articles to create or update based on this interaction]
-**Training Needs**: [Skills or knowledge gaps identified for team development]
-**Product Feedback**: [Features or improvements to suggest to product team]
+### 流程改进（7 天）
+**知识库**：[基于此交互创建或更新的文章]
+**培训需求**：[为团队发展确定的技能或知识差距]
+**产品反馈**：[向产品团队建议的功能或改进]
 
-### Proactive Measures (30 days)
-**Customer Success**: [Opportunities to help customer get more value]
-**Issue Prevention**: [Steps to prevent similar issues for this customer]
-**Process Optimization**: [Workflow improvements for similar future cases]
+### 主动措施（30 天）
+**客户成功**：[帮助客户获得更多价值的机会]
+**问题预防**：[防止该客户出现类似问题的步骤]
+**流程优化**：[针对未来类似案例的工作流程改进]
 
-### Quality Assurance
-**Interaction Review**: [Self-assessment of interaction quality and outcomes]
-**Coaching Opportunities**: [Areas for personal improvement or skill development]
-**Best Practices**: [Successful techniques that can be shared with team]
-**Customer Feedback Integration**: [How customer input will influence future support]
+### 质量保证
+**互动审核**：[互动质量和结果的自我评估]
+**辅导机会**：[个人改进或技能发展领域]
+**最佳实践**：[可以与团队分享的成功技术]
+**客户反馈集成**：[客户输入将如何影响未来的支持]
 
 ---
-**Support Responder**: [Your name]
-**Interaction Date**: [Date and time]
-**Case ID**: [Unique case identifier]
-**Resolution Status**: [Resolved/Ongoing/Escalated]
-**Customer Permission**: [Consent for follow-up communication and feedback collection]
+**支持回复者**：[您的姓名]
+**互动日期**：[日期和时间]
+**案例 ID**：[唯一案例标识符]
+**解决状态**：[已解决/正在进行/已升级]
+**客户许可**：[同意后续沟通和反馈收集]
 ```
 
 ### 学习与记忆

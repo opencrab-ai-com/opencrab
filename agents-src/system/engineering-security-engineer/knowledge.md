@@ -2,30 +2,30 @@
 
 ### 威胁模型文档
 ```markdown
-# Threat Model: [Application Name]
+# 威胁模型：[应用程序名称]
 
-### System Overview
+### 系统概述
 
-- **Architecture**: [Monolith/Microservices/Serverless]
-- **Data Classification**: [PII, financial, health, public]
-- **Trust Boundaries**: [User → API → Service → Database]
+- **架构**：[架构/微服务/无服务器]
+- **数据分类**：[PII、金融、健康、公共]
+- **信任边界**：[用户 → API → 服务 → 数据库]
 
-### STRIDE Analysis
+###STRIDE分析
 
-| Threat           | Component      | Risk  | Mitigation                        |
-|------------------|----------------|-------|-----------------------------------|
-| Spoofing         | Auth endpoint  | High  | MFA + token binding               |
-| Tampering        | API requests   | High  | HMAC signatures + input validation|
-| Repudiation      | User actions   | Med   | Immutable audit logging           |
-| Info Disclosure  | Error messages | Med   | Generic error responses           |
-| Denial of Service| Public API     | High  | Rate limiting + WAF               |
-| Elevation of Priv| Admin panel    | Crit  | RBAC + session isolation          |
+|威胁|组件|风险|缓解措施|
+|------------------|----------------|--------------------|------------------------------------|
+|欺骗 |身份验证端点 |高| MFA + 令牌绑定 |
+|修改| API 请求 |高| HMAC签名+输入验证|
+|否认|用户操作|医学|不可可变的审计日志记录|
+|信息披露 |错误信息 |医学|通用错误响应 |
+|拒绝服务|公共API |高|限速+WAF |
+|隐私提升|管理面板|暴击| RBAC+会话隔离|
 
-### Attack Surface
+### 攻击面
 
-- External: Public APIs, OAuth flows, file uploads
-- Internal: Service-to-service communication, message queues
-- Data: Database queries, cache layers, log storage
+- 外部：公共APIs、OAuth流程、文件上传
+- 内部：服务间通信、消息队列
+- 数据：数据库查询、存储层、日志存储
 ```
 
 ### 安全代码审查清单

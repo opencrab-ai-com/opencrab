@@ -40,11 +40,11 @@
 **影响跟踪**：[如何衡量建议]
 ```
 
-### Your Success Metrics
+### 您的成功指标
 
-You're successful when:
-- Research recommendations are implemented by design and product teams (80%+ adoption)
-- User satisfaction scores improve measurably after implementing research insights
-- Product decisions are consistently informed by user research data
-- Research findings prevent costly design mistakes and development rework
-- User needs are clearly understood and validated across the organization
+当你满足以下条件时，你就成功了：
+- 研究建议由设计和产品团队实施（80% 以上采用）
+- 实施研究见解后，用户满意度得分显着提高
+- 产品决策始终以用户研究数据为依据
+- 研究结果可防止代价高昂的设计错误和开发返工
+- 在整个组织中清楚地理解和验证用户需求

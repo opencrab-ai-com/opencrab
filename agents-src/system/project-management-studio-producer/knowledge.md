@@ -2,82 +2,82 @@
 
 ### 战略投资组合计划模板
 ```markdown
-# Strategic Portfolio Plan: [Fiscal Year/Period]
+# 战略投资组合计划：[财政年度/期间]
 
-### Executive Summary
+### 执行摘要
 
-**Strategic Objectives**: [High-level business goals and creative vision]
-**Portfolio Value**: [Total investment and expected ROI across all projects]
-**Market Opportunity**: [Competitive positioning and growth targets]
-**Resource Strategy**: [Team capacity and capability development plan]
+**战略目标**：[高层业务目标和创意愿景]
+**投资组合价值**：[所有项目的总投资和预期投资回报率]
+**市场机会**：[竞争定位和增长目标]
+**资源策略**：[团队能力及能力发展计划]
 
-### Project Portfolio Overview
+### 项目组合概述
 
-**Tier 1 Projects** (Strategic Priority):
-- [Project Name]: [Budget, Timeline, Expected ROI, Strategic Impact]
-- [Resource allocation and success metrics]
+**一级项目**（战略优先）：
+- [项目名称]：[预算、时间表、预期投资回报率、战略影响]
+- [资源分配和成功指标]
 
-**Tier 2 Projects** (Growth Initiatives):
-- [Project Name]: [Budget, Timeline, Expected ROI, Market Impact]
-- [Dependencies and risk assessment]
+**二级项目**（增长计划）：
+- [项目名称]：[预算、时间表、预期投资回报率、市场影响]
+- [依赖性和风险评估]
 
-**Innovation Pipeline**:
-- [Experimental initiatives with learning objectives]
-- [Technology adoption and capability development]
+**创新管道**：
+- [具有学习目标的实验举措]
+- [技术采用和能力开发]
 
-### Resource Allocation Strategy
+### 资源分配策略
 
-**Team Capacity**: [Current and planned team composition]
-**Skill Development**: [Training and capability building priorities]
-**External Partners**: [Vendor and freelancer strategic relationships]
-**Budget Distribution**: [Investment allocation across portfolio tiers]
+**团队容量**：[当前和计划的团队组成]
+**技能发展**：[培训和能力建设优先事项]
+**外部合作伙伴**：[供应商和自由职业者战略关系]
+**预算分配**：[跨投资组合层级的投资分配]
 
-### Risk Management and Contingency
+### 风险管理和应急措施
 
-**Portfolio Risks**: [Market, competitive, and execution risks]
-**Mitigation Strategies**: [Risk prevention and response planning]
-**Contingency Planning**: [Alternative scenarios and backup plans]
-**Success Metrics**: [Portfolio-level KPIs and tracking methodology]
+**投资组合风险**：[市场、竞争和执行风险]
+**缓解策略**：[风险防范与应对规划]
+**应急计划**：[替代方案和备份计划]
+**成功指标**：[投资组合级别 KPI 和跟踪方法]
 ```
 
 ### 你的交付模板
 
 ```markdown
-# Strategic Portfolio Review: [Quarter/Period]
+# 战略投资组合审查：[季度/期间]
 
-### Executive Summary
+### 执行摘要
 
-**Portfolio Performance**: [Overall ROI and strategic objective progress]
-**Market Position**: [Competitive standing and market share evolution]
-**Team Performance**: [Resource utilization and capability development]
-**Strategic Outlook**: [Future opportunities and investment priorities]
+**投资组合绩效**：[总体投资回报率和战略目标进展]
+**市场地位**：[竞争地位和市场份额演变]
+**团队绩效**：[资源利用和能力发展]
+**战略展望**：[未来机遇和投资重点]
 
-### Portfolio Metrics
+### 投资组合指标
 
-**Financial Performance**: [Revenue impact and cost optimization across projects]
-**Project Delivery**: [Timeline and quality metrics for strategic initiatives]
-**Innovation Pipeline**: [R&D progress and new capability development]
-**Client Satisfaction**: [Strategic account performance and relationship health]
+**财务绩效**：[跨项目的收入影响和成本优化]
+**项目交付**：[战略举措的时间表和质量指标]
+**创新管线**：[研发进展和新能力开发]
+**客户满意度**：[战略客户绩效和关系健康]
 
-### Strategic Achievements
+### 战略成就
 
-**Market Expansion**: [New market entry and competitive advantage gains]
-**Creative Excellence**: [Award recognition and industry leadership demonstrations]
-**Team Development**: [Leadership advancement and skill building outcomes]
-**Process Innovation**: [Operational improvements and efficiency gains]
+**市场扩张**：[新市场进入和竞争优势增益]
+**卓越创意**：[奖项认可和行业领导力展示]
+**团队发展**：[领导力提升和技能建设成果]
+**流程创新**：[运营改进和效率提升]
 
-### Strategic Priorities Next Period
+### 下一阶段的战略重点
 
-**Investment Focus**: [Resource allocation priorities and rationale]
-**Market Opportunities**: [Growth initiatives and competitive positioning]
-**Capability Building**: [Team development and technology adoption plans]
-**Partnership Development**: [Strategic alliance and vendor relationship priorities]
+**投资重点**：[资源配置优先顺序及理由]
+**市场机会**：[增长举措和竞争定位]
+**能力建设**：[团队发展和技术采用计划]
+**合作伙伴关系发展**：[战略联盟和供应商关系优先事项]
 
 ---
-**Studio Producer**: [Your name]
-**Review Date**: [Date]
-**Strategic Leadership**: Executive-level vision with operational excellence
-**Portfolio ROI**: 25%+ return with balanced risk management
+**工作室制作人**：[您的名字]
+**审核日期**：[日期]
+**战略领导力**：执行层面的愿景和卓越的运营
+**投资组合投资回报率**：25% 以上的回报率和平衡的风险管理
 ```
 
 ### 学习与记忆

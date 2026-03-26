@@ -2,73 +2,73 @@
 
 ### 项目章程模板
 ```markdown
-# Project Charter: [Project Name]
+# 项目章程：[项目名称]
 
-### Project Overview
+### 项目概述
 
-**Problem Statement**: [Clear issue or opportunity being addressed]
-**Project Objectives**: [Specific, measurable outcomes and success criteria]
-**Scope**: [Detailed deliverables, boundaries, and exclusions]
-**Success Criteria**: [Quantifiable measures of project success]
+**问题陈述**：[正在解决的明确问题或机会]
+**项目目标**：[具体的、可衡量的成果和成功标准]
+**范围**：[详细的可交付成果、边界和排除]
+**成功标准**：[项目成功的量化衡量标准]
 
-### Stakeholder Analysis
+### 利益相关者分析
 
-**Executive Sponsor**: [Decision authority and escalation point]
-**Project Team**: [Core team members with roles and responsibilities]
-**Key Stakeholders**: [All affected parties with influence/interest mapping]
-**Communication Plan**: [Frequency, format, and content by stakeholder group]
+**执行发起人**：[决策权限和升级点]
+**项目团队**：[具有角色和职责的核心团队成员]
+**主要利益相关者**：[具有影响力/利益映射的所有受影响方]
+**沟通计划**：[利益相关者群体的频率、格式和内容]
 
-### Resource Requirements
+### 资源要求
 
-**Team Composition**: [Required skills and team member allocation]
-**Budget**: [Total project cost with breakdown by category]
-**Timeline**: [High-level milestones and delivery dates]
-**External Dependencies**: [Vendor, partner, or external team requirements]
+**团队组成**：[所需技能及团队成员分配]
+**预算**：[项目总成本，按类别细分]
+**时间表**：[高级里程碑和交付日期]
+**外部依赖项**：[供应商、合作伙伴或外部团队要求]
 
-### Risk Assessment
+### 风险评估
 
-**High-Level Risks**: [Major project risks with impact assessment]
-**Mitigation Strategies**: [Risk prevention and response planning]
-**Success Factors**: [Critical elements required for project success]
+**高级别风险**：[重大项目风险及影响评估]
+**缓解策略**：[风险防范与应对规划]
+**成功因素**：[项目成功所需的关键要素]
 ```
 
 ### 你的交付模板
 
 ```markdown
-# Project Status Report: [Project Name]
+# 项目状态报告：[项目名称]
 
-### Executive Summary
+### 执行摘要
 
-**Overall Status**: [Green/Yellow/Red with clear rationale]
-**Timeline**: [On track/At risk/Delayed with recovery plan]
-**Budget**: [Within/Over/Under budget with variance explanation]
-**Next Milestone**: [Upcoming deliverable and target date]
+**总体状态**：[绿色/黄色/红色，有明确的理由]
+**时间表**：[按计划/有风险/恢复计划延迟]
+**预算**：[预算内/高于/低于预算，并附有差异解释]
+**下一个里程碑**：[即将交付的成果和目标日期]
 
-### Progress Update
+### 进度更新
 
-**Completed This Period**: [Major accomplishments and deliverables]
-**Planned Next Period**: [Upcoming activities and focus areas]
-**Key Metrics**: [Quantitative progress indicators]
-**Team Performance**: [Resource utilization and productivity notes]
+**本期完成**：[主要成就和可交付成果]
+**计划下一期**：[即将开展的活动和重点领域]
+**关键指标**：[量化进度指标]
+**团队绩效**：[资源利用率和生产力说明]
 
-### Issues and Risks
+### 问题和风险
 
-**Current Issues**: [Active problems requiring attention]
-**Risk Updates**: [Risk status changes and mitigation progress]
-**Escalation Needs**: [Items requiring stakeholder decision or support]
-**Change Requests**: [Scope, timeline, or budget change proposals]
+**当前问题**：[需要注意的活跃问题]
+**风险更新**：[风险状态变化及缓解进展]
+**升级需求**：[需要利益相关者决定或支持的项目]
+**变更请求**：[范围、时间表或预算变更提案]
 
-### Stakeholder Actions
+### 利益相关者行动
 
-**Decisions Needed**: [Outstanding decisions with recommended options]
-**Stakeholder Tasks**: [Actions required from project sponsors or key stakeholders]
-**Communication Highlights**: [Key messages and updates for broader organization]
+**需要做出的决定**：[带有推荐选项的杰出决定]
+**利益相关者任务**：[项目发起人或主要利益相关者需要采取的行动]
+**沟通要点**：[针对更广泛组织的关键信息和更新]
 
 ---
-**Project Shepherd**: [Your name]
-**Report Date**: [Date]
-**Project Health**: Transparent reporting with proactive issue management
-**Stakeholder Alignment**: Clear communication and expectation management
+**牧羊人计划**：[你的名字]
+**报告日期**：[日期]
+**项目健康**：透明报告和主动问题管理
+**利益相关者联盟**：清晰的沟通和期望管理
 ```
 
 ### 学习与记忆

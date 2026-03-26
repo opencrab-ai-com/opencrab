@@ -2,165 +2,165 @@
 
 ### 技术 SEO 审核模板
 ```markdown
-# Technical SEO Audit Report
+# SEO 技术审核报告
 
-### Crawlability & Indexation
+### 可抓取性和索引
 
-### Robots.txt Analysis
-- Allowed paths: [list critical paths]
-- Blocked paths: [list and verify intentional blocks]
-- Sitemap reference: [verify sitemap URL is declared]
+### Robots.txt分析
+- 允许的路径：[列出关键路径]
+- 被阻止的路径：[列出并验证有意阻止]
+- 站点地图参考：[验证已声明站点地图 URL]
 
-### XML Sitemap Health
-- Total URLs in sitemap: X
-- Indexed URLs (via Search Console): Y
-- Index coverage ratio: Y/X = Z%
-- Issues: [orphaned pages, 404s in sitemap, non-canonical URLs]
+### XML 站点地图健康状况
+- 站点地图中的 URL 总数：X
+- 索引 URL（通过 Search Console）：是
+- 指数覆盖率：Y/X = Z%
+- 问题：[孤立页面、站点地图中的 404、非规范 URL]
 
-### Crawl Budget Optimization
-- Total pages: X
-- Pages crawled/day (avg): Y
-- Crawl waste: [parameter URLs, faceted navigation, thin content pages]
-- Recommendations: [noindex/canonical/robots directives]
+### 抓取预算优化
+- 总页数：X
+- 每天抓取的页面数（平均）：Y
+- 抓取浪费：[参数 URL、分面导航、薄内容页面]
+- 建议：[noindex/canonical/robots 指令]
 
-### Site Architecture & Internal Linking
+### 网站架构和内部链接
 
-### URL Structure
-- Hierarchy depth: Max X clicks from homepage
-- URL pattern: [domain.com/category/subcategory/page]
-- Issues: [deep pages, orphaned content, redirect chains]
+### 网址结构
+- 层次结构深度：主页最多 X 次点击
+- URL 模式：[domain.com/category/subcategory/page]
+- 问题：[深层页面、孤立内容、重定向链]
 
-### Internal Link Distribution
-- Top linked pages: [list top 10]
-- Orphaned pages (0 internal links): [count and list]
-- Link equity distribution score: X/10
+### 内部链接分布
+- 热门链接页面：[列出前 10 名]
+- 孤立页面（0 个内部链接）：[计数和列表]
+- 链接权益分配分数：X/10
 
-### Core Web Vitals (Field Data)
+### 核心网络生命（现场数据）
 
-| Metric | Mobile | Desktop | Target | Status |
+|公制|手机 |桌面|目标|状态 |
 |--------|--------|---------|--------|--------|
-| LCP    | X.Xs   | X.Xs    | <2.5s  | ✅/❌  |
-| INP    | Xms    | Xms     | <200ms | ✅/❌  |
-| CLS    | X.XX   | X.XX    | <0.1   | ✅/❌  |
+|液晶聚合物| X.Xs | X.Xs | <2.5秒| ✅/❌ |
+|国际NP | Xms | Xms | <200 毫秒 | ✅/❌ |
+| CLS | X.XX | X.XX | <0.1 | ✅/❌ |
 
-### Structured Data Implementation
+### 结构化数据实现
 
-- Schema types present: [Article, Product, FAQ, HowTo, Organization]
-- Validation errors: [list from Rich Results Test]
-- Missing opportunities: [recommended schema for content types]
+- 存在模式类型：[文章、产品、常见问题解答、操作方法、组织]
+- 验证错误：[来自丰富结果测试的列表]
+- 错过的机会：[推荐的内容类型架构]
 
-### Mobile Optimization
+### 移动优化
 
-- Mobile-friendly status: [Pass/Fail]
-- Viewport configuration: [correct/issues]
-- Touch target spacing: [compliant/issues]
-- Font legibility: [adequate/needs improvement]
+- 移动设备友好状态：[通过/失败]
+- 视口配置：[正确/问题]
+- 触摸目标间距：[合规/问题]
+- 字体易读性：[足够/需要改进]
 ```
 
 ### 关键词研究框架
 ```markdown
-# Keyword Strategy Document
+# 关键词策略文档
 
-### Topic Cluster: [Primary Topic]
+### 主题群：[主要主题]
 
-### Pillar Page Target
-- **Keyword**: [head term]
-- **Monthly Search Volume**: X,XXX
-- **Keyword Difficulty**: XX/100
-- **Current Position**: XX (or not ranking)
-- **Search Intent**: [Informational/Commercial/Transactional/Navigational]
-- **SERP Features**: [Featured Snippet, PAA, Video, Images]
-- **Target URL**: /pillar-page-slug
+### 支柱页面目标
+- **关键字**：[核心术语]
+- **每月搜索量**：X,XXX
+- **关键字难度**：XX/100
+- **当前位置**：XX（或未排名）
+- **搜索意图**：[信息/商业/交易/导航]
+- **SERP 功能**：[精选片段、PAA、视频、图像]
+- **目标 URL**：/pillar-page-slug
 
-### Supporting Content Cluster
-| Keyword | Volume | KD | Intent | Target URL | Priority |
-|---------|--------|----|--------|------------|----------|
-| [long-tail 1] | X,XXX | XX | Info | /blog/subtopic-1 | High |
-| [long-tail 2] | X,XXX | XX | Commercial | /guide/subtopic-2 | Medium |
-| [long-tail 3] | XXX | XX | Transactional | /product/landing | High |
+### 支持内容集群
+|关键词 |卷 |杜兰特 |意向 |目标网址 |优先|
+|--------|--------|----|--------|------------|---------|
+| [长尾1]| X，XXX | XX |信息 | /blog/subtopic-1 |高|
+| [长尾2]| X，XXX | XX |商业| /guide/subtopic-2 |中等|
+| [长尾3]| XXX | XX |交易 | /产品/登陆 |高|
 
-### Content Gap Analysis
-- **Competitors ranking, we're not**: [keyword list with volumes]
-- **Low-hanging fruit (positions 4-20)**: [keyword list with current positions]
-- **Featured snippet opportunities**: [keywords where competitor snippets are weak]
+### 内容差距分析
+- **竞争对手排名，我们不是**：[带数量的关键词列表]
+- **容易实现的目标（位置 4-20）**：[包含当前位置的关键字列表]
+- **特色片段机会**：[竞争对手片段薄弱的关键词]
 
-### Search Intent Mapping
-- **Informational** (top-of-funnel): [keywords] → Blog posts, guides, how-tos
-- **Commercial Investigation** (mid-funnel): [keywords] → Comparisons, reviews, case studies
-- **Transactional** (bottom-funnel): [keywords] → Landing pages, product pages
+### 搜索意图映射
+- **信息**（漏斗顶部）：[关键词] → 博客文章、指南、操作方法
+- **商业调查**（漏斗中部）：[关键词] → 比较、评论、案例研究
+- **交易**（底部漏斗）：[关键词] → 登陆页面、产品页面
 ```
 
 ### 页面优化清单
 ```markdown
-# On-Page SEO Optimization: [Target Page]
+# 页面 SEO 优化：[目标页面]
 
-### Meta Tags
+### 元标签
 
-- [ ] Title tag: [Primary Keyword] - [Modifier] | [Brand] (50-60 chars)
-- [ ] Meta description: [Compelling copy with keyword + CTA] (150-160 chars)
-- [ ] Canonical URL: self-referencing canonical set correctly
-- [ ] Open Graph tags: og:title, og:description, og:image configured
-- [ ] Hreflang tags: [if multilingual — specify language/region mappings]
+- [ ] 标题标签：[主关键字] - [修饰符] | [品牌]（50-60 个字符）
+- [ ] 元描述：[带有关键字 + CTA 的引人入胜的文案]（150-160 个字符）
+- [ ] 规范 URL：自引用规范设置正确
+- [ ] 打开图形标签：og:title、og:description、og:image 配置
+- [ ] Hreflang 标签：[如果是多语言 — 指定语言/区域映射]
 
-### Content Structure
+### 内容结构
 
-- [ ] H1: Single, includes primary keyword, matches search intent
-- [ ] H2-H3 hierarchy: Logical outline covering subtopics and PAA questions
-- [ ] Word count: [X words] — competitive with top 5 ranking pages
-- [ ] Keyword density: Natural integration, primary keyword in first 100 words
-- [ ] Internal links: [X] contextual links to related pillar/cluster content
-- [ ] External links: [X] citations to authoritative sources (E-E-A-T signal)
+- [ ] H1：单个，包含主关键词，匹配搜索意图
+- [ ] H2-H3 层次结构：涵盖子主题和 PAA 问题的逻辑大纲
+- [ ] 字数：[X 个字] — 与排名前 5 的页面竞争
+- [ ] 关键词密度：自然整合，前100个词为主要关键词
+- [ ] 内部链接：[X] 相关支柱/集群内容的上下文链接
+- [ ] 外部链接：[X] 引用权威来源（E-E-A-T 信号）
 
-### Media & Engagement
+### 媒体与参与
 
-- [ ] Images: Descriptive alt text, compressed (<100KB), WebP/AVIF format
-- [ ] Video: Embedded with schema markup where relevant
-- [ ] Tables/Lists: Structured for featured snippet capture
-- [ ] FAQ section: Targeting People Also Ask questions with concise answers
+- [ ] 图像：描述性替代文本，压缩 (<100KB)，WebP/AVIF 格式
+- [ ] 视频：嵌入相关的架构标记
+- [ ] 表格/列表：针对特色片段捕获而构建
+- [ ] 常见问题解答部分：针对人群也提出问题并提供简洁的答案
 
-### Schema Markup
+### 架构标记
 
-- [ ] Primary schema type: [Article/Product/HowTo/FAQ]
-- [ ] Breadcrumb schema: Reflects site hierarchy
-- [ ] Author schema: Linked to author entity with credentials (E-E-A-T)
-- [ ] FAQ schema: Applied to Q&A sections for rich result eligibility
+- [ ] 主要架构类型：[文章/产品/操作方法/常见问题解答]
+- [ ] 面包屑模式：反映站点层次结构
+- [ ] 作者模式：链接到具有凭据的作者实体 (E-E-A-T)
+- [ ] FAQ 架构：应用于问答部分以获得丰富的结果资格
 ```
 
 ### 链接建设策略
 ```markdown
-# Link Authority Building Plan
+# 链接权威建设计划
 
-### Current Link Profile
+### 当前链接配置文件
 
-- Domain Rating/Authority: XX
-- Referring Domains: X,XXX
-- Backlink quality distribution: [High/Medium/Low percentages]
-- Toxic link ratio: X% (disavow if >5%)
+- 域名评级/权限：XX
+- 参考域名：X,XXX
+- 反向链接质量分布：[高/中/低百分比]
+- 有毒链接比例：X%（如果>5%则拒绝）
 
-### Link Acquisition Tactics
+### 链接获取策略
 
-### Digital PR & Data-Driven Content
-- Original research and industry surveys → journalist outreach
-- Data visualizations and interactive tools → resource link building
-- Expert commentary and trend analysis → HARO/Connectively responses
+### 数字公关和数据驱动内容
+- 原创研究和行业调查 → 记者外展
+- 数据可视化和交互工具→资源链接建设
+- 专家评论和趋势分析 → HARO/Connectively 回应
 
-### Content-Led Link Building
-- Definitive guides that become reference resources
-- Free tools and calculators (linkable assets)
-- Original case studies with shareable results
+### 以内容为主导的链接建设
+- 成为参考资源的权威指南
+- 免费工具和计算器（可链接资产）
+- 具有可共享结果的原始案例研究
 
-### Strategic Outreach
-- Broken link reclamation: [identify broken links on authority sites]
-- Unlinked brand mentions: [convert mentions to links]
-- Resource page inclusion: [target curated resource lists]
+### 战略外展
+- 损坏的链接回收：[识别权威网站上的损坏链接]
+- 未链接的品牌提及：[将提及转换为链接]
+- 资源页面包含：[目标策划资源列表]
 
-### Monthly Link Targets
+### 每月链接目标
 
-| Source Type | Target Links/Month | Avg DR | Approach |
-|-------------|-------------------|--------|----------|
-| Digital PR  | 5-10              | 60+    | Data stories, expert commentary |
-| Content     | 10-15             | 40+    | Guides, tools, original research |
-| Outreach    | 5-8               | 50+    | Broken links, unlinked mentions |
+|来源类型 |目标链接/月 |平均灾难恢复 |方法|
+|------------|--------------------|--------|----------|
+|数字公关 | 5-10 | 60+ |数据故事、专家评论|
+|内容 | 10-15 | 10-15 40+ |指南、工具、原创研究 |
+|外展 | 5-8 | 50+ |损坏的链接、未链接的提及 |
 ```
 
 ### 学习与记忆

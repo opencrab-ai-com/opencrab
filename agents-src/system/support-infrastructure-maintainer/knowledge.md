@@ -396,90 +396,90 @@ main "$@"
 ### 您的基础设施报告模板
 
 ```markdown
-# Infrastructure Health and Performance Report
+# 基础设施健康状况和性能报告
 
-### Executive Summary
+### 执行摘要
 
-### System Reliability Metrics
-**Uptime**: 99.95% (target: 99.9%, vs. last month: +0.02%)
-**Mean Time to Recovery**: 3.2 hours (target: <4 hours)
-**Incident Count**: 2 critical, 5 minor (vs. last month: -1 critical, +1 minor)
-**Performance**: 98.5% of requests under 200ms response time
+### 系统可靠性指标
+**正常运行时间**：99.95%（目标：99.9%，与上个月相比：+0.02%）
+**平均恢复时间**：3.2 小时（目标：<4 小时）
+**事件计数**：2 起严重事故，5 起轻微事故（与上个月相比：-1 起严重事故，+1 起轻微事故）
+**性能**：98.5% 的请求响应时间低于 200 毫秒
 
-### Cost Optimization Results
-**Monthly Infrastructure Cost**: $[Amount] ([+/-]% vs. budget)
-**Cost per User**: $[Amount] ([+/-]% vs. last month)
-**Optimization Savings**: $[Amount] achieved through right-sizing and automation
-**ROI**: [%] return on infrastructure optimization investments
+### 成本优化结果
+**每月基础设施成本**：$[金额]（[+/-]% 与预算）
+**每位用户的成本**：[金额] 美元（[+/-]% 与上个月相比）
+**优化节省**：通过调整规模和自动化实现[金额]美元
+**投资回报率**：基础设施优化投资回报率 [%]
 
-### Action Items Required
-1. **Critical**: [Infrastructure issue requiring immediate attention]
-2. **Optimization**: [Cost or performance improvement opportunity]
-3. **Strategic**: [Long-term infrastructure planning recommendation]
+### 所需的行动项目
+1. **严重**：[需要立即关注的基础设施问题]
+2. **优化**：[成本或性能改进机会]
+3. **战略**：[长期基础设施规划建议]
 
-### Detailed Infrastructure Analysis
+### 详细的基础设施分析
 
-### System Performance
-**CPU Utilization**: [Average and peak across all systems]
-**Memory Usage**: [Current utilization with growth trends]
-**Storage**: [Capacity utilization and growth projections]
-**Network**: [Bandwidth usage and latency measurements]
+### 系统性能
+**CPU 利用率**：[所有系统的平均值和峰值]
+**内存使用情况**：[当前利用率及增长趋势]
+**存储**：[容量利用率和增长预测]
+**网络**：[带宽使用和延迟测量]
 
-### Availability and Reliability
-**Service Uptime**: [Per-service availability metrics]
-**Error Rates**: [Application and infrastructure error statistics]
-**Response Times**: [Performance metrics across all endpoints]
-**Recovery Metrics**: [MTTR, MTBF, and incident response effectiveness]
+### 可用性和可靠性
+**服务正常运行时间**：[每项服务的可用性指标]
+**错误率**：[应用程序和基础设施错误统计]
+**响应时间**：[所有端点的性能指标]
+**恢复指标**：[MTTR、MTBF 和事件响应有效性]
 
-### Security Posture
-**Vulnerability Assessment**: [Security scan results and remediation status]
-**Access Control**: [User access review and compliance status]
-**Patch Management**: [System update status and security patch levels]
-**Compliance**: [Regulatory compliance status and audit readiness]
+### 安全态势
+**漏洞评估**：[安全扫描结果和修复状态]
+**访问控制**：[用户访问审核和合规状态]
+**补丁管理**：[系统更新状态及安全补丁级别]
+**合规性**：[监管合规状态和审核准备情况]
 
-### Cost Analysis and Optimization
+### 成本分析与优化
 
-### Spending Breakdown
-**Compute Costs**: $[Amount] ([%] of total, optimization potential: $[Amount])
-**Storage Costs**: $[Amount] ([%] of total, with data lifecycle management)
-**Network Costs**: $[Amount] ([%] of total, CDN and bandwidth optimization)
-**Third-party Services**: $[Amount] ([%] of total, vendor optimization opportunities)
+### 支出明细
+**计算成本**：$[金额]（占总数的[%]，优化潜力：$[金额]）
+**存储成本**：$[金额]（占总额的[%]，包含数据生命周期管理）
+**网络成本**：[金额] 美元（占总成本、CDN 和带宽优化的 [%]）
+**第三方服务**：$[金额]（占总数的[%]，供应商优化机会）
 
-### Optimization Opportunities
-**Right-sizing**: [Instance optimization with projected savings]
-**Reserved Capacity**: [Long-term commitment savings potential]
-**Automation**: [Operational cost reduction through automation]
-**Architecture**: [Cost-effective architecture improvements]
+### 优化机会
+**调整规模**：[实例优化与预计节省]
+**预留容量**：[长期承诺节省潜力]
+**自动化**：[通过自动化降低运营成本]
+**架构**：[经济高效的架构改进]
 
-### Infrastructure Recommendations
+### 基础设施建议
 
-### Immediate Actions (7 days)
-**Performance**: [Critical performance issues requiring immediate attention]
-**Security**: [Security vulnerabilities with high risk scores]
-**Cost**: [Quick cost optimization wins with minimal risk]
+### 立即采取行动（7 天）
+**性能**：[需要立即关注的关键性能问题]
+**安全性**：[风险评分高的安全漏洞]
+**成本**：[快速成本优化以最小风险获胜]
 
-### Short-term Improvements (30 days)
-**Monitoring**: [Enhanced monitoring and alerting implementations]
-**Automation**: [Infrastructure automation and optimization projects]
-**Capacity**: [Capacity planning and scaling improvements]
+### 短期改进（30 天）
+**监控**：[增强监控和警报实施]
+**自动化**：[基础设施自动化及优化项目]
+**容量**：[容量规划和扩展改进]
 
-### Strategic Initiatives (90+ days)
-**Architecture**: [Long-term architecture evolution and modernization]
-**Technology**: [Technology stack upgrades and migrations]
-**Disaster Recovery**: [Business continuity and disaster recovery enhancements]
+### 战略举措（90 多天）
+**架构**：[长期架构演化与现代化]
+**技术**：[技术栈升级和迁移]
+**灾难恢复**：[业务连续性和灾难恢复增强]
 
-### Capacity Planning
-**Growth Projections**: [Resource requirements based on business growth]
-**Scaling Strategy**: [Horizontal and vertical scaling recommendations]
-**Technology Roadmap**: [Infrastructure technology evolution plan]
-**Investment Requirements**: [Capital expenditure planning and ROI analysis]
+### 容量规划
+**增长预测**：[基于业务增长的资源需求]
+**扩展策略**：[水平和垂直扩展建议]
+**技术路线图**：[基础设施技术演进规划]
+**投资要求**：[资本支出规划和投资回报率分析]
 
 ---
-**Infrastructure Maintainer**: [Your name]
-**Report Date**: [Date]
-**Review Period**: [Period covered]
-**Next Review**: [Scheduled review date]
-**Stakeholder Approval**: [Technical and business approval status]
+**基础设施维护者**：[您的姓名]
+**报告日期**：[日期]
+**审核期**：[涵盖期间]
+**下一次审核**：[预定审核日期]
+**利益相关者批准**：[技术和业务批准状态]
 ```
 
 ### 学习与记忆

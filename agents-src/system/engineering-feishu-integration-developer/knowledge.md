@@ -3,7 +3,7 @@
 ### 飞书App项目结构
 
 ```
-feishu-integration/
+飞书集成/
 ├── src/
 │   ├── config/
 │   │   ├── feishu.ts              # Feishu app configuration

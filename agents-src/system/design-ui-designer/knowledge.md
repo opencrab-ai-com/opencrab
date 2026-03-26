@@ -175,76 +175,76 @@
 ### 您的设计交付模板
 
 ```markdown
-# [Project Name] UI Design System
+#[项目名称]UI设计系统
 
-### Design Foundations
+### 设计基础
 
-### Color System
-**Primary Colors**: [Brand color palette with hex values]
-**Secondary Colors**: [Supporting color variations]
-**Semantic Colors**: [Success, warning, error, info colors]
-**Neutral Palette**: [Grayscale system for text and backgrounds]
-**Accessibility**: [WCAG AA compliant color combinations]
+### 颜色系统
+**原色**：[带有十六值的品牌调色板]
+**辅助颜色**：[支持颜色变化]
+**暗示颜色**：[成功、警告、错误、信息颜色]
+**中性调色板**：[文本和背景的对比度系统]
+**辅助功能**：[WCAG AA 兼容颜色组合]
 
-### Typography System
-**Primary Font**: [Main brand font for headlines and UI]
-**Secondary Font**: [Body text and supporting content font]
-**Font Scale**: [12px → 14px → 16px → 18px → 24px → 30px → 36px]
-**Font Weights**: [400, 500, 600, 700]
-**Line Heights**: [Optimal line heights for readability]
+###版式系统
+**主要字体**：[标题和UI的主要品牌字体]
+**辅助字体**：[正文和支持内容字体]
+**字体比例**：[12px → 14px → 16px → 18px → 24px → 30px → 36px]
+**字体粗细**：[400, 500, 600, 700]
+**行高**：[唯一性的最佳行高]
 
-### Spacing System
-**Base Unit**: 4px
-**Scale**: [4px, 8px, 12px, 16px, 24px, 32px, 48px, 64px]
-**Usage**: [Consistent spacing for margins, padding, and component gaps]
+### 间距系统
+**基本单位**：4px
+**比例**：[4像素、8像素、12像素、16像素、24像素、32像素、48像素、64像素]
+**最**：[边距、填充和组件间隙的坐标一致]
 
-### Component Library
+### 组件库
 
-### Base Components
-**Buttons**: [Primary, secondary, tertiary variants with sizes]
-**Form Elements**: [Inputs, selects, checkboxes, radio buttons]
-**Navigation**: [Menu systems, breadcrumbs, pagination]
-**Feedback**: [Alerts, toasts, modals, tooltips]
-**Data Display**: [Cards, tables, lists, badges]
+### 基础组件
+**按钮**：[主要、次要、第三种尺寸变体]
+**表单元素**：[输入、选择、表单、单选按钮]
+**导航**：[菜单系统、面包片、分页]
+**反馈**：[警报、消防司、模式、工具提示]
+**数据展示**：[布局、表格、列表、权限]
 
-### Component States
-**Interactive States**: [Default, hover, active, focus, disabled]
-**Loading States**: [Skeleton screens, spinners, progress bars]
-**Error States**: [Validation feedback and error messaging]
-**Empty States**: [No data messaging and guidance]
+### 组件状态
+**交互状态**：[默认、悬停、活动、焦点、取消]
+**加载状态**：[制作屏幕、旋转器、详情条]
+**错误状态**：[验证反馈和错误消息]
+**空状态**：[无数据消息和指导]
 
-### Responsive Design
+### 响应式设计
 
-### Breakpoint Strategy
-**Mobile**: 320px - 639px (base design)
-**Tablet**: 640px - 1023px (layout adjustments)
-**Desktop**: 1024px - 1279px (full feature set)
-**Large Desktop**: 1280px+ (optimized for large screens)
+### 断点策略
+**移动设备**：320px - 639px（基本设计）
+**平板电脑**：640px - 1023px（布局调整）
+**桌面**：1024px - 1279px（完整功能集）
+**大型桌面**：1280px+（针对大屏幕进行了优化）
 
-### Layout Patterns
-**Grid System**: [12-column flexible grid with responsive breakpoints]
-**Container Widths**: [Centered containers with max-widths]
-**Component Behavior**: [How components adapt across screen sizes]
+### 布局模式
+**网格系统**：[带有响应断点的12列灵活网格]
+**容器宽度**：[具有最大宽度的居中容器]
+**组件行为**：[组件如何适应屏幕尺寸]
 
-### Accessibility Standards
+###无障碍标准
 
-### WCAG AA Compliance
-**Color Contrast**: 4.5:1 ratio for normal text, 3:1 for large text
-**Keyboard Navigation**: Full functionality without mouse
-**Screen Reader Support**: Semantic HTML and ARIA labels
-**Focus Management**: Clear focus indicators and logical tab order
+### WCAG AA 合规性
+**颜色实现**：普通文本为4.5:1比例，大文本为3:1
+**键盘导航**：离开鼠标即可实现完整功能
+** 屏幕阅读器支持**：语义 HTML 和 ARIA 标签
+**焦点管理**：清晰的焦点点亮和逻辑选项卡顺序
 
-### Inclusive Design
-**Touch Targets**: 44px minimum size for interactive elements
-**Motion Sensitivity**: Respects user preferences for reduced motion
-**Text Scaling**: Design works with browser text scaling up to 200%
-**Error Prevention**: Clear labels, instructions, and validation
+###对抗性设计
+**触摸目标**：交互元素的最小尺寸为44像素
+**运动不同**：尊重用户减少运动的偏好
+**文本缩放**：设计适用于浏览器缩放高达 200%
+**错误预防**：清晰的标签、说明和验证
 
 ---
-**UI Designer**: [Your name]
-**Design System Date**: [Date]
-**Implementation**: Ready for developer handoff
-**QA Process**: Design review and validation protocols established
+**UI设计师**：[您的名字]
+**设计系统日期**：[日期]
+**实施**：准备好开发人员移交
+**质量保证流程**：制定设计审查和验证协议
 ```
 
 ### 学习与记忆

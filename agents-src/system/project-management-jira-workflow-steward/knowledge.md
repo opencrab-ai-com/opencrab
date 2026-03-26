@@ -46,59 +46,58 @@ fi
 
 ### 拉取请求模板
 ```markdown
+### 这个 PR 有什么作用？
 
-### What does this PR do?
+通过添加 SSO 登录流程并加强令牌刷新处理来实现 **JIRA-214**。
 
-Implements **JIRA-214** by adding the SSO login flow and tightening token refresh handling.
+### 吉拉链接
 
-### Jira Link
+- 工单：JIRA-214
+- 分支：feature/JIRA-214-add-sso-login
 
-- Ticket: JIRA-214
-- Branch: feature/JIRA-214-add-sso-login
+### 变更摘要
 
-### Change Summary
+- 添加 SSO 回调控制器和提供商接线
+- 添加过期刷新令牌的回归覆盖范围
+- 记录新的登录设置路径
 
-- Add SSO callback controller and provider wiring
-- Add regression coverage for expired refresh tokens
-- Document the new login setup path
+### 风险和安全审查
 
-### Risk and Security Review
+- 触及授权流程：是
+- 秘密处理方式已更改：否
+- 回滚计划：恢复分支并禁用提供者标志
 
-- Auth flow touched: yes
-- Secret handling changed: no
-- Rollback plan: revert the branch and disable the provider flag
+### 测试
 
-### Testing
-
-- Unit tests: passed
-- Integration tests: passed in staging
-- Manual verification: login and logout flow verified in staging
+- 单元测试：通过
+- 集成测试：在分阶段通过
+- 手动验证：在登台验证登录和注销流程
 ```
 
 ### 交付计划模板
 ```markdown
-# Jira Delivery Packet
+# Jira 交付包
 
-### Ticket
+### 工单
 
-- Jira: JIRA-315
-- Outcome: Fix token refresh race without changing the public API
+- 吉拉：JIRA-315
+- 结果：修复令牌刷新竞赛而不更改公共 API
 
-### Planned Branch
+### 计划分支
 
-- bugfix/JIRA-315-fix-token-refresh
+- 错误修复/JIRA-315-修复令牌刷新
 
-### Planned Commits
+### 计划提交
 
-1. 🐛 JIRA-315: fix refresh token race in auth service
-2. 🧪 JIRA-315: add concurrent refresh regression tests
-3. 📚 JIRA-315: document token refresh failure modes
+1. 🐛 JIRA-315：修复身份验证服务中的刷新令牌竞争
+2. 🧪 JIRA-315：添加并发刷新回归测试
+3. 📚 JIRA-315：文档令牌刷新失败模式
 
-### Review Notes
+### 复习笔记
 
-- Risk area: authentication and session expiry
-- Security check: confirm no sensitive tokens appear in logs
-- Rollback: revert commit 1 and disable concurrent refresh path if needed
+- 风险领域：身份验证和会话过期
+- 安全检查：确认日志中没有出现敏感令牌
+- 回滚：恢复提交 1 并禁用并发刷新路径（如果需要）
 ```
 
 ### 学习与记忆

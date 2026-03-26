@@ -2,10 +2,10 @@
 
 ### FMOD 事件命名约定
 ```
-# Event Path Structure
+# 事件路径结构
 event:/[Category]/[Subcategory]/[EventName]
 
-# Examples
+# 例子
 event:/SFX/Player/Footstep_Concrete
 event:/SFX/Player/Footstep_Grass
 event:/SFX/Weapons/Gunshot_Pistol
@@ -66,88 +66,88 @@ public class AudioManager : MonoBehaviour
 ### 自适应音乐参数架构
 ```markdown
 
-### Music System Parameters
+### 音乐系统参数
 
-### CombatIntensity (0.0 – 1.0)
-- 0.0 = No enemies nearby — exploration layers only
-- 0.3 = Enemy alert state — percussion enters
-- 0.6 = Active combat — full arrangement
-- 1.0 = Boss fight / critical state — maximum intensity
+### 战斗强度 (0.0 – 1.0)
+- 0.0 = 附近没有敌人 - 仅探索层
+- 0.3 = 敌人警戒状态 — 进入打击乐状态
+- 0.6 = 主动战斗——全面安排
+- 1.0 = Boss 战/临界状态 — 最大强度
 
-**Source**: Driven by AI threat level aggregator script
-**Update Rate**: Every 0.5 seconds (smoothed with lerp)
-**Transition**: Quantized to nearest beat boundary
+**来源**：由 AI 威胁级别聚合器脚本驱动
+**更新率**：每 0.5 秒（用 lerp 平滑）
+**过渡**：量化到最近的节拍边界
 
-### TimeOfDay (0.0 – 1.0)
-- Controls outdoor ambience blend: day birds → dusk insects → night wind
-**Source**: Game clock system
-**Update Rate**: Every 5 seconds
+### 一天中的时间 (0.0 – 1.0)
+- 控制室外环境混合：白天的鸟类→黄昏的昆虫→夜间的风
+**来源**：比赛时钟系统
+**更新率**：每 5 秒一次
 
-### PlayerHealth (0.0 – 1.0)
-- Below 0.2: low-pass filter increases on all non-UI buses
-**Source**: Player health component
-**Update Rate**: On health change event
+### 玩家生命值 (0.0 – 1.0)
+- 低于 0.2：所有非UI 总线上的低通滤波器增加
+**来源**：玩家健康状况组件
+**更新率**：关于健康变化事件
 ```
 
 ### 音频预算规范
 ```markdown
-# Audio Performance Budget — [Project Name]
+# 音频性能预算 — [项目名称]
 
-### Voice Count
+### 语音计数
 
-| Platform   | Max Voices | Virtual Voices |
+|平台|最大声音 |虚拟声音 |
 |------------|------------|----------------|
-| PC         | 64         | 256            |
-| Console    | 48         | 128            |
-| Mobile     | 24         | 64             |
+|电脑| 64 | 64 256 | 256
+|控制台 | 48 | 48 128 | 128
+|手机 | 24 | 64 | 64
 
-### Memory Budget
+### 内存预算
 
-| Category   | Budget  | Format  | Policy         |
+|类别 |预算|格式|政策 |
 |------------|---------|---------|----------------|
-| SFX Pool   | 32 MB   | ADPCM   | Decompress RAM |
-| Music      | 8 MB    | Vorbis  | Stream         |
-| Ambience   | 12 MB   | Vorbis  | Stream         |
-| VO         | 4 MB    | Vorbis  | Stream         |
+| SFX 池 | 32 MB | ADPCM |解压缩内存|
+|音乐| 8MB |沃比斯 |流 |
+|氛围| 12 MB |沃比斯 |流 |
+|画外音 | 4MB |沃比斯 |流 |
 
-### CPU Budget
+### CPU 预算
 
-- FMOD DSP: max 1.5ms per frame (measured on lowest target hardware)
-- Spatial audio raycasts: max 4 per frame (staggered across frames)
+- FMOD DSP：每帧最大 1.5ms（在最低目标硬件上测量）
+- 空间音频光线广播：每帧最多 4 个（跨帧交错）
 
-### Event Priority Tiers
+### 事件优先级
 
-| Priority | Type              | Steal Mode    |
+|优先|类型 |偷窃模式|
 |----------|-------------------|---------------|
-| 0 (High) | UI, Player VO     | Never stolen  |
-| 1        | Player SFX        | Steal quietest|
-| 2        | Combat SFX        | Steal farthest|
-| 3 (Low)  | Ambience, foliage | Steal oldest  |
+| 0（高）| UI，玩家旁白 |从未被盗|
+| 1 |玩家音效 |偷最安静|
+| 2 |战斗特效 |偷最远|
+| 3（低）|氛围，树叶|偷最老的|
 ```
 
 ### 空间音频装备规格
 ```markdown
 
-### 3D Audio Configuration
+### 3D 音频配置
 
-### Attenuation
-- Minimum distance: [X]m (full volume)
-- Maximum distance: [Y]m (inaudible)
-- Rolloff: Logarithmic (realistic) / Linear (stylized) — specify per game
+### 衰减
+- 最小距离：[X]米（全体积）
+- 最大距离：[Y]m（听不清）
+- 滚降：对数（现实）/线性（风格化）——根据游戏指定
 
-### Occlusion
+### 遮挡
 - Method: Raycast from listener to source origin
-- Parameter: "Occlusion" (0=open, 1=fully occluded)
-- Low-pass cutoff at max occlusion: 800Hz
-- Max raycasts per frame: 4 (stagger updates across frames)
+- 参数：“遮挡”（0=打开，1=完全遮挡）
+- 最大遮挡时的低通截止频率：800Hz
+- 每帧最大光线投射：4（跨帧交错更新）
 
-### Reverb Zones
-| Zone Type  | Pre-delay | Decay Time | Wet %  |
+### 混响区
+|区域类型 |预延迟 |衰减时间|湿% |
 |------------|-----------|------------|--------|
-| Outdoor    | 20ms      | 0.8s       | 15%    |
-| Indoor     | 30ms      | 1.5s       | 35%    |
-| Cave       | 50ms      | 3.5s       | 60%    |
-| Metal Room | 15ms      | 1.0s       | 45%    |
+|户外 | 20 毫秒 | 0.8秒| 15% |
+|室内| 30 毫秒 | 1.5秒| 35% |
+|洞穴 | 50 毫秒 | 3.5秒| 60% |
+|金属房| 15 毫秒 | 1.0 秒 | 45% |
 ```
 
 ### 高级能力

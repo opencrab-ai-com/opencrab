@@ -2,75 +2,75 @@
 
 ### 获胜主题矩阵
 ```markdown
-# Win Theme Matrix: [Opportunity Name]
+# 获胜主题矩阵：[机会名称]
 
-### Theme 1: [Client-Centric Statement]
+### 主题 1：[以客户为中心的声明]
 
-- **Buyer Need**: [Specific challenge from RFP or discovery]
-- **Our Differentiator**: [Capability, methodology, or asset]
-- **Proof Point**: [Metric, case study, or evidence]
-- **Sections Where This Theme Appears**: Executive Summary, Technical Approach Section 3.2, Case Study B, Pricing Rationale
+- **买家需求**：[来自 RFP 或发现的具体挑战]
+- **我们的优势**：[能力、方法或资产]
+- **证明点**：[指标、案例研究或证据]
+- **出现此主题的部分**：执行摘要、技术方法第 3.2 节、案例研究 B、定价原理
 
-### Theme 2: [Client-Centric Statement]
+### 主题 2：[以客户为中心的声明]
 
-- **Buyer Need**: [...]
-- **Our Differentiator**: [...]
-- **Proof Point**: [...]
-- **Sections Where This Theme Appears**: [...]
+- **买家需求**：[...]
+- **我们的优势**：[...]
+- **证明点**：[...]
+- **出现此主题的部分**：[...]
 
-### Theme 3: [Client-Centric Statement]
+### 主题 3：[以客户为中心的声明]
 
 [...]
 
-### Competitive Positioning
+### 竞争定位
 
-| Dimension         | Our Position                    | Expected Competitor Approach     | Our Advantage                        |
-|-------------------|---------------------------------|----------------------------------|--------------------------------------|
-| [Key eval factor] | [Our specific approach]         | [Likely competitor approach]     | [Why ours matters more to this buyer]|
-| [Key eval factor] | [Our specific approach]         | [Likely competitor approach]     | [Why ours matters more to this buyer]|
+|尺寸|我们的立场 |预期的竞争对手方法|我们的优势 |
+|--------------------------------|---------------------------------|----------------------------------|----------------------------------------------------|
+| [关键评价因素] | [我们的具体做法]| [可能的竞争对手方法] | [为什么我们的对这位买家更重要]|
+| [关键评价因素] | [我们的具体做法]| [可能的竞争对手方法] | [为什么我们的对这位买家更重要]|
 ```
 
 ### 执行摘要模板
 ```markdown
-# Executive Summary
+# 执行摘要
 
-[Buyer name] faces [specific challenge in their language]. [1-2 sentences demonstrating deep understanding of their situation, constraints, and stakes.]
+[买家姓名]面临[其语言的具体挑战]。 [1-2 句话展示了对其处境、限制和利害关系的深刻理解。]
 
-[Central tension: what happens if this challenge isn't addressed — quantified cost of inaction or opportunity at risk.]
+[核心紧张：如果不解决这一挑战会发生什么——量化不作为的成本或面临风险的机会。]
 
-[Solution thesis: 2-3 sentences introducing your approach and how it resolves the tension. Win themes surface here naturally.]
+[解决方案论文：用 2-3 句话介绍您的方法以及它如何解决紧张局势。胜利主题自然地浮现在这里。]
 
-[Proof: One concrete evidence point — a similar engagement, a measured outcome, a differentiating methodology detail.]
+[证明：一个具体的证据点——类似的参与、可衡量的结果、差异化的方法细节。]
 
-[Transformed state: What their organization looks like 12-18 months after implementation. Specific, measurable, tied to their stated goals.]
+[转变后的状态：实施 12-18 个月后他们的组织是什么样子。具体、可衡量、与其既定目标相关。]
 ```
 
 ### 提案架构蓝图
 ```markdown
-# Proposal Architecture: [Opportunity Name]
+# 提案架构：[机会名称]
 
-### Narrative Flow
+### 叙事流程
 
-- Act I (Understanding): Sections [list] — Establish credibility through insight
-- Act II (Solution): Sections [list] — Methodology mapped to stated needs
-- Act III (Outcomes): Sections [list] — Quantified future state and proof
+- 第一幕（理解）：章节 [列表] — 通过洞察建立可信度
+- 第二幕（解决方案）：章节 [列表] — 满足既定需求的方法
+- 第三幕（结果）：章节 [列表] — 量化的未来状态和证明
 
-### Win Theme Integration Map
+### Win主题整合图
 
-| Section              | Primary Theme | Secondary Theme | Key Evidence      |
-|----------------------|---------------|-----------------|-------------------|
-| Executive Summary    | Theme 1       | Theme 2         | [Case study A]    |
-| Technical Approach   | Theme 2       | Theme 3         | [Methodology X]   |
-| Management Plan      | Theme 3       | Theme 1         | [Team credential]  |
-| Past Performance     | Theme 1       | Theme 3         | [Metric from Y]   |
-| Pricing              | Theme 2       | —               | [ROI calculation]  |
+|部分|主要主题|次要主题 |关键证据|
+|----------------------|----------------------------|-----------------|--------------------|
+|执行摘要|主题1 |主题 2 | [案例研究A] |
+|技术方法|主题 2 |主题 3 | [方法论X] |
+|管理计划|主题 3 |主题1 | [团队资质]|
+|过往表现 |主题1 |主题 3 | [Y 的度量] |
+|定价|主题 2 | — | [投资回报率计算]|
 
-### Compliance Checklist + Strategic Overlay
+### 合规检查表 + 战略覆盖
 
-| RFP Requirement     | Compliant? | Strategic Enhancement                              |
-|---------------------|------------|-----------------------------------------------------|
-| [Requirement 1]     | Yes        | [How this answer reinforces Theme 2]                |
-| [Requirement 2]     | Yes        | [Added micro-story from similar engagement]         |
+| RFP 要求 |合规吗？ |战略强化|
+|--------------------------------|------------------------|--------------------------------------------------------|
+| [要求1]|是的 | [这个答案如何强化主题 2] |
+| [要求2] |是的 | [添加类似参与的微观故事] |
 ```
 
 ### 学习与记忆

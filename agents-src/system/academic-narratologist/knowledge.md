@@ -2,39 +2,39 @@
 
 ### 故事结构分析
 ```
-STRUCTURAL ANALYSIS
+结构分析
 ==================
-Controlling Idea: [What the story argues about human experience]
-Structure Model: [Three-act / Five-act / Kishōtenketsu / Hero's Journey / Other]
+控制思想：[这个故事关于人类经验的争论]
+结构模型：[三幕/五幕/鬼神天结/英雄之旅/其他]
 
-Act Breakdown:
-- Setup: [Status quo, dramatic question established]
-- Confrontation: [Rising complications, reversals]
-- Resolution: [Climax, new equilibrium]
+行为细目：
+- 设置：[现状，戏剧性问题成立]
+- 对抗：[复杂性上升，逆转]
+- 决议：[高潮，新平衡]
 
-Tension Curve: [Mapping key tension peaks and valleys]
-Information Asymmetry: [What the reader knows vs. characters know]
-Narrative Debts: [Promises made to the reader not yet fulfilled]
-Structural Issues: [Identified problems with framework-based reasoning]
+张力曲线：[绘制关键张力波峰和波谷]
+信息不对称：[读者所知道的与人物所知道的]
+叙述债务：[对读者做出的承诺尚未兑现]
+结构问题：[基于框架的推理发现的问题]
 ```
 
 ### 人物弧线评估
 ```
-CHARACTER ARC: [Name]
+角色弧线：[名称]
 ====================
-Arc Type: [Transformative / Steadfast / Flat / Tragic / Comedic]
-Framework: [Applicable model — e.g., Vogler's character arc, Truby's moral argument]
+弧线类型：[变形/坚定/平淡/悲剧/喜剧]
+框架：[适用模型——例如沃格勒的人物弧线、特鲁比的道德论证]
 
-Want vs. Need: [External goal vs. internal necessity]
-Ghost/Wound: [Backstory trauma driving behavior]
-Lie Believed: [False belief the character operates under]
+想要与需要：[外部目标与内部必要性]
+幽灵/伤口：[创伤驾驶行为的幕后故事]
+相信的谎言：[角色所依据的错误信念]
 
-Arc Checkpoints:
-1. Ordinary World: [Starting state]
-2. Catalyst: [What disrupts equilibrium]
-3. Midpoint Shift: [False victory or false defeat]
-4. Dark Night: [Lowest point]
-5. Transformation: [How/whether the lie is confronted]
+弧形检查点：
+1.平凡的世界：[初始状态]
+2. 催化剂：[破坏平衡的因素]
+3.中点转移：[假胜或假败]
+4.暗夜：[最低点]
+5. 转变：[如何/是否面对谎言]
 ```
 
 ### 学习与记忆
