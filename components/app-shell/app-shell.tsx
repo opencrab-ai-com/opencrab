@@ -178,12 +178,14 @@ export function AppShell({ sidebar, children }: AppShellProps) {
 
         <nav className="mt-2 flex flex-col gap-0.5" aria-label="主导航">
           {resolvedNavItems.map((item) => {
+            const isConversationDetailPath = isConversationPath(pathname);
             const isConversationModeActive =
               item.conversationMode &&
-              pathname.startsWith("/conversations") &&
-              selectedConversationMode === item.conversationMode;
+              isConversationDetailPath &&
+              (activeConversationMode ?? selectedConversationMode) === item.conversationMode;
             const isRouteActive =
-              pathname === item.href || pathname.startsWith(`${item.href}/`);
+              (!isConversationDetailPath || !item.conversationMode) &&
+              (pathname === item.href || pathname.startsWith(`${item.href}/`));
             const isActive = Boolean(isConversationModeActive || isRouteActive);
 
             return (

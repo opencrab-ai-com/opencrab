@@ -1,7 +1,6 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import os from "node:os";
+import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   seedTestTeamAgents,
   STRATEGY_AGENT_ID,
@@ -9,6 +8,12 @@ import {
   WRITER_AGENT_ID,
   WRITER_AGENT_NAME,
 } from "@/tests/helpers/team-agents";
+import {
+  loadProjectStore,
+  queueConversationReplies,
+  useProjectStoreTestHome,
+  waitForProjectRuntime,
+} from "@/tests/helpers/project-store-runtime";
 
 const runConversationTurnMock = vi.hoisted(() => vi.fn());
 
@@ -16,87 +21,15 @@ vi.mock("@/lib/conversations/run-conversation-turn", () => ({
   runConversationTurn: runConversationTurnMock,
 }));
 
-type ProjectStoreModule = Awaited<typeof import("@/lib/projects/project-store")>;
+const { createTempHome } = useProjectStoreTestHome(runConversationTurnMock);
 
-function queueConversationReplies(replies: Array<string | Error>) {
-  let index = 0;
-
-  runConversationTurnMock.mockImplementation(async (input: {
-    onThreadReady?: (threadId: string | null) => void;
-    onThinking?: (entries: string[]) => void;
-    onAssistantText?: (text: string) => void;
-  }) => {
-    const nextReply = replies[index++];
-
-    input.onThreadReady?.(`thread-phase7-${index}`);
-    input.onThinking?.([`phase7-step-${index}`]);
-
-    if (nextReply instanceof Error) {
-      throw nextReply;
-    }
-
-    input.onAssistantText?.(nextReply);
-
-    return {
-      assistant: {
-        text: nextReply,
-      },
-    };
-  });
-}
-
-function clearRuntimeQueues() {
-  delete (globalThis as typeof globalThis & {
-    __opencrabProjectRuntimeQueues?: Map<string, Promise<void>>;
-  }).__opencrabProjectRuntimeQueues;
-}
-
-async function loadProjectStore(): Promise<ProjectStoreModule> {
-  vi.resetModules();
-  return import("@/lib/projects/project-store");
-}
-
-async function waitForProjectRuntime(projectId: string) {
-  const queues = (globalThis as typeof globalThis & {
-    __opencrabProjectRuntimeQueues?: Map<string, Promise<void>>;
-  }).__opencrabProjectRuntimeQueues;
-
-  await (queues?.get(projectId) ?? Promise.resolve());
-}
-
-describe("project store phase 7 runtime support", () => {
-  const originalOpencrabHome = process.env.OPENCRAB_HOME;
-  const tempHomes: string[] = [];
-
-  beforeEach(() => {
-    runConversationTurnMock.mockReset();
-    clearRuntimeQueues();
-    tempHomes.length = 0;
-  });
-
-  afterEach(() => {
-    clearRuntimeQueues();
-    runConversationTurnMock.mockReset();
-
-    if (originalOpencrabHome === undefined) {
-      delete process.env.OPENCRAB_HOME;
-    } else {
-      process.env.OPENCRAB_HOME = originalOpencrabHome;
-    }
-
-    tempHomes.forEach((homePath) => {
-      rmSync(homePath, { recursive: true, force: true });
-    });
-  });
+describe("project store runtime operations", () => {
 
   it("records structured heartbeat snapshots and run history during a normal run", async () => {
-    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase7-"));
-    const workspaceDir = path.join(tempHome, "workspace");
-    tempHomes.push(tempHome);
-    process.env.OPENCRAB_HOME = tempHome;
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-runtime-");
     seedTestTeamAgents(tempHome);
 
-    queueConversationReplies([
+    queueConversationReplies(runConversationTurnMock, [
       JSON.stringify({
         decision: "delegate",
         group_reply: `先由 @${STRATEGY_AGENT_NAME} 输出这一轮结构化判断，我拿到结果后再收束成 checkpoint。`,
@@ -116,11 +49,14 @@ describe("project store phase 7 runtime support", () => {
         checkpoint_summary: "团队已经完成这一轮结构化判断，当前有可交付的阶段结果，等待用户确认或补充。",
         delegations: [],
       }),
-    ]);
+    ], {
+      threadPrefix: "runtime-thread",
+      thinkingPrefix: "runtime-step",
+    });
 
     const projectStore = await loadProjectStore();
     const created = projectStore.createProject({
-      goal: "验证 Phase 7 的运行健康对象和 run log",
+      goal: "验证运行健康对象和 run log",
       workspaceDir,
       agentProfileIds: ["project-manager", STRATEGY_AGENT_ID],
     });
@@ -157,13 +93,10 @@ describe("project store phase 7 runtime support", () => {
   });
 
   it("reassigns a stalled task to a peer and records stuck / recovery signals", async () => {
-    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase7-"));
-    const workspaceDir = path.join(tempHome, "workspace");
-    tempHomes.push(tempHome);
-    process.env.OPENCRAB_HOME = tempHome;
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-runtime-");
     seedTestTeamAgents(tempHome);
 
-    queueConversationReplies([
+    queueConversationReplies(runConversationTurnMock, [
       "我已经接住这一棒，并把阶段结果整理好了。",
       JSON.stringify({
         decision: "waiting_approval",
@@ -171,7 +104,10 @@ describe("project store phase 7 runtime support", () => {
         checkpoint_summary: "团队已通过替补成员完成这一棒恢复，当前已有新的阶段结果，等待用户确认。",
         delegations: [],
       }),
-    ]);
+    ], {
+      threadPrefix: "runtime-thread",
+      thinkingPrefix: "runtime-step",
+    });
 
     const projectStore = await loadProjectStore();
     const created = projectStore.createProject({
@@ -341,13 +277,10 @@ describe("project store phase 7 runtime support", () => {
   });
 
   it("rolls back to the latest checkpoint and starts a fresh rerun", async () => {
-    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase7-"));
-    const workspaceDir = path.join(tempHome, "workspace");
-    tempHomes.push(tempHome);
-    process.env.OPENCRAB_HOME = tempHome;
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-runtime-");
     seedTestTeamAgents(tempHome);
 
-    queueConversationReplies([
+    queueConversationReplies(runConversationTurnMock, [
       JSON.stringify({
         decision: "delegate",
         group_reply: `先由 @${STRATEGY_AGENT_NAME} 整理第一版阶段判断，我拿到 checkpoint 后再决定是否继续派工。`,
@@ -373,7 +306,10 @@ describe("project store phase 7 runtime support", () => {
         checkpoint_summary: "团队已从最近 checkpoint 重跑一轮，并按新的要求重整了当前阶段结论。",
         delegations: [],
       }),
-    ]);
+    ], {
+      threadPrefix: "runtime-thread",
+      thinkingPrefix: "runtime-step",
+    });
 
     const projectStore = await loadProjectStore();
     const created = projectStore.createProject({
@@ -429,10 +365,7 @@ describe("project store phase 7 runtime support", () => {
   });
 
   it("derives task, review, run, and recovery insights for the projects overview list", async () => {
-    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase7-"));
-    const workspaceDir = path.join(tempHome, "workspace");
-    tempHomes.push(tempHome);
-    process.env.OPENCRAB_HOME = tempHome;
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-runtime-");
     seedTestTeamAgents(tempHome);
 
     const projectStore = await loadProjectStore();

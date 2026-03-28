@@ -1,7 +1,6 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import os from "node:os";
+import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   seedTestTeamAgents,
   STRATEGY_AGENT_ID,
@@ -9,6 +8,12 @@ import {
   WRITER_AGENT_ID,
   WRITER_AGENT_NAME,
 } from "@/tests/helpers/team-agents";
+import {
+  loadProjectStore,
+  queueConversationReplies,
+  useProjectStoreTestHome,
+  waitForProjectRuntime,
+} from "@/tests/helpers/project-store-runtime";
 
 const runConversationTurnMock = vi.hoisted(() => vi.fn());
 
@@ -16,88 +21,15 @@ vi.mock("@/lib/conversations/run-conversation-turn", () => ({
   runConversationTurn: runConversationTurnMock,
 }));
 
-type ProjectStoreModule = Awaited<typeof import("@/lib/projects/project-store")>;
+const { createTempHome } = useProjectStoreTestHome(runConversationTurnMock);
 
-function queueConversationReplies(replies: Array<string | Error>) {
-  let index = 0;
-
-  runConversationTurnMock.mockImplementation(async (input: {
-    content: string;
-    onThreadReady?: (threadId: string | null) => void;
-    onThinking?: (entries: string[]) => void;
-    onAssistantText?: (text: string) => void;
-  }) => {
-    const nextReply = replies[index++];
-
-    input.onThreadReady?.(`thread-phase9-${index}`);
-    input.onThinking?.([`phase9-step-${index}`]);
-
-    if (nextReply instanceof Error) {
-      throw nextReply;
-    }
-
-    input.onAssistantText?.(nextReply);
-
-    return {
-      assistant: {
-        text: nextReply,
-      },
-    };
-  });
-}
-
-function clearRuntimeQueues() {
-  delete (globalThis as typeof globalThis & {
-    __opencrabProjectRuntimeQueues?: Map<string, Promise<void>>;
-  }).__opencrabProjectRuntimeQueues;
-}
-
-async function loadProjectStore(): Promise<ProjectStoreModule> {
-  vi.resetModules();
-  return import("@/lib/projects/project-store");
-}
-
-async function waitForProjectRuntime(projectId: string) {
-  const queues = (globalThis as typeof globalThis & {
-    __opencrabProjectRuntimeQueues?: Map<string, Promise<void>>;
-  }).__opencrabProjectRuntimeQueues;
-
-  await (queues?.get(projectId) ?? Promise.resolve());
-}
-
-describe("project store phase 9 learning loop", () => {
-  const originalOpencrabHome = process.env.OPENCRAB_HOME;
-  const tempHomes: string[] = [];
-
-  beforeEach(() => {
-    runConversationTurnMock.mockReset();
-    clearRuntimeQueues();
-    tempHomes.length = 0;
-  });
-
-  afterEach(() => {
-    clearRuntimeQueues();
-    runConversationTurnMock.mockReset();
-
-    if (originalOpencrabHome === undefined) {
-      delete process.env.OPENCRAB_HOME;
-    } else {
-      process.env.OPENCRAB_HOME = originalOpencrabHome;
-    }
-
-    tempHomes.forEach((homePath) => {
-      rmSync(homePath, { recursive: true, force: true });
-    });
-  });
+describe("project store learning loop", () => {
 
   it("derives reflections and injects learning suggestions into the next manager prompt", async () => {
-    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase9-"));
-    const workspaceDir = path.join(tempHome, "workspace");
-    tempHomes.push(tempHome);
-    process.env.OPENCRAB_HOME = tempHome;
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-learning-");
     seedTestTeamAgents(tempHome);
 
-    queueConversationReplies([
+    queueConversationReplies(runConversationTurnMock, [
       JSON.stringify({
         decision: "delegate",
         group_reply: `先由 @${STRATEGY_AGENT_NAME} 输出阶段判断，我拿到结果后再收束。`,
@@ -123,11 +55,14 @@ describe("project store phase 9 learning loop", () => {
         checkpoint_summary: "团队已把上一轮 learning loop 的提醒合进本轮判断。",
         delegations: [],
       }),
-    ]);
+    ], {
+      threadPrefix: "learning-thread",
+      thinkingPrefix: "learning-step",
+    });
 
     const projectStore = await loadProjectStore();
     const created = projectStore.createProject({
-      goal: "验证 Phase 9 的 learning loop 会影响下一轮派工判断",
+      goal: "验证 learning loop 会影响下一轮派工判断",
       workspaceDir,
       agentProfileIds: ["project-manager", STRATEGY_AGENT_ID],
     });
@@ -187,10 +122,7 @@ describe("project store phase 9 learning loop", () => {
   });
 
   it("builds task reflections, stage reflections, run summaries, and six suggestion kinds from seeded project state", async () => {
-    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase9-"));
-    const workspaceDir = path.join(tempHome, "workspace");
-    tempHomes.push(tempHome);
-    process.env.OPENCRAB_HOME = tempHome;
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-learning-");
     seedTestTeamAgents(tempHome);
 
     const projectStore = await loadProjectStore();
@@ -429,13 +361,10 @@ describe("project store phase 9 learning loop", () => {
   });
 
   it("allows human review suggestions to be accepted and settles the related mailbox thread", async () => {
-    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase9-"));
-    const workspaceDir = path.join(tempHome, "workspace");
-    tempHomes.push(tempHome);
-    process.env.OPENCRAB_HOME = tempHome;
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-learning-");
     seedTestTeamAgents(tempHome);
 
-    queueConversationReplies([
+    queueConversationReplies(runConversationTurnMock, [
       JSON.stringify({
         decision: "delegate",
         group_reply: `先由 @${STRATEGY_AGENT_NAME} 输出阶段判断，我拿到结果后再收束。`,
@@ -455,7 +384,10 @@ describe("project store phase 9 learning loop", () => {
         checkpoint_summary: "团队已经交出一版阶段判断，当前可进入待确认 checkpoint。",
         delegations: [],
       }),
-    ]);
+    ], {
+      threadPrefix: "learning-thread",
+      thinkingPrefix: "learning-step",
+    });
 
     const projectStore = await loadProjectStore();
     const created = projectStore.createProject({
@@ -528,14 +460,11 @@ describe("project store phase 9 learning loop", () => {
   });
 
   it("turns accepted suggestions into reusable cross-project candidates after explicit confirmation", async () => {
-    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase9-"));
-    const workspaceDir = path.join(tempHome, "workspace");
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-learning-");
     const secondWorkspaceDir = path.join(tempHome, "workspace-2");
-    tempHomes.push(tempHome);
-    process.env.OPENCRAB_HOME = tempHome;
     seedTestTeamAgents(tempHome);
 
-    queueConversationReplies([
+    queueConversationReplies(runConversationTurnMock, [
       JSON.stringify({
         decision: "delegate",
         group_reply: `先由 @${STRATEGY_AGENT_NAME} 输出阶段判断，我拿到结果后再收束。`,
@@ -561,7 +490,10 @@ describe("project store phase 9 learning loop", () => {
         checkpoint_summary: "当前先等待你补充第二个项目的范围和验收标准。",
         delegations: [],
       }),
-    ]);
+    ], {
+      threadPrefix: "learning-thread",
+      thinkingPrefix: "learning-step",
+    });
 
     const projectStore = await loadProjectStore();
     const firstProject = projectStore.createProject({

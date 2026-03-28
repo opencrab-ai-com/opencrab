@@ -56,10 +56,10 @@
 
 对应现状代码：
 
-- [lib/tasks/task-store.ts](/Users/sky/SkyProjects/opencrab/lib/tasks/task-store.ts)
-- [lib/tasks/task-runner.ts](/Users/sky/SkyProjects/opencrab/lib/tasks/task-runner.ts)
-- [components/tasks/task-form.tsx](/Users/sky/SkyProjects/opencrab/components/tasks/task-form.tsx)
-- [components/tasks/task-detail-screen.tsx](/Users/sky/SkyProjects/opencrab/components/tasks/task-detail-screen.tsx)
+- [lib/tasks/task-store.ts](../../lib/tasks/task-store.ts)
+- [lib/tasks/task-runner.ts](../../lib/tasks/task-runner.ts)
+- [components/tasks/task-form.tsx](../../components/tasks/task-form.tsx)
+- [components/tasks/task-detail-screen.tsx](../../components/tasks/task-detail-screen.tsx)
 
 ### 还没有真正完成的部分
 
@@ -153,7 +153,7 @@
 
 对应：
 
-- [lib/tasks/types.ts](/Users/sky/SkyProjects/opencrab/lib/tasks/types.ts)
+- [lib/tasks/types.ts](../../lib/tasks/types.ts)
 
 ### 当前缺口
 
@@ -195,8 +195,8 @@
 
 对应：
 
-- [components/tasks/task-form.tsx](/Users/sky/SkyProjects/opencrab/components/tasks/task-form.tsx)
-- [components/tasks/tasks-screen.tsx](/Users/sky/SkyProjects/opencrab/components/tasks/tasks-screen.tsx)
+- [components/tasks/task-form.tsx](../../components/tasks/task-form.tsx)
+- [components/tasks/tasks-screen.tsx](../../components/tasks/tasks-screen.tsx)
 
 ### 当前缺口
 
@@ -321,7 +321,7 @@
 
 对应：
 
-- [lib/tasks/task-runner.ts](/Users/sky/SkyProjects/opencrab/lib/tasks/task-runner.ts#L101)
+- [lib/tasks/task-runner.ts](../../lib/tasks/task-runner.ts#L101)
 
 ### 当前缺口
 

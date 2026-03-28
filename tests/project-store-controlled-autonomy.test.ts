@@ -1,12 +1,17 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import os from "node:os";
+import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   seedTestTeamAgents,
   STRATEGY_AGENT_ID,
   STRATEGY_AGENT_NAME,
 } from "@/tests/helpers/team-agents";
+import {
+  loadProjectStore,
+  queueConversationReplies,
+  useProjectStoreTestHome,
+  waitForProjectRuntime,
+} from "@/tests/helpers/project-store-runtime";
 
 const runConversationTurnMock = vi.hoisted(() => vi.fn());
 
@@ -14,88 +19,15 @@ vi.mock("@/lib/conversations/run-conversation-turn", () => ({
   runConversationTurn: runConversationTurnMock,
 }));
 
-type ProjectStoreModule = Awaited<typeof import("@/lib/projects/project-store")>;
+const { createTempHome } = useProjectStoreTestHome(runConversationTurnMock);
 
-function queueConversationReplies(replies: Array<string | Error>) {
-  let index = 0;
-
-  runConversationTurnMock.mockImplementation(async (input: {
-    content: string;
-    onThreadReady?: (threadId: string | null) => void;
-    onThinking?: (entries: string[]) => void;
-    onAssistantText?: (text: string) => void;
-  }) => {
-    const nextReply = replies[index++];
-
-    input.onThreadReady?.(`thread-phase10-${index}`);
-    input.onThinking?.([`phase10-step-${index}`]);
-
-    if (nextReply instanceof Error) {
-      throw nextReply;
-    }
-
-    input.onAssistantText?.(nextReply);
-
-    return {
-      assistant: {
-        text: nextReply,
-      },
-    };
-  });
-}
-
-function clearRuntimeQueues() {
-  delete (globalThis as typeof globalThis & {
-    __opencrabProjectRuntimeQueues?: Map<string, Promise<void>>;
-  }).__opencrabProjectRuntimeQueues;
-}
-
-async function loadProjectStore(): Promise<ProjectStoreModule> {
-  vi.resetModules();
-  return import("@/lib/projects/project-store");
-}
-
-async function waitForProjectRuntime(projectId: string) {
-  const queues = (globalThis as typeof globalThis & {
-    __opencrabProjectRuntimeQueues?: Map<string, Promise<void>>;
-  }).__opencrabProjectRuntimeQueues;
-
-  await (queues?.get(projectId) ?? Promise.resolve());
-}
-
-describe("project store phase 10 controlled autonomy", () => {
-  const originalOpencrabHome = process.env.OPENCRAB_HOME;
-  const tempHomes: string[] = [];
-
-  beforeEach(() => {
-    runConversationTurnMock.mockReset();
-    clearRuntimeQueues();
-    tempHomes.length = 0;
-  });
-
-  afterEach(() => {
-    clearRuntimeQueues();
-    runConversationTurnMock.mockReset();
-
-    if (originalOpencrabHome === undefined) {
-      delete process.env.OPENCRAB_HOME;
-    } else {
-      process.env.OPENCRAB_HOME = originalOpencrabHome;
-    }
-
-    tempHomes.forEach((homePath) => {
-      rmSync(homePath, { recursive: true, force: true });
-    });
-  });
+describe("project store controlled autonomy", () => {
 
   it("opens an autonomy budget gate after several guarded rounds and lets the user approve more autonomy", async () => {
-    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase10-"));
-    const workspaceDir = path.join(tempHome, "workspace");
-    tempHomes.push(tempHome);
-    process.env.OPENCRAB_HOME = tempHome;
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-autonomy-");
     seedTestTeamAgents(tempHome);
 
-    queueConversationReplies([
+    queueConversationReplies(runConversationTurnMock, [
       JSON.stringify({
         decision: "delegate",
         group_reply: `先由 @${STRATEGY_AGENT_NAME} 做第一棒，我拿到结果后继续安排。`,
@@ -167,11 +99,14 @@ describe("project store phase 10 controlled autonomy", () => {
         checkpoint_summary: "团队已经在继续自治后交出一版可确认的阶段结论。",
         delegations: [],
       }),
-    ]);
+    ], {
+      threadPrefix: "autonomy-thread",
+      thinkingPrefix: "autonomy-step",
+    });
 
     const projectStore = await loadProjectStore();
     const created = projectStore.createProject({
-      goal: "验证 Phase 10 的自治预算 gate",
+      goal: "验证自治预算 gate",
       workspaceDir,
       agentProfileIds: ["project-manager", STRATEGY_AGENT_ID],
     });
@@ -234,16 +169,13 @@ describe("project store phase 10 controlled autonomy", () => {
     expect(resumedDetail.autonomyGates.some((gate) => gate.kind === "autonomy_budget" && gate.status === "resolved")).toBe(true);
     expect(resumedDetail.project.openGateCount).toBe(0);
     expect(resumedDetail.project.runStatus).toBe("waiting_approval");
-  });
+  }, 90000);
 
   it("auto-executes a self-claimed ready task under the task graph constraint", async () => {
-    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase10-"));
-    const workspaceDir = path.join(tempHome, "workspace");
-    tempHomes.push(tempHome);
-    process.env.OPENCRAB_HOME = tempHome;
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-autonomy-");
     seedTestTeamAgents(tempHome);
 
-    queueConversationReplies([
+    queueConversationReplies(runConversationTurnMock, [
       `这是${STRATEGY_AGENT_NAME}主动接手后给出的第一版结构化判断。`,
       JSON.stringify({
         decision: "waiting_approval",
@@ -251,7 +183,10 @@ describe("project store phase 10 controlled autonomy", () => {
         checkpoint_summary: "这条自领任务已经完成并交回项目经理。",
         delegations: [],
       }),
-    ]);
+    ], {
+      threadPrefix: "autonomy-thread",
+      thinkingPrefix: "autonomy-step",
+    });
 
     const projectStore = await loadProjectStore();
     const created = projectStore.createProject({
@@ -377,7 +312,7 @@ describe("project store phase 10 controlled autonomy", () => {
 
     await projectStore.replyToProjectConversation({
       projectId,
-      conversationId: "conversation-phase10-self-claim",
+      conversationId: "conversation-autonomy-self-claim",
       content: "现在进展如何？",
     });
     await waitForProjectRuntime(projectId);

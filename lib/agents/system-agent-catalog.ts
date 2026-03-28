@@ -36,6 +36,14 @@ const VALID_SANDBOX_MODES = new Set<CodexSandboxMode>([
   "workspace-write",
   "danger-full-access",
 ]);
+const SYSTEM_AGENT_CACHE_TTL_MS = process.env.NODE_ENV === "development" ? 1_500 : 60_000;
+
+let builtInSystemAgentCache:
+  | {
+      agents: BuiltInSystemAgentDefinition[];
+      expiresAt: number;
+    }
+  | null = null;
 
 type StoredSourceAgentConfig = {
   id?: string;
@@ -106,7 +114,20 @@ export type BuiltInSystemAgentDefinition = {
 };
 
 export function listBuiltInSystemAgents() {
-  return loadBuiltInSystemAgents();
+  const now = Date.now();
+
+  if (builtInSystemAgentCache && builtInSystemAgentCache.expiresAt > now) {
+    return builtInSystemAgentCache.agents;
+  }
+
+  const agents = loadBuiltInSystemAgents();
+
+  builtInSystemAgentCache = {
+    agents,
+    expiresAt: now + SYSTEM_AGENT_CACHE_TTL_MS,
+  };
+
+  return agents;
 }
 
 function loadBuiltInSystemAgents() {

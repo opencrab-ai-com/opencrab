@@ -91,7 +91,7 @@ starterPrompts:
 ## 可选字段
 
 - `groupId`
-  推荐必填；指向 [system-groups.json](/Users/sky/SkyProjects/opencrab/agents-src/system-groups.json) 里的职能组
+  推荐必填；指向 [system-groups.json](../../agents-src/system-groups.json) 里的职能组
 - `roleLabel`
   默认 `Specialist`
 - `description`
@@ -107,7 +107,7 @@ starterPrompts:
 - `defaultSandboxMode`
   可选 `read-only` / `workspace-write` / `danger-full-access`，默认 `workspace-write`
 - `avatarFileName`
-  对应 [public/agent-avatars/system](/Users/sky/SkyProjects/opencrab/public/agent-avatars/system)
+  对应 [public/agent-avatars/system](../../public/agent-avatars/system)
 - `promoted`
   默认 `false`
 - `starterPrompts`
@@ -157,7 +157,7 @@ OpenCrab 把系统智能体拆成两层：
 
 其中：
 
-- `collection` 信息统一定义在 [system-groups.json](/Users/sky/SkyProjects/opencrab/agents-src/system-groups.json)
+- `collection` 信息统一定义在 [system-groups.json](../../agents-src/system-groups.json)
 - 单个 agent 只写 `groupId`
 - 运行时会自动把 `groupLabel / groupDescription / collectionLabel / collectionDescription` 灌进系统 agent 元数据
 

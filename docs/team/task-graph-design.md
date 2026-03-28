@@ -4,8 +4,8 @@
 状态：Draft  
 前置文档：
 
-- [OpenCrab Team OS 设计稿](/Users/sky/SkyProjects/opencrab/docs/team/team-os-design.md)
-- [Learning Loop 设计稿](/Users/sky/SkyProjects/opencrab/docs/team/learning-loop-design.md)
+- [OpenCrab Team OS 设计稿](./team-os-design.md)
+- [Learning Loop 设计稿](./learning-loop-design.md)
 
 ## 1. 目标
 

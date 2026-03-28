@@ -48,6 +48,9 @@ const DEPRECATED_SYSTEM_AGENT_IDS = new Set([
   "writer-editor",
 ]);
 const SYSTEM_AGENT_TIMESTAMP = "2026-03-25T00:00:00.000Z";
+const AGENT_DIRECTORY_CLEANUP_TTL_MS = process.env.NODE_ENV === "development" ? 1_500 : 60_000;
+
+let lastDeprecatedSystemAgentCleanupAt = 0;
 
 type StoredAgentProfile = Omit<AgentProfileDetail, "fileCount">;
 
@@ -235,7 +238,14 @@ function ensureAgentsReady() {
     mkdirSync(OPENCRAB_AGENTS_DIR, { recursive: true });
   }
 
+  const now = Date.now();
+
+  if (now - lastDeprecatedSystemAgentCleanupAt < AGENT_DIRECTORY_CLEANUP_TTL_MS) {
+    return;
+  }
+
   cleanupDeprecatedSystemAgents();
+  lastDeprecatedSystemAgentCleanupAt = now;
 }
 
 function cleanupDeprecatedSystemAgents() {

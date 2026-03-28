@@ -4,10 +4,10 @@
 状态：Draft  
 前置文档：
 
-- [OpenCrab Team Runtime 设计方案](/Users/sky/SkyProjects/opencrab/docs/team/multi-agent-design.md)
-- [OpenCrab 不做 Subagents，而是要走向比 Agent Teams 更像真实团队的模式](/Users/sky/SkyProjects/opencrab/docs/blogs/opencrab-beyond-agent-teams.md)
-- [Task Graph 设计稿](/Users/sky/SkyProjects/opencrab/docs/team/task-graph-design.md)
-- [Learning Loop 设计稿](/Users/sky/SkyProjects/opencrab/docs/team/learning-loop-design.md)
+- [OpenCrab Team Runtime 设计方案](./multi-agent-design.md)
+- [OpenCrab 不做 Subagents，而是要走向比 Agent Teams 更像真实团队的模式](../blogs/opencrab-beyond-agent-teams.md)
+- [Task Graph 设计稿](./task-graph-design.md)
+- [Learning Loop 设计稿](./learning-loop-design.md)
 
 ## 1. 目标
 

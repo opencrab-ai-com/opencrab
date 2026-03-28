@@ -1,7 +1,6 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import os from "node:os";
+import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   seedTestTeamAgents,
   STRATEGY_AGENT_ID,
@@ -9,6 +8,13 @@ import {
   WRITER_AGENT_ID,
   WRITER_AGENT_NAME,
 } from "@/tests/helpers/team-agents";
+import {
+  loadLocalStore,
+  loadProjectStore,
+  queueConversationReplies,
+  useProjectStoreTestHome,
+  waitForProjectRuntime,
+} from "@/tests/helpers/project-store-runtime";
 
 const runConversationTurnMock = vi.hoisted(() => vi.fn());
 
@@ -16,89 +22,12 @@ vi.mock("@/lib/conversations/run-conversation-turn", () => ({
   runConversationTurn: runConversationTurnMock,
 }));
 
-type ProjectStoreModule = Awaited<typeof import("@/lib/projects/project-store")>;
-type LocalStoreModule = Awaited<typeof import("@/lib/resources/local-store")>;
+const { createTempHome } = useProjectStoreTestHome(runConversationTurnMock);
 
-function queueConversationReplies(replies: Array<string | Error>) {
-  let index = 0;
-
-  runConversationTurnMock.mockImplementation(async (input: {
-    onThreadReady?: (threadId: string | null) => void;
-    onThinking?: (entries: string[]) => void;
-    onAssistantText?: (text: string) => void;
-  }) => {
-    const nextReply = replies[index++];
-
-    input.onThreadReady?.(`thread-${index}`);
-    input.onThinking?.([`step-${index}`]);
-
-    if (nextReply instanceof Error) {
-      throw nextReply;
-    }
-
-    input.onAssistantText?.(nextReply);
-
-    return {
-      assistant: {
-        text: nextReply,
-      },
-    };
-  });
-}
-
-function clearRuntimeQueues() {
-  delete (globalThis as typeof globalThis & {
-    __opencrabProjectRuntimeQueues?: Map<string, Promise<void>>;
-  }).__opencrabProjectRuntimeQueues;
-}
-
-async function loadProjectStore(): Promise<ProjectStoreModule> {
-  vi.resetModules();
-  return import("@/lib/projects/project-store");
-}
-
-async function loadLocalStore(): Promise<LocalStoreModule> {
-  return import("@/lib/resources/local-store");
-}
-
-async function waitForProjectRuntime(projectId: string) {
-  const queues = (globalThis as typeof globalThis & {
-    __opencrabProjectRuntimeQueues?: Map<string, Promise<void>>;
-  }).__opencrabProjectRuntimeQueues;
-
-  await (queues?.get(projectId) ?? Promise.resolve());
-}
-
-describe("project store phase 6 coordination", () => {
-  const originalOpencrabHome = process.env.OPENCRAB_HOME;
-  const tempHomes: string[] = [];
-
-  beforeEach(() => {
-    runConversationTurnMock.mockReset();
-    clearRuntimeQueues();
-    tempHomes.length = 0;
-  });
-
-  afterEach(() => {
-    clearRuntimeQueues();
-    runConversationTurnMock.mockReset();
-
-    if (originalOpencrabHome === undefined) {
-      delete process.env.OPENCRAB_HOME;
-    } else {
-      process.env.OPENCRAB_HOME = originalOpencrabHome;
-    }
-
-    tempHomes.forEach((homePath) => {
-      rmSync(homePath, { recursive: true, force: true });
-    });
-  });
+describe("project store team coordination", () => {
 
   it("lets system team agents inherit the current conversation runtime settings on create", async () => {
-    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase6-"));
-    const workspaceDir = path.join(tempHome, "workspace");
-    tempHomes.push(tempHome);
-    process.env.OPENCRAB_HOME = tempHome;
+    const { workspaceDir } = createTempHome("opencrab-project-coordination-");
 
     const projectStore = await loadProjectStore();
     const created = projectStore.createProject({
@@ -148,19 +77,19 @@ describe("project store phase 6 coordination", () => {
   });
 
   it("updates the Team sandbox mode and syncs the team chat plus runtime conversations", async () => {
-    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase6-"));
-    const workspaceDir = path.join(tempHome, "workspace");
-    tempHomes.push(tempHome);
-    process.env.OPENCRAB_HOME = tempHome;
+    const { workspaceDir } = createTempHome("opencrab-project-coordination-");
 
-    queueConversationReplies([
+    queueConversationReplies(runConversationTurnMock, [
       JSON.stringify({
         decision: "waiting_approval",
         group_reply: "已经整理出一版阶段结果，等待你确认是否继续推进。",
         checkpoint_summary: "项目经理已经完成第一轮收束。",
         delegations: [],
       }),
-    ]);
+    ], {
+      threadPrefix: "coordination-thread",
+      thinkingPrefix: "coordination-step",
+    });
 
     const projectStore = await loadProjectStore();
     const localStore = await loadLocalStore();
@@ -210,13 +139,10 @@ describe("project store phase 6 coordination", () => {
   });
 
   it("creates mailbox coordination threads across delegation, handoff, review, and self-claim", async () => {
-    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase6-"));
-    const workspaceDir = path.join(tempHome, "workspace");
-    tempHomes.push(tempHome);
-    process.env.OPENCRAB_HOME = tempHome;
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-coordination-");
     seedTestTeamAgents(tempHome);
 
-    queueConversationReplies([
+    queueConversationReplies(runConversationTurnMock, [
       JSON.stringify({
         decision: "delegate",
         group_reply: `收到，先由 @${STRATEGY_AGENT_NAME} 输出执行草案，再由 @${WRITER_AGENT_NAME} 整理成阶段总结。`,
@@ -242,11 +168,14 @@ describe("project store phase 6 coordination", () => {
         checkpoint_summary: "团队已经完成本轮两棒接力，当前具备可交付的阶段总结，等待用户确认或提出补充。",
         delegations: [],
       }),
-    ]);
+    ], {
+      threadPrefix: "coordination-thread",
+      thinkingPrefix: "coordination-step",
+    });
 
     const projectStore = await loadProjectStore();
     const created = projectStore.createProject({
-      goal: "梳理 Team Mode Phase 6 的协作闭环",
+      goal: "梳理 Team Mode 的协作闭环",
       workspaceDir,
       agentProfileIds: ["project-manager", STRATEGY_AGENT_ID, WRITER_AGENT_ID],
     });
@@ -259,7 +188,7 @@ describe("project store phase 6 coordination", () => {
     }
 
     await projectStore.runProject(projectId, {
-      triggerLabel: "启动 Phase 6",
+      triggerLabel: "启动协作闭环",
       triggerPrompt: "推进成员协作层，给我一个能验收的阶段结果。",
     });
     await waitForProjectRuntime(projectId);
@@ -318,10 +247,7 @@ describe("project store phase 6 coordination", () => {
   });
 
   it("auto-claims a ready task for an idle owner and emits a self-claim signal", async () => {
-    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase6-"));
-    const workspaceDir = path.join(tempHome, "workspace");
-    tempHomes.push(tempHome);
-    process.env.OPENCRAB_HOME = tempHome;
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-coordination-");
     seedTestTeamAgents(tempHome);
 
     const projectStore = await loadProjectStore();
@@ -450,13 +376,10 @@ describe("project store phase 6 coordination", () => {
   });
 
   it("opens a structured escalation thread when a worker execution fails", async () => {
-    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase6-"));
-    const workspaceDir = path.join(tempHome, "workspace");
-    tempHomes.push(tempHome);
-    process.env.OPENCRAB_HOME = tempHome;
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-coordination-");
     seedTestTeamAgents(tempHome);
 
-    queueConversationReplies([
+    queueConversationReplies(runConversationTurnMock, [
       JSON.stringify({
         decision: "delegate",
         group_reply: `先由 @${STRATEGY_AGENT_NAME} 处理这一棒，我等结果回来后再判断下一步。`,
@@ -470,11 +393,14 @@ describe("project store phase 6 coordination", () => {
         ],
       }),
       new Error("工作区写入失败"),
-    ]);
+    ], {
+      threadPrefix: "coordination-thread",
+      thinkingPrefix: "coordination-step",
+    });
 
     const projectStore = await loadProjectStore();
     const created = projectStore.createProject({
-      goal: "验证 Phase 6 的异常升级链路",
+      goal: "验证团队协作异常升级链路",
       workspaceDir,
       agentProfileIds: ["project-manager", STRATEGY_AGENT_ID],
     });

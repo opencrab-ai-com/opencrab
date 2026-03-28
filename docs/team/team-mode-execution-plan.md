@@ -5,12 +5,12 @@
 适用范围：后续 Team Mode 全量迭代、验收与文档同步  
 前置文档：
 
-- [OpenCrab Team Runtime 设计方案](/Users/sky/SkyProjects/opencrab/docs/team/multi-agent-design.md)
-- [OpenCrab Team Runtime 调研补充](/Users/sky/SkyProjects/opencrab/docs/team/multi-agent-research.md)
-- [OpenCrab Team OS 设计稿](/Users/sky/SkyProjects/opencrab/docs/team/team-os-design.md)
-- [OpenCrab Task Graph 设计稿](/Users/sky/SkyProjects/opencrab/docs/team/task-graph-design.md)
-- [OpenCrab Learning Loop 设计稿](/Users/sky/SkyProjects/opencrab/docs/team/learning-loop-design.md)
-- [OpenCrab 不做 Subagents，而是要走向比 Agent Teams 更像真实团队的模式](/Users/sky/SkyProjects/opencrab/docs/blogs/opencrab-beyond-agent-teams.md)
+- [OpenCrab Team Runtime 设计方案](./multi-agent-design.md)
+- [OpenCrab Team Runtime 调研补充](./multi-agent-research.md)
+- [OpenCrab Team OS 设计稿](./team-os-design.md)
+- [OpenCrab Task Graph 设计稿](./task-graph-design.md)
+- [OpenCrab Learning Loop 设计稿](./learning-loop-design.md)
+- [OpenCrab 不做 Subagents，而是要走向比 Agent Teams 更像真实团队的模式](../blogs/opencrab-beyond-agent-teams.md)
 
 ## 1. 文档目标
 
@@ -99,7 +99,7 @@ OpenCrab Team Mode 不做 `subagents`，也不做“群聊里多人表演”。
   最新进展：已写入 Team 相关设计与博客结论，后续 Team Mode 路线明确以“比 Claude agent teams 更接近真实团队”为目标。
 
 - [x] 明确 Team Mode 的目标不是“多人群聊”，而是“数字团队工作台”
-  最新进展：已在 [OpenCrab Team OS 设计稿](/Users/sky/SkyProjects/opencrab/docs/team/team-os-design.md) 和 [博客长文](/Users/sky/SkyProjects/opencrab/docs/blogs/opencrab-beyond-agent-teams.md) 中定稿。
+  最新进展：已在 [OpenCrab Team OS 设计稿](./team-os-design.md) 和 [博客长文](../blogs/opencrab-beyond-agent-teams.md) 中定稿。
 
 - [x] 明确 Team Mode 的组织中枢是 PM，而不是平均化多 Agent
   最新进展：当前运行实现已经是 `PM-first`，项目经理是唯一 Lead / canDelegate 成员。
@@ -107,16 +107,16 @@ OpenCrab Team Mode 不做 `subagents`，也不做“群聊里多人表演”。
 ### 5.2 文档基线
 
 - [x] 产出 Team OS 设计稿
-  最新进展：已完成，路径见 [team-os-design.md](/Users/sky/SkyProjects/opencrab/docs/team/team-os-design.md)。
+  最新进展：已完成，路径见 [team-os-design.md](./team-os-design.md)。
 
 - [x] 产出 Task Graph 设计稿
-  最新进展：已完成，路径见 [task-graph-design.md](/Users/sky/SkyProjects/opencrab/docs/team/task-graph-design.md)。
+  最新进展：已完成，路径见 [task-graph-design.md](./task-graph-design.md)。
 
 - [x] 产出 Learning Loop 设计稿
-  最新进展：已完成，路径见 [learning-loop-design.md](/Users/sky/SkyProjects/opencrab/docs/team/learning-loop-design.md)。
+  最新进展：已完成，路径见 [learning-loop-design.md](./learning-loop-design.md)。
 
 - [x] 整理 docs 目录结构与总索引
-  最新进展：`docs/` 已按 `product / engineering / team / blogs` 收拢，并补了 [docs/README.md](/Users/sky/SkyProjects/opencrab/docs/README.md)。
+  最新进展：`docs/` 已按 `product / engineering / tasks / team / blogs` 收拢，并补了 [docs/README.md](../README.md)。
 
 ### 5.3 当前判断
 
@@ -213,7 +213,7 @@ OpenCrab Team Mode 不做 `subagents`，也不做“群聊里多人表演”。
 ### 8.1 Task 一等公民
 
 - [x] 引入 `ProjectTaskRecord`
-  最新进展：已进入 [types.ts](/Users/sky/SkyProjects/opencrab/lib/projects/types.ts)，Team Store / Project Detail 已正式包含 `tasks`。
+  最新进展：已进入 [types.ts](../../lib/projects/types.ts)，Team Store / Project Detail 已正式包含 `tasks`。
 
 - [x] 任务具备基础字段
   最新进展：已具备：

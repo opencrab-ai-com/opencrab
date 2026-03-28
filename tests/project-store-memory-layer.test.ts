@@ -1,7 +1,6 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import os from "node:os";
+import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   seedTestTeamAgents,
   STRATEGY_AGENT_ID,
@@ -9,6 +8,12 @@ import {
   WRITER_AGENT_ID,
   WRITER_AGENT_NAME,
 } from "@/tests/helpers/team-agents";
+import {
+  loadProjectStore,
+  queueConversationReplies,
+  useProjectStoreTestHome,
+  waitForProjectRuntime,
+} from "@/tests/helpers/project-store-runtime";
 
 const runConversationTurnMock = vi.hoisted(() => vi.fn());
 
@@ -16,88 +21,15 @@ vi.mock("@/lib/conversations/run-conversation-turn", () => ({
   runConversationTurn: runConversationTurnMock,
 }));
 
-type ProjectStoreModule = Awaited<typeof import("@/lib/projects/project-store")>;
+const { createTempHome } = useProjectStoreTestHome(runConversationTurnMock);
 
-function queueConversationReplies(replies: Array<string | Error>) {
-  let index = 0;
-
-  runConversationTurnMock.mockImplementation(async (input: {
-    content: string;
-    onThreadReady?: (threadId: string | null) => void;
-    onThinking?: (entries: string[]) => void;
-    onAssistantText?: (text: string) => void;
-  }) => {
-    const nextReply = replies[index++];
-
-    input.onThreadReady?.(`thread-phase8-${index}`);
-    input.onThinking?.([`phase8-step-${index}`]);
-
-    if (nextReply instanceof Error) {
-      throw nextReply;
-    }
-
-    input.onAssistantText?.(nextReply);
-
-    return {
-      assistant: {
-        text: nextReply,
-      },
-    };
-  });
-}
-
-function clearRuntimeQueues() {
-  delete (globalThis as typeof globalThis & {
-    __opencrabProjectRuntimeQueues?: Map<string, Promise<void>>;
-  }).__opencrabProjectRuntimeQueues;
-}
-
-async function loadProjectStore(): Promise<ProjectStoreModule> {
-  vi.resetModules();
-  return import("@/lib/projects/project-store");
-}
-
-async function waitForProjectRuntime(projectId: string) {
-  const queues = (globalThis as typeof globalThis & {
-    __opencrabProjectRuntimeQueues?: Map<string, Promise<void>>;
-  }).__opencrabProjectRuntimeQueues;
-
-  await (queues?.get(projectId) ?? Promise.resolve());
-}
-
-describe("project store phase 8 memory layer", () => {
-  const originalOpencrabHome = process.env.OPENCRAB_HOME;
-  const tempHomes: string[] = [];
-
-  beforeEach(() => {
-    runConversationTurnMock.mockReset();
-    clearRuntimeQueues();
-    tempHomes.length = 0;
-  });
-
-  afterEach(() => {
-    clearRuntimeQueues();
-    runConversationTurnMock.mockReset();
-
-    if (originalOpencrabHome === undefined) {
-      delete process.env.OPENCRAB_HOME;
-    } else {
-      process.env.OPENCRAB_HOME = originalOpencrabHome;
-    }
-
-    tempHomes.forEach((homePath) => {
-      rmSync(homePath, { recursive: true, force: true });
-    });
-  });
+describe("project store memory layer", () => {
 
   it("persists project memory and injects it into the next manager prompt", async () => {
-    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase8-"));
-    const workspaceDir = path.join(tempHome, "workspace");
-    tempHomes.push(tempHome);
-    process.env.OPENCRAB_HOME = tempHome;
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-memory-");
     seedTestTeamAgents(tempHome);
 
-    queueConversationReplies([
+    queueConversationReplies(runConversationTurnMock, [
       JSON.stringify({
         decision: "delegate",
         group_reply: `先由 @${STRATEGY_AGENT_NAME} 输出阶段判断，我拿到结果后再收束成 checkpoint。`,
@@ -123,11 +55,14 @@ describe("project store phase 8 memory layer", () => {
         checkpoint_summary: "团队已把新的用户偏好合进本轮判断，当前 checkpoint 已更新。",
         delegations: [],
       }),
-    ]);
+    ], {
+      threadPrefix: "memory-thread",
+      thinkingPrefix: "memory-step",
+    });
 
     const projectStore = await loadProjectStore();
     const created = projectStore.createProject({
-      goal: "验证 Phase 8 的项目记忆会影响下一轮判断",
+      goal: "验证项目记忆会影响下一轮判断",
       workspaceDir,
       agentProfileIds: ["project-manager", STRATEGY_AGENT_ID],
     });
@@ -178,10 +113,7 @@ describe("project store phase 8 memory layer", () => {
   });
 
   it("derives team memory and role memory from handoffs, blockers, reviews, and recovery actions", async () => {
-    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-phase8-"));
-    const workspaceDir = path.join(tempHome, "workspace");
-    tempHomes.push(tempHome);
-    process.env.OPENCRAB_HOME = tempHome;
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-memory-");
     seedTestTeamAgents(tempHome);
 
     const projectStore = await loadProjectStore();

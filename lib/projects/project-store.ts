@@ -5394,6 +5394,7 @@ function normalizeStoredProjectAgents(
   rooms: ProjectRoomRecord[],
 ) {
   const groupedAgents = new Map<string, ProjectAgentRecord[]>();
+  const profileCache = new Map<string, ReturnType<typeof getAgentProfile>>();
   const runStatusByProject = new Map(rooms.map((room) => [room.id, room.runStatus] as const));
 
   agents.forEach((agent) => {
@@ -5431,7 +5432,15 @@ function normalizeStoredProjectAgents(
     });
 
     return sortedAgents.map((agent) => {
-      const detail = agent.agentProfileId ? getAgentProfile(agent.agentProfileId) : null;
+      const detail = agent.agentProfileId
+        ? (profileCache.has(agent.agentProfileId)
+            ? profileCache.get(agent.agentProfileId)
+            : (() => {
+                const nextDetail = getAgentProfile(agent.agentProfileId!);
+                profileCache.set(agent.agentProfileId!, nextDetail);
+                return nextDetail;
+              })()) ?? null
+        : null;
       const isLead = agent.id === managerId;
       const storedTeamRole = inferStoredTeamRole(agent, detail?.teamRole || null);
       const teamRole = isLead ? "lead" : normalizeNonManagerTeamRole(storedTeamRole);

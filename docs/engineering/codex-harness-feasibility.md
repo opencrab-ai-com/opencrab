@@ -368,5 +368,5 @@ OpenCrab 现在的执行层是直接绑定 `Codex` 的：
 
 - [Unrolling the Codex agent loop](https://openai.com/index/unrolling-the-codex-agent-loop/)
 - [Codex CLI Getting Started](https://help.openai.com/en/articles/11096431-openai-codex-cli-getting-started)
-- [Codex SDK README in current repo](/Users/sky/SkyProjects/opencrab/node_modules/@openai/codex-sdk/README.md)
-- [Current Codex integration](/Users/sky/SkyProjects/opencrab/lib/codex/sdk.ts)
+- [Codex SDK README in current repo](../../node_modules/@openai/codex-sdk/README.md)
+- [Current Codex integration](../../lib/codex/sdk.ts)
