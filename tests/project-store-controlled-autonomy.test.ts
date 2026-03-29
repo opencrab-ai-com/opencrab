@@ -9,7 +9,7 @@ import {
 import {
   loadProjectStore,
   queueConversationReplies,
-  useProjectStoreTestHome,
+  setupProjectStoreTestHome,
   waitForProjectRuntime,
 } from "@/tests/helpers/project-store-runtime";
 
@@ -19,7 +19,7 @@ vi.mock("@/lib/conversations/run-conversation-turn", () => ({
   runConversationTurn: runConversationTurnMock,
 }));
 
-const { createTempHome } = useProjectStoreTestHome(runConversationTurnMock);
+const { createTempHome } = setupProjectStoreTestHome(runConversationTurnMock);
 
 describe("project store controlled autonomy", () => {
 
