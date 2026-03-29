@@ -1,8 +1,7 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import {
   OPENCRAB_RUNTIME_CONFIG_PATH,
-  OPENCRAB_STATE_DIR,
 } from "@/lib/resources/runtime-paths";
+import { createSyncJsonFileStore } from "@/lib/infrastructure/json-store/sync-json-file-store";
 
 type ManagedTunnelProvider = "cloudflared" | "localtunnel";
 
@@ -21,8 +20,12 @@ type RuntimeConfigState = {
   managedTunnel: ManagedTunnelConfig | null;
 };
 
-const STORE_DIR = OPENCRAB_STATE_DIR;
 const STORE_PATH = OPENCRAB_RUNTIME_CONFIG_PATH;
+const store = createSyncJsonFileStore<RuntimeConfigState>({
+  filePath: STORE_PATH,
+  seed: createSeedState,
+  normalize: normalizeState,
+});
 
 export function getStoredPublicBaseUrl() {
   return readState().publicBaseUrl;
@@ -52,35 +55,13 @@ export function clearManagedTunnelConfig() {
 }
 
 function readState(): RuntimeConfigState {
-  ensureStoreFile();
-
-  try {
-    const parsed = JSON.parse(readFileSync(STORE_PATH, "utf8")) as Partial<RuntimeConfigState>;
-    const normalized = normalizeState(parsed);
-    writeFileSync(STORE_PATH, JSON.stringify(normalized, null, 2), "utf8");
-    return normalized;
-  } catch {
-    const seed = createSeedState();
-    writeFileSync(STORE_PATH, JSON.stringify(seed, null, 2), "utf8");
-    return seed;
-  }
+  return store.read();
 }
 
 function mutateState(mutator: (state: RuntimeConfigState) => void) {
-  const state = readState();
-  mutator(state);
-  ensureStoreFile();
-  writeFileSync(STORE_PATH, JSON.stringify(state, null, 2), "utf8");
-}
-
-function ensureStoreFile() {
-  if (!existsSync(STORE_DIR)) {
-    mkdirSync(STORE_DIR, { recursive: true });
-  }
-
-  if (!existsSync(STORE_PATH)) {
-    writeFileSync(STORE_PATH, JSON.stringify(createSeedState(), null, 2), "utf8");
-  }
+  store.mutate((state) => {
+    mutator(state);
+  });
 }
 
 function createSeedState(): RuntimeConfigState {

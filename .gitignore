@@ -25,6 +25,9 @@
 *.pem
 .playwright-cli/
 .opencrab/
+.opencrab-desktop/
+dist/
+app-builder-bin-*.tgz
 output/
 tmp/
 /official-site/

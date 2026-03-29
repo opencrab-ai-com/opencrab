@@ -12,6 +12,15 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { getSnapshot } from "@/lib/resources/local-store";
 import { OPENCRAB_CHROME_PROFILE_DIR } from "@/lib/resources/runtime-paths";
+import { getOpenCrabAppOrigin } from "@/lib/runtime/app-origin";
+import {
+  getOpenCrabBrowserMcpProxyScriptPath,
+  markCurrentRuntimeAsNode,
+  prependBundledRuntimeBinToPath,
+  resolveNodeRuntimeExecutablePath,
+  resolvePackageBinScript,
+} from "@/lib/runtime/resource-paths";
+import { ensureRuntimeLock } from "@/lib/runtime/runtime-lock";
 import type {
   BrowserConnectionMode,
   CodexBrowserSessionStatus,
@@ -26,8 +35,6 @@ const MANAGED_DEBUG_PORT = Number.isFinite(DEFAULT_MANAGED_DEBUG_PORT)
   : 9333;
 const MANAGED_BROWSER_URL = `http://127.0.0.1:${MANAGED_DEBUG_PORT}`;
 const MANAGED_USER_DATA_DIR = OPENCRAB_CHROME_PROFILE_DIR;
-const APP_ORIGIN = process.env.OPENCRAB_APP_ORIGIN || "http://127.0.0.1:3000";
-const MCP_PROXY_URL = `${APP_ORIGIN}/api/codex/browser-mcp`;
 const CHROME_CANDIDATES = [
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
   path.join(process.env.HOME || "", "Applications/Google Chrome.app/Contents/MacOS/Google Chrome"),
@@ -73,11 +80,11 @@ declare global {
 export function buildChromeDevtoolsMcpConfig() {
   return {
     "chrome-devtools": {
-      command: process.execPath,
-      args: [path.join(process.cwd(), "scripts", "browser_mcp_stdio_proxy.mjs")],
-      env: {
-        OPENCRAB_BROWSER_MCP_URL: MCP_PROXY_URL,
-      },
+      command: resolveNodeRuntimeExecutablePath(),
+      args: [getOpenCrabBrowserMcpProxyScriptPath()],
+      env: markCurrentRuntimeAsNode({
+        OPENCRAB_BROWSER_MCP_URL: `${getOpenCrabAppOrigin()}/api/codex/browser-mcp`,
+      }),
     },
   };
 }
@@ -255,6 +262,8 @@ export async function handleBrowserMcpRequest(request: Request) {
 }
 
 async function ensureBrowserBridge(mode: BrowserConnectionMode) {
+  ensureRuntimeLock();
+
   const existingBridge = globalThis.__opencrabBrowserBridge;
 
   if (existingBridge?.mode === mode) {
@@ -287,12 +296,14 @@ async function createBrowserBridge(mode: BrowserConnectionMode): Promise<Browser
     await ensureManagedBrowserInstance();
   }
 
+  const cliLaunchSpec = resolveChromeDevtoolsMcpLaunchSpec();
+
   const transport = new StdioClientTransport({
-    command: "npx",
+    command: cliLaunchSpec.command,
     args:
       mode === "current-browser"
-        ? ["-y", "chrome-devtools-mcp@latest", "--autoConnect", "--channel=stable", "--no-usage-statistics"]
-        : ["-y", "chrome-devtools-mcp@latest", `--browserUrl=${MANAGED_BROWSER_URL}`, "--no-usage-statistics"],
+        ? [...cliLaunchSpec.args, "--autoConnect", "--channel=stable", "--no-usage-statistics"]
+        : [...cliLaunchSpec.args, `--browserUrl=${MANAGED_BROWSER_URL}`, "--no-usage-statistics"],
     env: buildBrowserBridgeEnv(),
     stderr: "pipe",
   });
@@ -485,7 +496,25 @@ function buildBrowserBridgeEnv() {
     }
   }
 
-  return env;
+  return markCurrentRuntimeAsNode(prependBundledRuntimeBinToPath(env));
+}
+
+function resolveChromeDevtoolsMcpLaunchSpec() {
+  const cliScriptPath = resolvePackageBinScript(
+    "chrome-devtools-mcp",
+    "chrome-devtools-mcp",
+  );
+
+  if (!cliScriptPath) {
+    throw new Error(
+      "当前找不到内置的 chrome-devtools-mcp 运行时。请重新构建桌面包后再试。",
+    );
+  }
+
+  return {
+    command: resolveNodeRuntimeExecutablePath(),
+    args: [cliScriptPath],
+  };
 }
 
 function createStatus(input: {

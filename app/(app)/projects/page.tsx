@@ -2,6 +2,8 @@ import { ProjectsOverviewScreen } from "@/components/projects/projects-overview-
 import { AppPage } from "@/components/ui/app-page";
 import { listProjects } from "@/lib/projects/project-store";
 
+export const dynamic = "force-dynamic";
+
 export default function ProjectsPage() {
   const projects = listProjects();
 

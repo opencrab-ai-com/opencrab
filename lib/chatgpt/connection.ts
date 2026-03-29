@@ -1,8 +1,13 @@
 import { execFile, spawn } from "node:child_process";
 import { promisify } from "node:util";
 import type { ChildProcess } from "node:child_process";
+import { resolveCodexExecutablePath } from "@/lib/codex/codex-executable";
 import type { ChatGptConnectionStatusResponse } from "@/lib/resources/opencrab-api-types";
-import { buildChatGptLoginEnv, getCodexLoginStatus } from "@/lib/codex/sdk";
+import {
+  buildChatGptLoginEnv,
+  getCodexLoginStatus,
+  invalidateCodexLoginStatusCache,
+} from "@/lib/codex/sdk";
 
 const execFileAsync = promisify(execFile);
 const DEVICE_AUTH_URL = "https://auth.openai.com/codex/device";
@@ -130,7 +135,7 @@ export async function startChatGptConnection(): Promise<ChatGptConnectionStatusR
     loginStatusCheckInFlight: false,
   };
 
-  const child = spawn("codex", ["login"], {
+  const child = spawn(resolveCodexExecutablePath(), ["login"], {
     env: buildChatGptLoginEnv() as NodeJS.ProcessEnv,
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -220,9 +225,10 @@ export async function disconnectChatGptConnection(): Promise<ChatGptConnectionSt
   });
 
   try {
-    await execFileAsync("codex", ["logout"], {
+    await execFileAsync(resolveCodexExecutablePath(), ["logout"], {
       env: buildChatGptLoginEnv() as NodeJS.ProcessEnv,
     });
+    invalidateCodexLoginStatusCache();
   } catch (error) {
         return buildResponse({
           authMode: null,

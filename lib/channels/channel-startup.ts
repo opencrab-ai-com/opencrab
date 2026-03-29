@@ -6,6 +6,7 @@ import {
   syncAllChannelConfigsFromSecrets,
 } from "@/lib/channels/secret-store";
 import { syncTelegramChannelState } from "@/lib/channels/telegram-channel-service";
+import { ensureRuntimeLock } from "@/lib/runtime/runtime-lock";
 import { ensurePublicBaseUrl } from "@/lib/tunnel/public-url-service";
 import { ensureTunnelWatchdog } from "@/lib/tunnel/tunnel-watchdog";
 
@@ -45,6 +46,8 @@ export function ensureChannelStartupSync(input: { force?: boolean } = {}) {
 }
 
 export function ensureChannelWatchdog() {
+  ensureRuntimeLock();
+
   if (globalThis.__opencrabChannelWatchdogStarted) {
     return;
   }
@@ -57,6 +60,7 @@ export function ensureChannelWatchdog() {
 }
 
 async function runChannelStartupSync() {
+  ensureRuntimeLock();
   syncAllChannelConfigsFromSecrets();
   ensureTunnelWatchdog();
   const shouldForceReconnect = !globalThis.__opencrabChannelConnectionsPrimed;

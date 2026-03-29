@@ -7,6 +7,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import path from "node:path";
+import { ensureRuntimeLockForPath } from "@/lib/runtime/runtime-lock";
 
 type SyncJsonFileStoreOptions<T> = {
   filePath: string;
@@ -21,10 +22,12 @@ export function createSyncJsonFileStore<T>(options: SyncJsonFileStoreOptions<T>)
     const dirPath = path.dirname(options.filePath);
 
     if (!existsSync(dirPath)) {
+      ensureRuntimeLockForPath(options.filePath);
       mkdirSync(dirPath, { recursive: true });
     }
 
     if (!existsSync(options.filePath)) {
+      ensureRuntimeLockForPath(options.filePath);
       writeSerialized(options.seed());
     }
   }
@@ -39,11 +42,13 @@ export function createSyncJsonFileStore<T>(options: SyncJsonFileStoreOptions<T>)
       const serialized = JSON.stringify(normalized, null, 2);
 
       if (serialized !== raw) {
+        ensureRuntimeLockForPath(options.filePath);
         writeSerialized(normalized);
       }
 
       return normalized;
     } catch {
+      ensureRuntimeLockForPath(options.filePath);
       backupCorruptFile(options.filePath);
       const seed = options.seed();
       writeSerialized(seed);
@@ -53,6 +58,7 @@ export function createSyncJsonFileStore<T>(options: SyncJsonFileStoreOptions<T>)
 
   function write(state: T) {
     ensureFile();
+    ensureRuntimeLockForPath(options.filePath);
     writeSerialized(state);
   }
 

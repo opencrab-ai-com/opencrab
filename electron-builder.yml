@@ -1,0 +1,22 @@
+appId: com.opencrab.desktop
+productName: OpenCrab
+artifactName: ${productName}-${version}-${arch}.${ext}
+directories:
+  output: dist/desktop
+files:
+  - package.json
+  - .opencrab-desktop/**/*
+extraResources:
+  - from: .next/standalone
+    to: desktop-bundle/standalone
+    filter:
+      - "**/*"
+asar: true
+npmRebuild: false
+nodeGypRebuild: false
+extraMetadata:
+  main: .opencrab-desktop/main.js
+mac:
+  category: public.app-category.productivity
+  target:
+    - dmg

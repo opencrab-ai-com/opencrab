@@ -10,11 +10,13 @@ import type {
   CodexReasoningEffort,
   CodexSandboxMode,
 } from "@/lib/resources/opencrab-api-types";
+import {
+  getOpenCrabSystemAgentAvatarDir,
+  getOpenCrabSystemAgentGroupsFilePath,
+  getOpenCrabSystemAgentSourceDir,
+} from "@/lib/runtime/resource-paths";
 
-const SYSTEM_AGENT_SOURCE_DIR = path.join(process.cwd(), "agents-src", "system");
-const SYSTEM_AGENT_GROUPS_FILE = path.join(process.cwd(), "agents-src", "system-groups.json");
 const SYSTEM_AGENT_METADATA_FILE_NAME = "agent.yaml";
-const SYSTEM_AGENT_AVATAR_DIR = path.join(process.cwd(), "public", "agent-avatars", "system");
 const AGENT_SECTION_DEFS: Array<{ key: AgentFileKey; title: string; fileName: string }> = [
   { key: "soul", title: "Soul", fileName: "soul.md" },
   { key: "responsibility", title: "Responsibility", fileName: "responsibility.md" },
@@ -131,15 +133,17 @@ export function listBuiltInSystemAgents() {
 }
 
 function loadBuiltInSystemAgents() {
-  if (!existsSync(SYSTEM_AGENT_SOURCE_DIR)) {
+  const systemAgentSourceDir = getOpenCrabSystemAgentSourceDir();
+
+  if (!existsSync(systemAgentSourceDir)) {
     return [];
   }
 
-  const groupRegistry = readSystemAgentGroupRegistry(SYSTEM_AGENT_GROUPS_FILE);
-  const agents = readdirSync(SYSTEM_AGENT_SOURCE_DIR, { withFileTypes: true })
+  const groupRegistry = readSystemAgentGroupRegistry(getOpenCrabSystemAgentGroupsFilePath());
+  const agents = readdirSync(systemAgentSourceDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .sort((left, right) => left.name.localeCompare(right.name, "en"))
-    .map((entry) => readBuiltInSystemAgentSource(path.join(SYSTEM_AGENT_SOURCE_DIR, entry.name), groupRegistry));
+    .map((entry) => readBuiltInSystemAgentSource(path.join(systemAgentSourceDir, entry.name), groupRegistry));
 
   const seenIds = new Set<string>();
 
@@ -544,7 +548,7 @@ function readSystemAgentAvatarDataUrl(fileName: string | null) {
     return null;
   }
 
-  const filePath = path.join(SYSTEM_AGENT_AVATAR_DIR, fileName);
+  const filePath = path.join(getOpenCrabSystemAgentAvatarDir(), fileName);
 
   if (!existsSync(filePath)) {
     return null;

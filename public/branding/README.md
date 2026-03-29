@@ -11,6 +11,8 @@ White-background PNG files live in `public/branding/png-white/`.
 
 Circular avatar PNG files live in `public/branding/png-circle/`.
 
+Rounded-square app icon PNG files live in `public/branding/png-app/`.
+
 Regenerate them with:
 
 ```bash
@@ -22,3 +24,5 @@ The generated PNGs keep the SVG transparency, so they work well on light and dar
 The white-background PNGs are flattened onto a solid white canvas for platforms that do not handle transparency well.
 
 The circular avatar PNGs use a white circular badge with transparent outer corners, which works well for profile images and app listings that should read as round instead of square.
+
+The app icon PNGs use a white rounded-square badge with transparent outer corners, which works well for macOS app bundles and disk images.

@@ -90,6 +90,10 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
   const artifactSectionRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
+    setDetail(initialDetail);
+  }, [initialDetail]);
+
+  useEffect(() => {
     if (detail?.project?.runStatus === "waiting_user") {
       setCheckpointNote(detail.project.latestUserRequest || "");
       return;

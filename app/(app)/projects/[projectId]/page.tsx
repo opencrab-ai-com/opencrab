@@ -2,6 +2,8 @@ import { ProjectRoomScreen } from "@/components/projects/project-room-screen";
 import { AppPage } from "@/components/ui/app-page";
 import { getProjectDetail } from "@/lib/projects/project-store";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProjectRoomPage({
   params,
 }: {
@@ -12,7 +14,7 @@ export default async function ProjectRoomPage({
 
   return (
     <AppPage width="wide" contentClassName="space-y-6">
-      <ProjectRoomScreen detail={detail} />
+      <ProjectRoomScreen key={projectId} detail={detail} />
     </AppPage>
   );
 }

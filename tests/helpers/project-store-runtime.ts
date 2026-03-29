@@ -76,7 +76,7 @@ export async function waitForProjectRuntime(projectId: string) {
   await (queues?.get(projectId) ?? Promise.resolve());
 }
 
-export function useProjectStoreTestHome(runConversationTurnMock: { mockReset: () => void }) {
+export function setupProjectStoreTestHome(runConversationTurnMock: { mockReset: () => void }) {
   const originalOpencrabHome = process.env.OPENCRAB_HOME;
   const tempHomes: string[] = [];
 

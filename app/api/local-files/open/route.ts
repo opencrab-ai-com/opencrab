@@ -1,7 +1,3 @@
-import { statSync } from "node:fs";
-import path from "node:path";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
 import {
   errorResponse,
   noStoreJson,
@@ -10,8 +6,7 @@ import {
   isAttachmentPathAllowed,
   resolveExistingPath,
 } from "@/lib/resources/attachment-access-policy";
-
-const execFileAsync = promisify(execFile);
+import { revealNativePath } from "@/lib/server/native-directory-picker";
 
 export async function GET(request: Request) {
   try {
@@ -37,7 +32,7 @@ export async function GET(request: Request) {
       );
     }
 
-    await revealPathInFileManager(resolvedPath);
+    await revealNativePath(resolvedPath);
 
     return noStoreJson({
       ok: true,
@@ -48,31 +43,5 @@ export async function GET(request: Request) {
       request,
       operation: "open_local_file_directory",
     });
-  }
-}
-
-async function revealPathInFileManager(targetPath: string) {
-  const stats = statSync(targetPath);
-  const isDirectory = stats.isDirectory();
-
-  switch (process.platform) {
-    case "darwin":
-      if (isDirectory) {
-        await execFileAsync("open", [targetPath]);
-        return;
-      }
-
-      await execFileAsync("open", ["-R", targetPath]);
-      return;
-    case "win32":
-      if (isDirectory) {
-        await execFileAsync("explorer.exe", [targetPath]);
-        return;
-      }
-
-      await execFileAsync("explorer.exe", [`/select,${targetPath}`]);
-      return;
-    default:
-      await execFileAsync("xdg-open", [isDirectory ? targetPath : path.dirname(targetPath)]);
   }
 }
