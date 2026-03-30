@@ -8,6 +8,7 @@ import { WorkspacePickerDialog } from "@/components/workspace/workspace-picker-d
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
 import {
   formatBrowserSessionLabel,
+  getBrowserSessionPresentation,
   formatReasoningEffortLabel,
   formatSandboxModeLabel,
 } from "@/lib/opencrab/labels";
@@ -40,6 +41,7 @@ export function HomeScreen({ title, description }: HomeScreenProps) {
     isUploadingAttachments,
     errorMessage,
   } = useOpenCrabApp();
+  const browserSessionPresentation = getBrowserSessionPresentation(browserSessionStatus);
   const { draft, setDraft, clearDraft } = usePersistedDraft("opencrab:draft:home");
 
   async function handleSubmit(input: { content: string; attachments: UploadedAttachment[] }) {
@@ -85,6 +87,11 @@ export function HomeScreen({ title, description }: HomeScreenProps) {
           </div>
           {codexStatus?.ok === false ? (
             <ChatGptConnectionPanel compact />
+          ) : null}
+          {browserSessionStatus && !browserSessionStatus.ok ? (
+            <p className="text-left text-[13px] text-muted-strong">
+              浏览器控制暂未就绪：{browserSessionPresentation.detail}
+            </p>
           ) : null}
           {errorMessage ? <p className="text-left text-[13px] text-[#a34942]">{errorMessage}</p> : null}
           <Composer

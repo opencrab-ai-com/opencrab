@@ -31,6 +31,7 @@ docs/
 ### 想看工程实现与运行边界
 
 - [Web / Desktop 双端升级唯一操作指南](./engineering/web-desktop-upgrade-operations-guide.md)
+- [Desktop Smoke And Release Checklist](./engineering/desktop-smoke-and-release-checklist.md)
 - [Architecture](./engineering/architecture.md)
 - [Development Guide](./engineering/development.md)
 - [隐私与数据边界](./engineering/privacy-and-data.md)

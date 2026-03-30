@@ -1,6 +1,6 @@
-import { access, mkdir } from "node:fs/promises";
+import { mkdir } from "node:fs/promises";
 import http from "node:http";
-import path from "node:path";
+import os from "node:os";
 import { spawn } from "node:child_process";
 import { Client } from "@modelcontextprotocol/sdk/client";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
@@ -16,6 +16,16 @@ import type {
   BrowserConnectionMode,
   CodexBrowserSessionStatus,
 } from "@/lib/resources/opencrab-api-types";
+import { resolveOpenCrabResourcePath } from "@/lib/runtime/app-resource-paths";
+import {
+  getChromeInstallationStatus,
+  resolveChromeExecutable,
+} from "@/lib/runtime/chrome";
+import {
+  buildOpenCrabNodeEnv,
+  getOpenCrabNodeExecutable,
+} from "@/lib/runtime/node-exec";
+import { resolveBrowserMcpInvocation } from "@/lib/codex/browser-mcp-executable";
 
 const DEFAULT_MANAGED_DEBUG_PORT = Number.parseInt(
   process.env.OPENCRAB_CHROME_DEBUG_PORT || "9333",
@@ -28,10 +38,6 @@ const MANAGED_BROWSER_URL = `http://127.0.0.1:${MANAGED_DEBUG_PORT}`;
 const MANAGED_USER_DATA_DIR = OPENCRAB_CHROME_PROFILE_DIR;
 const APP_ORIGIN = process.env.OPENCRAB_APP_ORIGIN || "http://127.0.0.1:3000";
 const MCP_PROXY_URL = `${APP_ORIGIN}/api/codex/browser-mcp`;
-const CHROME_CANDIDATES = [
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  path.join(process.env.HOME || "", "Applications/Google Chrome.app/Contents/MacOS/Google Chrome"),
-];
 const BROWSER_WARMUP_COOLDOWN_MS = 5 * 60_000;
 const BROWSER_TOOL_PROBE_TIMEOUT_MS = 8_000;
 const WAIT_TIMEOUT_MS = 12_000;
@@ -64,6 +70,7 @@ type BrowserBridge = {
 declare global {
   var __opencrabBrowserBridge: BrowserBridge | undefined;
   var __opencrabBrowserBridgePromise: Promise<BrowserBridge> | undefined;
+  var __opencrabBrowserBridgeLastError: string | undefined;
   var __opencrabManagedChromePath: string | null | undefined;
   var __opencrabManagedChromeWasLaunched: boolean | undefined;
   var __opencrabBrowserWarmupPromise: Promise<void> | undefined;
@@ -73,11 +80,11 @@ declare global {
 export function buildChromeDevtoolsMcpConfig() {
   return {
     "chrome-devtools": {
-      command: process.execPath,
-      args: [path.join(process.cwd(), "scripts", "browser_mcp_stdio_proxy.mjs")],
-      env: {
+      command: getOpenCrabNodeExecutable(),
+      args: [resolveOpenCrabResourcePath("scripts", "browser_mcp_stdio_proxy.mjs")],
+      env: buildOpenCrabNodeEnv({
         OPENCRAB_BROWSER_MCP_URL: MCP_PROXY_URL,
-      },
+      }),
     },
   };
 }
@@ -85,11 +92,21 @@ export function buildChromeDevtoolsMcpConfig() {
 export async function getBrowserSessionStatus(): Promise<CodexBrowserSessionStatus> {
   const mode = getPreferredBrowserConnectionMode();
   const bridge = globalThis.__opencrabBrowserBridge;
+  const chrome = await getChromeInstallationStatus();
+
+  if (!chrome.ok) {
+    return createStatus({
+      ok: false,
+      status: "missing_browser",
+      mode,
+      chromePath: null,
+      message: chrome.message,
+    });
+  }
 
   if (bridge && bridge.mode === mode) {
     try {
-      const toolsResult = await bridge.client.listTools();
-      bridge.tools = normalizeTools(toolsResult.tools);
+      await refreshBrowserBridge(bridge);
       return createStatus({
         ok: true,
         status: "ready",
@@ -99,7 +116,8 @@ export async function getBrowserSessionStatus(): Promise<CodexBrowserSessionStat
             ? "OpenCrab 已连接你当前正在使用的 Chrome，会在同一服务进程内持续复用这条连接。"
             : "OpenCrab 已连接独立浏览器，会在同一服务进程内持续复用这条连接。",
       });
-    } catch {
+    } catch (error) {
+      globalThis.__opencrabBrowserBridgeLastError = normalizeBrowserBridgeError(error, mode);
       await closeBrowserBridge();
     }
   }
@@ -116,28 +134,15 @@ export async function getBrowserSessionStatus(): Promise<CodexBrowserSessionStat
     });
   }
 
-  if (mode === "managed-browser") {
-    const chromePath = await resolveChromeExecutable();
-
-    if (!chromePath) {
-      return createStatus({
-        ok: false,
-        status: "missing_browser",
-        mode,
-        chromePath: null,
-        message: "没有找到可用的 Google Chrome，暂时无法启动独立浏览器。",
-      });
-    }
-  }
-
   return createStatus({
     ok: false,
     status: "unreachable",
     mode,
     message:
-      mode === "current-browser"
-        ? "OpenCrab 会在启动时连接你当前正在使用的 Chrome。首次连接需要你允许一次，之后当前服务进程内会持续复用。"
-        : "OpenCrab 会在启动时拉起独立浏览器并保持连接常驻。",
+      globalThis.__opencrabBrowserBridgeLastError ||
+      (mode === "current-browser"
+        ? "OpenCrab 会在启动时连接你当前正在使用的 Chrome。首次连接需要你允许一次；如果不稳定，建议切到“独立浏览器”。"
+        : "OpenCrab 会在启动时拉起独立浏览器并保持连接常驻。"),
   });
 }
 
@@ -171,7 +176,13 @@ export function ensureBrowserSessionWarmup(input: { force?: boolean } = {}) {
   const task = ensureBrowserSession()
     .then(() => probeBrowserToolAccess())
     .then(() => undefined)
-    .catch(() => undefined)
+    .catch((error) => {
+      globalThis.__opencrabBrowserBridgeLastError = normalizeBrowserBridgeError(
+        error,
+        getPreferredBrowserConnectionMode(),
+      );
+      return undefined;
+    })
     .finally(() => {
       globalThis.__opencrabBrowserWarmupPromise = undefined;
     });
@@ -193,13 +204,17 @@ async function probeBrowserToolAccess() {
     return;
   }
 
-  await promiseWithTimeout(
+  const result = await promiseWithTimeout(
     bridge.client.callTool({
       name: probeTool.name,
       arguments: {},
     }),
     BROWSER_TOOL_PROBE_TIMEOUT_MS,
   );
+
+  if (isMcpToolError(result)) {
+    throw new Error(readMcpToolErrorMessage(result));
+  }
 }
 
 export async function handleBrowserMcpRequest(request: Request) {
@@ -287,12 +302,17 @@ async function createBrowserBridge(mode: BrowserConnectionMode): Promise<Browser
     await ensureManagedBrowserInstance();
   }
 
+  const invocation = resolveBrowserMcpInvocation(process.env);
   const transport = new StdioClientTransport({
-    command: "npx",
+    command: invocation.command,
     args:
       mode === "current-browser"
-        ? ["-y", "chrome-devtools-mcp@latest", "--autoConnect", "--channel=stable", "--no-usage-statistics"]
-        : ["-y", "chrome-devtools-mcp@latest", `--browserUrl=${MANAGED_BROWSER_URL}`, "--no-usage-statistics"],
+        ? [...invocation.argsPrefix, "--autoConnect", "--channel=stable", "--no-usage-statistics"]
+        : [
+            ...invocation.argsPrefix,
+            `--browserUrl=${MANAGED_BROWSER_URL}`,
+            "--no-usage-statistics",
+          ],
     env: buildBrowserBridgeEnv(),
     stderr: "pipe",
   });
@@ -308,8 +328,7 @@ async function createBrowserBridge(mode: BrowserConnectionMode): Promise<Browser
 
   await client.connect(transport);
   const toolsResult = await client.listTools();
-
-  return {
+  const bridge = {
     mode,
     client,
     transport,
@@ -320,6 +339,10 @@ async function createBrowserBridge(mode: BrowserConnectionMode): Promise<Browser
     userDataDir: mode === "managed-browser" ? MANAGED_USER_DATA_DIR : null,
     launchedByOpenCrab: mode === "managed-browser" ? Boolean(globalThis.__opencrabManagedChromeWasLaunched) : false,
   };
+
+  await probeBrowserToolAccessForBridge(bridge);
+
+  return bridge;
 }
 
 async function closeBrowserBridge() {
@@ -364,23 +387,6 @@ async function ensureManagedBrowserInstance() {
   if (!ready) {
     throw new Error("Chrome 已尝试启动，但还没有暴露远程调试端口。");
   }
-}
-
-async function resolveChromeExecutable() {
-  for (const candidate of CHROME_CANDIDATES) {
-    if (!candidate) {
-      continue;
-    }
-
-    try {
-      await access(candidate);
-      return candidate;
-    } catch {
-      continue;
-    }
-  }
-
-  return null;
 }
 
 function launchManagedChrome() {
@@ -465,11 +471,10 @@ async function fetchBrowserVersion() {
 }
 
 function buildBrowserBridgeEnv() {
-  const env: Record<string, string> = {};
+  const baseEnv = {} as NodeJS.ProcessEnv;
 
   for (const key of [
     "PATH",
-    "HOME",
     "USER",
     "LOGNAME",
     "SHELL",
@@ -481,11 +486,74 @@ function buildBrowserBridgeEnv() {
     const value = process.env[key];
 
     if (typeof value === "string") {
-      env[key] = value;
+      baseEnv[key] = value;
     }
   }
 
-  return env;
+  baseEnv.HOME = resolveUserHomeDirectory();
+  return buildOpenCrabNodeEnv({}, baseEnv);
+}
+
+async function refreshBrowserBridge(bridge: BrowserBridge) {
+  const toolsResult = await bridge.client.listTools();
+  bridge.tools = normalizeTools(toolsResult.tools);
+  await probeBrowserToolAccessForBridge(bridge);
+  globalThis.__opencrabBrowserBridgeLastError = undefined;
+}
+
+async function probeBrowserToolAccessForBridge(bridge: BrowserBridge) {
+  const probeTool = bridge.tools.find((tool) => tool.name === "list_pages");
+
+  if (!probeTool) {
+    return;
+  }
+
+  const result = await promiseWithTimeout(
+    bridge.client.callTool({
+      name: probeTool.name,
+      arguments: {},
+    }),
+    BROWSER_TOOL_PROBE_TIMEOUT_MS,
+  );
+
+  if (isMcpToolError(result)) {
+    throw new Error(readMcpToolErrorMessage(result));
+  }
+}
+
+function isMcpToolError(
+  value: unknown,
+): value is { isError: true; content?: Array<{ type?: string; text?: string }> } {
+  return typeof value === "object" && value !== null && "isError" in value && value.isError === true;
+}
+
+function readMcpToolErrorMessage(
+  value: { content?: Array<{ type?: string; text?: string }> },
+) {
+  const lines = (value.content || [])
+    .filter((entry) => entry?.type === "text" && typeof entry.text === "string")
+    .map((entry) => entry.text!.trim())
+    .filter(Boolean);
+
+  return lines[0] || "浏览器 MCP 已连接，但当前无法执行页面操作。";
+}
+
+function normalizeBrowserBridgeError(error: unknown, mode: BrowserConnectionMode) {
+  const message = error instanceof Error ? error.message : String(error);
+
+  if (/spawn .* ENOENT/i.test(message) || /\bENOENT\b/i.test(message)) {
+    return "OpenCrab 当前缺少浏览器控制组件，请重新安装或重新打开应用后再试一次。";
+  }
+
+  if (mode === "current-browser") {
+    if (/DevToolsActivePort/i.test(message) || /Could not connect to Chrome/i.test(message)) {
+      return "OpenCrab 还没真正连上你当前正在使用的 Chrome。请先确认 Chrome 正在运行，再重新检查浏览器连接。";
+    }
+
+    return `OpenCrab 当前还不能稳定控制你正在使用的 Chrome：${message}`;
+  }
+
+  return `OpenCrab 当前还不能稳定控制独立浏览器：${message}`;
 }
 
 function createStatus(input: {
@@ -552,4 +620,12 @@ function promiseWithTimeout<T>(promise: Promise<T>, timeoutMs: number) {
       },
     );
   });
+}
+
+function resolveUserHomeDirectory() {
+  try {
+    return os.userInfo().homedir;
+  } catch {
+    return os.homedir();
+  }
 }

@@ -3,7 +3,7 @@ import {
   ensureBrowserSessionWarmup,
   getBrowserSessionStatus,
 } from "@/lib/codex/browser-session";
-import { json } from "@/lib/server/api-route";
+import { errorResponse, json } from "@/lib/server/api-route";
 
 export const dynamic = "force-dynamic";
 
@@ -15,13 +15,21 @@ export async function GET() {
     status.status !== "launching" &&
     status.status !== "missing_browser"
   ) {
-    void ensureBrowserSessionWarmup({ force: true });
+    void ensureBrowserSessionWarmup();
   }
 
   return json(status);
 }
 
 export async function POST() {
-  const status = await ensureBrowserSession();
-  return json(status);
+  try {
+    const status = await ensureBrowserSession();
+    return json(status);
+  } catch (error) {
+    return errorResponse(
+      error,
+      "OpenCrab 当前还不能稳定连接浏览器，请稍后再试。",
+      503,
+    );
+  }
 }

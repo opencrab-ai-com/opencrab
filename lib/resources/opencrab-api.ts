@@ -13,6 +13,7 @@ import type {
   SkillDetailResponse,
   SkillsCatalogResponse,
   SnapshotMutationResult,
+  RuntimeReadinessResponse,
   TaskDetailResponse,
   TaskListResponse,
   TaskSchedule,
@@ -89,8 +90,23 @@ export async function disconnectChatGptConnection() {
   );
 }
 
+export async function openPendingChatGptConnectionInChrome() {
+  return request<ChatGptConnectionStatusResponse>(
+    "/api/chatgpt/connect/open",
+    {
+      method: "POST",
+    },
+  );
+}
+
 export async function getCodexBrowserSessionStatus() {
   return request<CodexBrowserSessionStatus>("/api/codex/browser-session", {
+    method: "GET",
+  });
+}
+
+export async function getRuntimeReadiness() {
+  return request<RuntimeReadinessResponse>("/api/runtime/readiness", {
     method: "GET",
   });
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useSyncExternalStore } from "react";
+import { FirstRunReadinessOverlay } from "@/components/app-shell/first-run-readiness-overlay";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
 import {
   OpenCrabMark,
@@ -81,11 +82,19 @@ const LAST_CONVERSATION_PATH_EVENT = "opencrab:last-conversation-path-change";
 const CONVERSATION_MODE_KEY = "opencrab:conversation-list-mode";
 const CONVERSATION_MODE_EVENT = "opencrab:conversation-list-mode-change";
 const DEFAULT_CONVERSATION_HREF = "/conversations";
+const DESKTOP_SHELL_MODE = "desktop";
+const DESKTOP_MAC_SHELL_MODE = "desktop:darwin";
 
 export function AppShell({ sidebar, children }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { chatGptConnectionStatus, codexStatus, conversations } = useOpenCrabApp();
+  const {
+    chatGptConnectionStatus,
+    codexStatus,
+    conversations,
+    isHydrated,
+    runtimeReadiness,
+  } = useOpenCrabApp();
   const lastConversationHref = useSyncExternalStore(
     subscribeToLastConversationPath,
     getLastConversationHref,
@@ -95,6 +104,11 @@ export function AppShell({ sidebar, children }: AppShellProps) {
     subscribeToConversationMode,
     getSelectedConversationMode,
     () => DEFAULT_CONVERSATION_MODE,
+  );
+  const desktopShellMode = useSyncExternalStore(
+    subscribeToDesktopShell,
+    getDesktopShellSnapshot,
+    () => "web",
   );
   const activeConversationId = getConversationIdFromPath(pathname);
   const activeConversation = useMemo(
@@ -108,6 +122,9 @@ export function AppShell({ sidebar, children }: AppShellProps) {
     () => resolveDirectConversationHref(lastConversationHref, conversations),
     [conversations, lastConversationHref],
   );
+  const isFirstRunBlocked = Boolean(isHydrated && runtimeReadiness && !runtimeReadiness.ready);
+  const isDesktopMac = desktopShellMode === DESKTOP_MAC_SHELL_MODE;
+  const isDesktopShell = desktopShellMode.startsWith(DESKTOP_SHELL_MODE);
 
   useEffect(() => {
     if (isConversationPath(pathname) && activeConversationMode === "direct") {
@@ -150,135 +167,153 @@ export function AppShell({ sidebar, children }: AppShellProps) {
   }, [resolvedNavItems, router]);
 
   return (
-    <div className="grid min-h-screen grid-cols-1 bg-background lg:grid-cols-[304px_1fr]">
-      <aside className="flex min-h-0 flex-col gap-1.5 border-b border-line bg-sidebar px-2.5 py-3.5 lg:h-screen lg:border-r lg:border-b-0">
-        <div className="flex min-h-9 items-center gap-3">
-          <Link
-            href="/conversations"
-            className="group flex items-center gap-3 rounded-xl px-1 py-1 text-muted-strong transition hover:bg-surface"
-            aria-label="OpenCrab 工作台"
+    <div className="relative">
+      <FirstRunReadinessOverlay />
+      <div
+        className="grid min-h-screen grid-cols-1 bg-background lg:grid-cols-[304px_1fr]"
+        inert={isFirstRunBlocked}
+        aria-hidden={isFirstRunBlocked}
+      >
+        <aside
+          className={`flex min-h-0 flex-col gap-1.5 border-b border-line bg-sidebar px-2.5 py-3.5 lg:h-screen lg:border-r lg:border-b-0 ${
+            isDesktopMac ? "lg:pt-11" : ""
+          }`}
+        >
+          <div
+            className={`flex min-h-9 items-center gap-3 ${
+              isDesktopMac ? "" : isDesktopShell ? "lg:pt-1" : ""
+            }`}
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl transition group-hover:bg-white/70">
-              <OpenCrabMark className="h-7 w-7" />
-            </span>
-            <OpenCrabWordmark className="text-[16px] font-semibold tracking-[-0.02em] text-text" />
-          </Link>
-        </div>
+            <Link
+              href="/conversations"
+              className="group flex items-center gap-3 rounded-xl px-1 py-1 text-muted-strong transition hover:bg-surface"
+              aria-label="OpenCrab 工作台"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl transition group-hover:bg-white/70">
+                <OpenCrabMark className="h-7 w-7" />
+              </span>
+              <OpenCrabWordmark className="text-[16px] font-semibold tracking-[-0.02em] text-text" />
+            </Link>
+          </div>
 
-        <div className="mt-1.5 flex flex-col gap-0.5">
-          <SidebarAction
-            href="/conversations"
-            onClick={() => {
-              saveSelectedConversationMode("direct");
-            }}
-          >
-            新对话
-          </SidebarAction>
-        </div>
+          <div className="mt-1.5 flex flex-col gap-0.5">
+            <SidebarAction
+              href="/conversations"
+              onClick={() => {
+                saveSelectedConversationMode("direct");
+              }}
+            >
+              新对话
+            </SidebarAction>
+          </div>
 
-        <nav className="mt-2 flex flex-col gap-0.5" aria-label="主导航">
-          {resolvedNavItems.map((item) => {
-            const isConversationDetailPath = isConversationPath(pathname);
-            const isConversationModeActive =
-              item.conversationMode &&
-              isConversationDetailPath &&
-              (activeConversationMode ?? selectedConversationMode) === item.conversationMode;
-            const isRouteActive =
-              (!isConversationDetailPath || !item.conversationMode) &&
-              (pathname === item.href || pathname.startsWith(`${item.href}/`));
-            const isActive = Boolean(isConversationModeActive || isRouteActive);
+          <nav className="mt-2 flex flex-col gap-0.5" aria-label="主导航">
+            {resolvedNavItems.map((item) => {
+              const isConversationDetailPath = isConversationPath(pathname);
+              const isConversationModeActive =
+                item.conversationMode &&
+                isConversationDetailPath &&
+                (activeConversationMode ?? selectedConversationMode) === item.conversationMode;
+              const isRouteActive =
+                (!isConversationDetailPath || !item.conversationMode) &&
+                (pathname === item.href || pathname.startsWith(`${item.href}/`));
+              const isActive = Boolean(isConversationModeActive || isRouteActive);
 
-            return (
-              <Link
-                key={item.key}
-                href={item.href}
-                onClick={() => {
-                  if (isConversationPath(pathname)) {
-                    saveLastConversationHref(pathname);
-                  }
-
-                  if (item.conversationMode) {
-                    saveSelectedConversationMode(item.conversationMode);
-                  }
-                }}
-                className={`flex min-h-9 items-center gap-3 rounded-xl px-3 text-[14px] transition ${
-                  isActive
-                    ? "bg-surface font-medium text-text"
-                    : "text-text hover:bg-surface-muted"
-                }`}
-              >
-                <span className="text-muted-strong">{item.icon}</span>
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="mt-2 min-h-0 flex-1 overflow-y-auto pr-1">
-          {sidebar}
-        </div>
-
-        <nav className="mt-2 flex shrink-0 flex-col gap-0.5 border-t border-line pt-2" aria-label="品牌信息">
-          {secondaryNavItems.map((item) => {
-            const isActive = item.external
-              ? false
-              : pathname === item.href || pathname.startsWith(`${item.href}/`);
-            const className = `flex min-h-9 items-center gap-3 rounded-xl px-3 text-[14px] transition ${
-              isActive
-                ? "bg-surface font-medium text-text"
-                : "text-text hover:bg-surface-muted"
-            }`;
-
-            if (item.external) {
               return (
-                <a
+                <Link
                   key={item.key}
                   href={item.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={className}
+                  onClick={() => {
+                    if (isConversationPath(pathname)) {
+                      saveLastConversationHref(pathname);
+                    }
+
+                    if (item.conversationMode) {
+                      saveSelectedConversationMode(item.conversationMode);
+                    }
+                  }}
+                  className={`flex min-h-9 items-center gap-3 rounded-xl px-3 text-[14px] transition ${
+                    isActive
+                      ? "bg-surface font-medium text-text"
+                      : "text-text hover:bg-surface-muted"
+                  }`}
                 >
                   <span className="text-muted-strong">{item.icon}</span>
                   <span>{item.label}</span>
-                </a>
+                </Link>
               );
-            }
+            })}
+          </nav>
 
-            return (
-              <Link key={item.key} href={item.href} className={className}>
-                <span className="text-muted-strong">{item.icon}</span>
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+          <div className="mt-2 min-h-0 flex-1 overflow-y-auto pr-1">
+            {sidebar}
+          </div>
 
-        <Link
-          href="/settings"
-          className="group relative mt-2 shrink-0 flex items-center justify-between gap-3 border-t border-line px-3 pt-2.5 text-[14px] text-text transition hover:opacity-80"
-        >
-          <span className="flex items-center gap-3">
-            <span className="text-muted-strong">
-              <SettingsIcon />
+          <nav
+            className="mt-2 flex shrink-0 flex-col gap-0.5 border-t border-line pt-2"
+            aria-label="品牌信息"
+          >
+            {secondaryNavItems.map((item) => {
+              const isActive = item.external
+                ? false
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const className = `flex min-h-9 items-center gap-3 rounded-xl px-3 text-[14px] transition ${
+                isActive
+                  ? "bg-surface font-medium text-text"
+                  : "text-text hover:bg-surface-muted"
+              }`;
+
+              if (item.external) {
+                return (
+                  <a
+                    key={item.key}
+                    href={item.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={className}
+                  >
+                    <span className="text-muted-strong">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </a>
+                );
+              }
+
+              return (
+                <Link key={item.key} href={item.href} className={className}>
+                  <span className="text-muted-strong">{item.icon}</span>
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
+          <Link
+            href="/settings"
+            className="group relative mt-2 shrink-0 flex items-center justify-between gap-3 border-t border-line px-3 pt-2.5 text-[14px] text-text transition hover:opacity-80"
+          >
+            <span className="flex items-center gap-3">
+              <span className="text-muted-strong">
+                <SettingsIcon />
+              </span>
+              <span>设置</span>
             </span>
-            <span>设置</span>
-          </span>
-          <ChatGptStatusBadge
-            stage={chatGptConnectionStatus?.stage}
-            isConnected={chatGptConnectionStatus?.isConnected === true}
-            isAvailable={codexStatus?.ok === true}
-          />
-          <ChatGptStatusTooltip
-            stage={chatGptConnectionStatus?.stage}
-            isConnected={chatGptConnectionStatus?.isConnected === true}
-            isAvailable={codexStatus?.ok === true}
-          />
-        </Link>
-      </aside>
+            <ChatGptStatusBadge
+              stage={chatGptConnectionStatus?.stage}
+              isConnected={chatGptConnectionStatus?.isConnected === true}
+              isAvailable={codexStatus?.ok === true}
+            />
+            <ChatGptStatusTooltip
+              stage={chatGptConnectionStatus?.stage}
+              isConnected={chatGptConnectionStatus?.isConnected === true}
+              isAvailable={codexStatus?.ok === true}
+            />
+          </Link>
+        </aside>
 
-      <main className="min-h-screen lg:h-screen lg:min-h-0 lg:overflow-hidden">
-        {children}
-      </main>
+        <main className="min-h-screen lg:h-screen lg:min-h-0 lg:overflow-hidden">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
@@ -350,6 +385,31 @@ function subscribeToConversationMode(onStoreChange: () => void) {
     window.removeEventListener("storage", handleChange);
     window.removeEventListener(CONVERSATION_MODE_EVENT, handleChange);
   };
+}
+
+function subscribeToDesktopShell() {
+  return () => {};
+}
+
+function getDesktopShellSnapshot() {
+  if (typeof window === "undefined") {
+    return "web";
+  }
+
+  const desktopShell = (
+    window as Window & {
+      opencrabDesktop?: {
+        isDesktop?: boolean;
+        platform?: string;
+      };
+    }
+  ).opencrabDesktop;
+
+  if (!desktopShell?.isDesktop) {
+    return "web";
+  }
+
+  return desktopShell.platform ? `desktop:${desktopShell.platform}` : DESKTOP_SHELL_MODE;
 }
 
 function getLastConversationHref() {

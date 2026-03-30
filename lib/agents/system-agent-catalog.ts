@@ -10,11 +10,16 @@ import type {
   CodexReasoningEffort,
   CodexSandboxMode,
 } from "@/lib/resources/opencrab-api-types";
+import { resolveOpenCrabResourcePath } from "@/lib/runtime/app-resource-paths";
 
-const SYSTEM_AGENT_SOURCE_DIR = path.join(process.cwd(), "agents-src", "system");
-const SYSTEM_AGENT_GROUPS_FILE = path.join(process.cwd(), "agents-src", "system-groups.json");
+const SYSTEM_AGENT_SOURCE_DIR = resolveOpenCrabResourcePath("agents-src", "system");
+const SYSTEM_AGENT_GROUPS_FILE = resolveOpenCrabResourcePath("agents-src", "system-groups.json");
 const SYSTEM_AGENT_METADATA_FILE_NAME = "agent.yaml";
-const SYSTEM_AGENT_AVATAR_DIR = path.join(process.cwd(), "public", "agent-avatars", "system");
+const SYSTEM_AGENT_AVATAR_DIR = resolveOpenCrabResourcePath(
+  "public",
+  "agent-avatars",
+  "system",
+);
 const AGENT_SECTION_DEFS: Array<{ key: AgentFileKey; title: string; fileName: string }> = [
   { key: "soul", title: "Soul", fileName: "soul.md" },
   { key: "responsibility", title: "Responsibility", fileName: "responsibility.md" },

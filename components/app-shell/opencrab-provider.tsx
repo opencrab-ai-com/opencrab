@@ -29,6 +29,7 @@ import {
   getCodexBrowserSessionStatus as getCodexBrowserSessionStatusResource,
   getCodexOptions as getCodexOptionsResource,
   getCodexStatus as getCodexStatusResource,
+  getRuntimeReadiness as getRuntimeReadinessResource,
   deleteAgent as deleteAgentResource,
   updateAgent as updateAgentResource,
   updateConversation,
@@ -53,6 +54,7 @@ import type {
   CodexReasoningEffort,
   CodexSandboxMode,
   CodexStatusResponse,
+  RuntimeReadinessResponse,
   UploadedAttachment,
 } from "@/lib/resources/opencrab-api-types";
 
@@ -65,6 +67,7 @@ type OpenCrabContextValue = {
   codexStatus: CodexStatusResponse | null;
   chatGptConnectionStatus: ChatGptConnectionStatusResponse | null;
   browserSessionStatus: CodexBrowserSessionStatus | null;
+  runtimeReadiness: RuntimeReadinessResponse | null;
   selectedBrowserConnectionMode: BrowserConnectionMode;
   selectedModel: string;
   selectedReasoningEffort: CodexReasoningEffort;
@@ -80,6 +83,7 @@ type OpenCrabContextValue = {
   isSendingMessage: boolean;
   isUploadingAttachments: boolean;
   isChatGptConnectionPending: boolean;
+  isBrowserSessionPending: boolean;
   activeStreamingConversationId: string | null;
   activeStreamingConversationIds: string[];
   errorMessage: string | null;
@@ -98,7 +102,11 @@ type OpenCrabContextValue = {
   ) => Promise<void>;
   setAllowOpenAiApiKeyForCommands: (enabled: boolean) => Promise<void>;
   refreshChatGptConnectionStatus: () => Promise<ChatGptConnectionStatusResponse | null>;
+  refreshBrowserSessionStatus: () => Promise<CodexBrowserSessionStatus | null>;
+  reconnectBrowserSession: () => Promise<CodexBrowserSessionStatus | null>;
+  refreshRuntimeReadiness: () => Promise<RuntimeReadinessResponse | null>;
   startChatGptConnection: () => Promise<ChatGptConnectionStatusResponse | null>;
+  openPendingChatGptConnectionInChrome: () => Promise<ChatGptConnectionStatusResponse | null>;
   cancelChatGptConnection: () => Promise<ChatGptConnectionStatusResponse | null>;
   disconnectChatGptConnection: () => Promise<ChatGptConnectionStatusResponse | null>;
   toggleFolder: (folderId: string) => void;
@@ -204,12 +212,16 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     useState<ChatGptConnectionStatusResponse | null>(null);
   const [browserSessionStatus, setBrowserSessionStatus] =
     useState<CodexBrowserSessionStatus | null>(null);
+  const [runtimeReadiness, setRuntimeReadiness] =
+    useState<RuntimeReadinessResponse | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<
     Record<string, boolean>
   >({});
   const [isHydrated, setIsHydrated] = useState(false);
   const [isMutating, setIsMutating] = useState(false);
   const [isChatGptConnectionPending, setIsChatGptConnectionPending] =
+    useState(false);
+  const [isBrowserSessionPending, setIsBrowserSessionPending] =
     useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -273,7 +285,9 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     setSelectedBrowserConnectionMode,
     setAllowOpenAiApiKeyForCommands,
     refreshChatGptConnectionStatus,
+    refreshRuntimeReadiness,
     startChatGptConnection,
+    openPendingChatGptConnectionInChrome,
     cancelChatGptConnection,
     disconnectChatGptConnection,
   } = useOpenCrabSettingsController({
@@ -282,6 +296,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     onCodexStatusChange: setCodexStatus,
     onChatGptConnectionStatusChange: setChatGptConnectionStatus,
     onBrowserSessionStatusChange: setBrowserSessionStatus,
+    onRuntimeReadinessChange: setRuntimeReadiness,
     onError: setErrorMessage,
     onChatGptPendingChange: setIsChatGptConnectionPending,
   });
@@ -374,12 +389,13 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
 
     async function hydrateCodexMeta() {
       try {
-        const [codexOptions, status, browserStatus, chatGptConnection] =
+        const [codexOptions, status, browserStatus, chatGptConnection, readiness] =
           await Promise.all([
             getCodexOptionsResource(),
             getCodexStatusResource(),
             getCodexBrowserSessionStatusResource(),
             getChatGptConnectionStatusResource(),
+            getRuntimeReadinessResource(),
           ]);
 
         if (!active) {
@@ -390,17 +406,8 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
         setCodexStatus(status);
         setBrowserSessionStatus(browserStatus);
         setChatGptConnectionStatus(chatGptConnection);
+        setRuntimeReadiness(readiness);
         reconcileModelSelection(codexOptions.models, codexOptions.defaultModel);
-
-        void warmCodexBrowserSessionResource()
-          .then((nextStatus) => {
-            if (active) {
-              setBrowserSessionStatus(nextStatus);
-            }
-          })
-          .catch(() => {
-            // Ignore warmup noise here; the visible status card keeps the current state.
-          });
       } catch (error) {
         if (active) {
           setCodexStatus({
@@ -460,34 +467,136 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     }
 
     let active = true;
-
-    const intervalId = window.setInterval(() => {
+    const syncPendingStatus = async () => {
       if (!active) {
         return;
       }
 
-      void Promise.all([
-        getChatGptConnectionStatusResource(),
-        getCodexStatusResource(),
-      ])
-        .then(([chatGptConnection, status]) => {
-          if (!active) {
-            return;
-          }
+      try {
+        const [chatGptConnection, status, readiness] = await Promise.all([
+          getChatGptConnectionStatusResource(),
+          getCodexStatusResource(),
+          getRuntimeReadinessResource(),
+        ]);
 
-          setChatGptConnectionStatus(chatGptConnection);
-          setCodexStatus(status);
-        })
-        .catch(() => {
-          // Keep polling quiet. The visible connection card already shows the last good state.
-        });
+        if (!active) {
+          return;
+        }
+
+        setChatGptConnectionStatus(chatGptConnection);
+        setCodexStatus(status);
+        setRuntimeReadiness(readiness);
+      } catch {
+        // Keep polling quiet. The visible connection card already shows the last good state.
+      }
+    };
+
+    const intervalId = window.setInterval(() => {
+      void syncPendingStatus();
     }, 1500);
+
+    const handleWindowFocus = () => {
+      void syncPendingStatus();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void syncPendingStatus();
+      }
+    };
+
+    window.addEventListener("focus", handleWindowFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       active = false;
       window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleWindowFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [chatGptConnectionStatus?.stage]);
+
+  const refreshBrowserSessionStatus = useCallback(async () => {
+    try {
+      const status = await getCodexBrowserSessionStatusResource();
+      setBrowserSessionStatus(status);
+      return status;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const reconnectBrowserSession = useCallback(async () => {
+    setIsBrowserSessionPending(true);
+    setErrorMessage(null);
+
+    try {
+      const status = await warmCodexBrowserSessionResource();
+      setBrowserSessionStatus(status);
+      return status;
+    } catch (error) {
+      setErrorMessage(
+        getUserFacingError(error, "重新连接浏览器失败，请先确认 Chrome 已启动。"),
+      );
+      return null;
+    } finally {
+      setIsBrowserSessionPending(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const status = browserSessionStatus;
+
+    if (!status || status.ok || status.status === "missing_browser") {
+      return;
+    }
+
+    let active = true;
+
+    const syncBrowserStatus = async () => {
+      if (
+        !active ||
+        document.visibilityState !== "visible" ||
+        isBrowserSessionPending
+      ) {
+        return;
+      }
+
+      try {
+        const nextStatus = await getCodexBrowserSessionStatusResource();
+
+        if (active) {
+          setBrowserSessionStatus(nextStatus);
+        }
+      } catch {
+        // Keep browser polling quiet. The visible status card already shows the last good state.
+      }
+    };
+
+    const intervalId = window.setInterval(() => {
+      void syncBrowserStatus();
+    }, 2500);
+
+    const handleWindowFocus = () => {
+      void syncBrowserStatus();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void syncBrowserStatus();
+      }
+    };
+
+    window.addEventListener("focus", handleWindowFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleWindowFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [browserSessionStatus, isBrowserSessionPending]);
 
   const toggleFolder = useCallback((folderId: string) => {
     setExpandedFolders((current) => ({
@@ -829,6 +938,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       codexStatus,
       chatGptConnectionStatus,
       browserSessionStatus,
+      runtimeReadiness,
       selectedBrowserConnectionMode,
       selectedModel,
       selectedReasoningEffort,
@@ -844,6 +954,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       isSendingMessage,
       isUploadingAttachments,
       isChatGptConnectionPending,
+      isBrowserSessionPending,
       activeStreamingConversationId,
       activeStreamingConversationIds,
       errorMessage,
@@ -860,7 +971,11 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       setSelectedBrowserConnectionMode,
       setAllowOpenAiApiKeyForCommands,
       refreshChatGptConnectionStatus,
+      refreshBrowserSessionStatus,
+      reconnectBrowserSession,
+      refreshRuntimeReadiness,
       startChatGptConnection,
+      openPendingChatGptConnectionInChrome,
       cancelChatGptConnection,
       disconnectChatGptConnection,
       toggleFolder,
@@ -891,6 +1006,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       codexStatus,
       chatGptConnectionStatus,
       browserSessionStatus,
+      runtimeReadiness,
       selectedBrowserConnectionMode,
       selectedModel,
       selectedReasoningEffort,
@@ -906,6 +1022,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       isSendingMessage,
       isUploadingAttachments,
       isChatGptConnectionPending,
+      isBrowserSessionPending,
       activeStreamingConversationId,
       activeStreamingConversationIds,
       errorMessage,
@@ -922,7 +1039,11 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       setSelectedBrowserConnectionMode,
       setAllowOpenAiApiKeyForCommands,
       refreshChatGptConnectionStatus,
+      refreshBrowserSessionStatus,
+      reconnectBrowserSession,
+      refreshRuntimeReadiness,
       startChatGptConnection,
+      openPendingChatGptConnectionInChrome,
       cancelChatGptConnection,
       disconnectChatGptConnection,
       toggleFolder,
