@@ -11,6 +11,8 @@ White-background PNG files live in `public/branding/png-white/`.
 
 Circular avatar PNG files live in `public/branding/png-circle/`.
 
+Desktop app icon source files live in `public/branding/png-app/`.
+
 Regenerate them with:
 
 ```bash
