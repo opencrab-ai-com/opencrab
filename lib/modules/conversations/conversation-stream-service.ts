@@ -141,15 +141,12 @@ export async function buildConversationReplyStream(
           });
         }
       } finally {
-        if (
-          !didComplete &&
-          !input.request.signal.aborted &&
-          !latestText.trim() &&
-          !emittedErrorMessage
-        ) {
+        if (!didComplete && !input.request.signal.aborted && !emittedErrorMessage) {
           emit({
             type: "error",
-            error: "OpenCrab 当前没有返回可用内容，请稍后再试。",
+            error: latestText.trim()
+              ? "OpenCrab 回复在完成前中断了，请重试。"
+              : "OpenCrab 当前没有返回可用内容，请稍后再试。",
           });
         }
 

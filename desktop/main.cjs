@@ -5,6 +5,7 @@ const { createRuntimeManager, isAppUrl } = require("./runtime-manager.cjs");
 const runtimeManager = createRuntimeManager({
   packaged: app.isPackaged,
   resourcesPath: process.resourcesPath,
+  executablePath: process.execPath,
 });
 const preloadPath = path.join(__dirname, "preload.cjs");
 let mainWindow = null;

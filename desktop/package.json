@@ -1,0 +1,47 @@
+{
+  "name": "opencrab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenCrab desktop shell",
+  "author": "OpenCrab",
+  "main": "main.cjs",
+  "build": {
+    "appId": "com.opencrab.app",
+    "productName": "OpenCrab",
+    "artifactName": "${productName}-${version}-${arch}.${ext}",
+    "electronVersion": "41.1.0",
+    "asar": true,
+    "directories": {
+      "output": "../dist/desktop"
+    },
+    "files": [
+      "**/*",
+      "!**/.DS_Store"
+    ],
+    "extraResources": [
+      {
+        "from": "../.opencrab-desktop/runtime",
+        "to": "desktop-runtime",
+        "filter": [
+          "**/*",
+          "!node_modules{,/**}"
+        ]
+      },
+      {
+        "from": "../.opencrab-desktop/runtime/node_modules",
+        "to": "desktop-runtime/node_modules",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "../build/icon.icns",
+      "hardenedRuntime": true
+    },
+    "dmg": {
+      "sign": false
+    }
+  }
+}

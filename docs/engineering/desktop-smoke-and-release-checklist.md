@@ -25,7 +25,7 @@
 所有命令都在仓库根目录执行：
 
 ```bash
-cd /Users/sky/SkyProjects/opencrab
+cd /path/to/opencrab
 ```
 
 开发前的基础检查：

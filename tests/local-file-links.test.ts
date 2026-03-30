@@ -8,18 +8,18 @@ import {
 describe("local file markdown links", () => {
   it("parses absolute local file paths with a line anchor", () => {
     expect(
-      parseLocalFileReference("/Users/sky/Desktop/OpenCrabTeams/Case2/example.md#L13"),
+      parseLocalFileReference("/Users/example/Desktop/Workspace/example.md#L13"),
     ).toEqual({
-      absolutePath: "/Users/sky/Desktop/OpenCrabTeams/Case2/example.md",
+      absolutePath: "/Users/example/Desktop/Workspace/example.md",
       lineAnchor: "L13",
     });
   });
 
   it("parses hash-prefixed local file paths produced by broken links", () => {
     expect(
-      parseLocalFileReference("#/Users/sky/Desktop/OpenCrabTeams/Case2/example.md#L13"),
+      parseLocalFileReference("#/Users/example/Desktop/Workspace/example.md#L13"),
     ).toEqual({
-      absolutePath: "/Users/sky/Desktop/OpenCrabTeams/Case2/example.md",
+      absolutePath: "/Users/example/Desktop/Workspace/example.md",
       lineAnchor: "L13",
     });
   });
@@ -30,9 +30,9 @@ describe("local file markdown links", () => {
 
   it("maps local file links to the open-directory endpoint", () => {
     expect(
-      resolveConversationMarkdownLink("/Users/sky/Desktop/OpenCrabTeams/Case2/example.md#L13"),
+      resolveConversationMarkdownLink("/Users/example/Desktop/Workspace/example.md#L13"),
     ).toBe(
-      buildLocalFileOpenRequestHref("/Users/sky/Desktop/OpenCrabTeams/Case2/example.md"),
+      buildLocalFileOpenRequestHref("/Users/example/Desktop/Workspace/example.md"),
     );
   });
 });

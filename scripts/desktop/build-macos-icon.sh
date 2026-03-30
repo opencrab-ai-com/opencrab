@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-SOURCE_ICON="$ROOT_DIR/public/branding/png-app/opencrab-app-icon-1024.png"
+SOURCE_ICON="$ROOT_DIR/public/branding/png-white-rounded/opencrab-mark-1024.png"
 BUILD_DIR="$ROOT_DIR/build"
 ICONSET_DIR="$BUILD_DIR/icon.iconset"
 OUTPUT_ICON="$BUILD_DIR/icon.icns"

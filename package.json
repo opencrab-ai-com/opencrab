@@ -19,10 +19,10 @@
     "desktop:bundle-runtime": "npm run build && node scripts/desktop/prepare-runtime-bundle.mjs",
     "desktop:dev": "electron desktop/main.cjs",
     "desktop:dev:isolated": "node scripts/desktop/run-isolated-desktop.mjs development",
-    "desktop:pack": "npm run desktop:icon:mac && npm run desktop:bundle-runtime && electron-builder --dir",
+    "desktop:pack": "npm run desktop:icon:mac && npm run desktop:bundle-runtime && electron-builder --projectDir desktop --dir",
     "desktop:prod": "OPENCRAB_DESKTOP_RUNTIME_PROFILE=production electron desktop/main.cjs",
     "desktop:prod:isolated": "npm run desktop:bundle-runtime && node scripts/desktop/run-isolated-desktop.mjs production",
-    "desktop:dist:mac": "npm run desktop:icon:mac && npm run desktop:bundle-runtime && electron-builder --mac dmg",
+    "desktop:dist:mac": "npm run desktop:icon:mac && npm run desktop:bundle-runtime && electron-builder --projectDir desktop --mac dmg",
     "lint": "eslint",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
@@ -54,43 +54,5 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^3.2.4"
-  },
-  "build": {
-    "appId": "com.opencrab.app",
-    "productName": "OpenCrab",
-    "artifactName": "${productName}-${version}-${arch}.${ext}",
-    "asar": true,
-    "directories": {
-      "output": "dist/desktop"
-    },
-    "files": [
-      "desktop/**/*",
-      "package.json"
-    ],
-    "extraResources": [
-      {
-        "from": ".opencrab-desktop/runtime",
-        "to": "desktop-runtime",
-        "filter": [
-          "**/*",
-          "!node_modules{,/**}"
-        ]
-      },
-      {
-        "from": ".opencrab-desktop/runtime/node_modules",
-        "to": "desktop-runtime/node_modules",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ],
-    "mac": {
-      "category": "public.app-category.productivity",
-      "icon": "build/icon.icns",
-      "hardenedRuntime": true
-    },
-    "dmg": {
-      "sign": false
-    }
   }
 }

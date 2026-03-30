@@ -135,4 +135,46 @@ describe("conversation-stream-service", () => {
       },
     ]);
   });
+
+  it("emits a terminal error when the stream ends silently after partial assistant output", async () => {
+    streamCodexReplyMock.mockImplementation(async function* () {
+      yield {
+        type: "thinking" as const,
+        entries: ["正在检查上下文"],
+      };
+      yield {
+        type: "assistant" as const,
+        text: "先给你一版草稿",
+      };
+    });
+
+    const { buildConversationReplyStream } =
+      await loadConversationStreamModule();
+    const response = await buildConversationReplyStream({
+      request: new Request("http://opencrab.test/api/reply", {
+        method: "POST",
+      }),
+      conversationId: "conversation-1",
+      body: {
+        content: "你好",
+      },
+    });
+
+    const events = await readStreamEvents(response);
+
+    expect(events).toEqual([
+      {
+        type: "thinking",
+        entries: ["正在检查上下文"],
+      },
+      {
+        type: "assistant",
+        text: "先给你一版草稿",
+      },
+      {
+        type: "error",
+        error: "OpenCrab 回复在完成前中断了，请重试。",
+      },
+    ]);
+  });
 });

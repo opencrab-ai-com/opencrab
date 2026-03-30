@@ -5,6 +5,10 @@ import type { AgentProfileDetail } from "@/lib/agents/types";
 import { createCodexAppServerClient } from "@/lib/codex/app-server-client";
 import { buildChromeDevtoolsMcpConfig, ensureBrowserSession } from "@/lib/codex/browser-session";
 import {
+  isCodexTransportNoiseMessage,
+  normalizeCodexTransportNoiseMessage,
+} from "@/lib/codex/stream-noise";
+import {
   execCodexCommand,
   resolveCodexExecutablePath,
 } from "@/lib/codex/executable";
@@ -484,7 +488,7 @@ function getThinkingEntry(item: {
 }) {
   switch (item.type) {
     case "reasoning":
-      return item.text?.trim() || null;
+      return sanitizeThinkingEntry(item.text);
     case "command_execution":
       if (!item.command) {
         return null;
@@ -514,10 +518,24 @@ function getThinkingEntry(item: {
             .join("；")}`
         : null;
     case "error":
-      return item.message ? `遇到一个中间错误：${item.message}` : null;
+      if (!item.message || isCodexTransportNoiseMessage(item.message)) {
+        return null;
+      }
+
+      return `遇到一个中间错误：${item.message}`;
     default:
       return null;
   }
+}
+
+function sanitizeThinkingEntry(value: string | undefined) {
+  const normalized = value?.trim();
+
+  if (!normalized || isCodexTransportNoiseMessage(normalized)) {
+    return null;
+  }
+
+  return normalized;
 }
 
 export async function getCodexLoginStatus() {
@@ -571,6 +589,11 @@ async function ensureCodexLogin() {
 
 function normalizeCodexRuntimeError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
+  const normalizedTransportNoiseMessage = normalizeCodexTransportNoiseMessage(message);
+
+  if (normalizedTransportNoiseMessage) {
+    return new Error(normalizedTransportNoiseMessage);
+  }
 
   if (/Unable to locate Codex CLI binaries/i.test(message)) {
     return new Error(

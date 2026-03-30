@@ -298,7 +298,7 @@ export function ProjectsOverviewScreen({ projects }: ProjectsOverviewScreenProps
                     <input
                       value={workspaceDir}
                       onChange={(event) => setWorkspaceDir(event.target.value)}
-                      placeholder="/Users/sky/SkyProjects/opencrab/workspaces/team-alpha"
+                      placeholder="~/OpenCrab/workspaces/team-alpha"
                       className="min-w-0 flex-1 rounded-[18px] border border-line bg-surface px-4 py-3 text-[14px] text-text outline-none transition focus:border-text"
                     />
                     <button

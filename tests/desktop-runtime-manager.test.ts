@@ -5,6 +5,7 @@ const require = createRequire(import.meta.url);
 const {
   isAppUrl,
   normalizeBaseUrl,
+  resolveDesktopProxyEnv,
   resolveDesktopBundleRoot,
   resolveDesktopRuntimeConfig,
 } = require("../desktop/runtime-manager.cjs");
@@ -39,13 +40,20 @@ describe("desktop runtime manager", () => {
       OPENCRAB_DESKTOP_PORT: "4567",
     }, {
       packaged: true,
+      executablePath: "/Applications/OpenCrab.app/Contents/MacOS/OpenCrab",
       resourcesPath: "/Applications/OpenCrab.app/Contents/Resources",
+      systemProxyEnv: {
+        http_proxy: "http://127.0.0.1:8118",
+      },
     });
 
     expect(config.mode).toBe("spawn");
     expect(config.runtimeProfile).toBe("production");
     expect(config.baseUrl).toBe("http://127.0.0.1:4567");
     expect(config.cwd).toBe("/Applications/OpenCrab.app/Contents/Resources/desktop-runtime");
+    expect(config.command).toBe(
+      "/Applications/OpenCrab.app/Contents/Frameworks/OpenCrab Helper.app/Contents/MacOS/OpenCrab Helper",
+    );
     expect(config.args).toEqual([
       "/Applications/OpenCrab.app/Contents/Resources/desktop-runtime/server.js",
     ]);
@@ -53,6 +61,48 @@ describe("desktop runtime manager", () => {
     expect(config.env.OPENCRAB_RESOURCE_ROOT).toBe(
       "/Applications/OpenCrab.app/Contents/Resources/desktop-runtime",
     );
+    expect(config.env.http_proxy).toBe("http://127.0.0.1:8118");
+    expect(config.env.HTTP_PROXY).toBe("http://127.0.0.1:8118");
+  });
+
+  it("does not override explicit proxy env from the shell", () => {
+    const proxyEnv = resolveDesktopProxyEnv({
+      https_proxy: "http://127.0.0.1:9000",
+    }, {
+      systemProxyEnv: {
+        https_proxy: "http://127.0.0.1:8118",
+      },
+    });
+
+    expect(proxyEnv).toEqual({});
+  });
+
+  it("maps macOS system proxy output into runtime proxy env", () => {
+    const proxyEnv = resolveDesktopProxyEnv({}, {
+      systemProxyOutput: `
+<dictionary> {
+  ExceptionsList : <array> {
+    0 : localhost
+    1 : *.local
+  }
+  HTTPEnable : 1
+  HTTPPort : 8118
+  HTTPProxy : 127.0.0.1
+  HTTPSEnable : 1
+  HTTPSPort : 8118
+  HTTPSProxy : 127.0.0.1
+}
+      `,
+    });
+
+    expect(proxyEnv).toEqual({
+      http_proxy: "http://127.0.0.1:8118",
+      HTTP_PROXY: "http://127.0.0.1:8118",
+      https_proxy: "http://127.0.0.1:8118",
+      HTTPS_PROXY: "http://127.0.0.1:8118",
+      no_proxy: "localhost,*.local",
+      NO_PROXY: "localhost,*.local",
+    });
   });
 
   it("resolves the local runtime bundle root when not packaged", () => {

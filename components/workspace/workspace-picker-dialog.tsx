@@ -26,7 +26,7 @@ export function WorkspacePickerDialog({
   title,
   description,
   initialValue,
-  placeholder = "/Users/sky/SkyProjects/workspaces/example",
+  placeholder = "~/OpenCrab/workspaces/example",
   confirmLabel = "保存",
   allowEmpty = false,
   defaultHint = null,

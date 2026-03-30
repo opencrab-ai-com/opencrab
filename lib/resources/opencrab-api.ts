@@ -560,8 +560,18 @@ export async function streamReplyToConversation(
     throw new Error("流式响应不可用，请稍后再试。");
   }
 
+  let receivedTerminalEvent = false;
+
   for await (const event of readNdjsonStream<ReplyStreamEvent>(response)) {
+    if (event.type === "done" || event.type === "error") {
+      receivedTerminalEvent = true;
+    }
+
     options.onEvent(event);
+  }
+
+  if (!receivedTerminalEvent && !options.signal?.aborted) {
+    throw new Error("OpenCrab 回复流在完成前中断了，请重试。");
   }
 }
 
