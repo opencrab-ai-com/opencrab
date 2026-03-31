@@ -96,7 +96,10 @@ export async function createCodexAppServerClient(
       const requestId = nextRequestId++;
 
       const resultPromise = new Promise<TResult>((resolve, reject) => {
-        pendingRequests.set(requestId, { resolve, reject });
+        pendingRequests.set(requestId, {
+          resolve: (value) => resolve(value as TResult),
+          reject,
+        });
       });
 
       child.stdin.write(
