@@ -15,11 +15,6 @@ const LEGACY_OPENCRAB_HOME = path.join(HOME_DIR, "Library", "Application Support
 const OPENCRAB_HOME = process.env.OPENCRAB_HOME || DEFAULT_OPENCRAB_HOME;
 
 export const OPENCRAB_RUNTIME_DIR = OPENCRAB_HOME;
-export const OPENCRAB_RUNTIME_LOCK_DIR = path.join(OPENCRAB_RUNTIME_DIR, ".runtime-lock");
-export const OPENCRAB_RUNTIME_LOCK_INFO_PATH = path.join(
-  OPENCRAB_RUNTIME_LOCK_DIR,
-  "owner.json",
-);
 export const OPENCRAB_STATE_DIR = path.join(OPENCRAB_RUNTIME_DIR, "state");
 export const OPENCRAB_UPLOADS_DIR = path.join(OPENCRAB_RUNTIME_DIR, "uploads");
 export const OPENCRAB_UPLOADS_INDEX_PATH = path.join(OPENCRAB_UPLOADS_DIR, "index.json");

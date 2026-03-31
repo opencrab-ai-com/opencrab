@@ -91,7 +91,6 @@ export function SidebarContent() {
     getSelectedConversationMode,
     () => DEFAULT_CONVERSATION_MODE,
   );
-  const shouldShowConversationSections = !pathname.startsWith("/skills");
 
   const activeConversationId = pathname.startsWith("/conversations/") ? pathname.split("/")[2] : null;
 
@@ -300,123 +299,111 @@ export function SidebarContent() {
         <SidebarStatusBanner tone="neutral">正在保存更改...</SidebarStatusBanner>
       ) : null}
 
-      {shouldShowConversationSections ? (
-        <>
-          <SidebarSection
-            title="对话文件夹"
-            action={
-              <button
-                type="button"
-                onClick={handleOpenCreateFolderDialog}
-                className="flex h-[26px] w-[26px] items-center justify-center rounded-lg text-muted transition hover:bg-surface"
-                aria-label="新建文件夹"
-              >
-                ＋
-              </button>
-            }
+      <SidebarSection
+        title="对话文件夹"
+        action={
+          <button
+            type="button"
+            onClick={handleOpenCreateFolderDialog}
+            className="flex h-[26px] w-[26px] items-center justify-center rounded-lg text-muted transition hover:bg-surface"
+            aria-label="新建文件夹"
           >
-            {sidebarViewModel.folders.map((folder) => {
-              const folderConversations = folder.conversations;
-              const isExpanded = folder.isExpanded;
+            ＋
+          </button>
+        }
+      >
+        {sidebarViewModel.folders.map((folder) => {
+          const folderConversations = folder.conversations;
+          const isExpanded = folder.isExpanded;
 
-              return (
-                <div key={folder.id} className="rounded-xl">
-                  <FolderRow
-                    id={folder.id}
-                    name={folder.name}
-                    count={folderConversations.length}
-                    isExpanded={isExpanded}
-                    isMenuOpen={openActionMenu?.kind === "folder" && openActionMenu.id === folder.id}
-                    onToggle={() => toggleFolder(folder.id)}
-                    onRename={() => handleOpenRenameFolderDialog(folder.id)}
-                    onDelete={() => handleDeleteFolder(folder.id)}
-                    onMenuToggle={() =>
-                      setOpenActionMenu((current) =>
-                        current?.kind === "folder" && current.id === folder.id
-                          ? null
-                          : { kind: "folder", id: folder.id },
-                      )
-                    }
-                    onDrop={() => {
-                      void handleDropToFolder(folder.id);
-                    }}
-                  />
+          return (
+            <div key={folder.id} className="rounded-xl">
+              <FolderRow
+                id={folder.id}
+                name={folder.name}
+                count={folderConversations.length}
+                isExpanded={isExpanded}
+                isMenuOpen={openActionMenu?.kind === "folder" && openActionMenu.id === folder.id}
+                onToggle={() => toggleFolder(folder.id)}
+                onRename={() => handleOpenRenameFolderDialog(folder.id)}
+                onDelete={() => handleDeleteFolder(folder.id)}
+                onMenuToggle={() =>
+                  setOpenActionMenu((current) =>
+                    current?.kind === "folder" && current.id === folder.id
+                      ? null
+                      : { kind: "folder", id: folder.id },
+                  )
+                }
+                onDrop={() => {
+                  void handleDropToFolder(folder.id);
+                }}
+              />
 
-                  {isExpanded ? (
-                    <div
-                      id={`folder-${folder.id}`}
-                      className="mt-0.5 ml-4 flex flex-col gap-0.5 border-l border-line pl-2.5"
-                    >
-                      {folderConversations.length > 0 ? (
-                        folderConversations.map((item) => (
-                          <ConversationRow
-                            key={item.id}
-                            conversation={item}
-                            isActive={activeConversationId === item.id}
-                            onRename={handleOpenRenameConversationDialog}
-                            onDelete={handleDeleteConversation}
-                            isMenuOpen={
-                              openActionMenu?.kind === "conversation" &&
-                              openActionMenu.id === item.id
-                            }
-                            onMenuToggle={() =>
-                              setOpenActionMenu((current) =>
-                                current?.kind === "conversation" && current.id === item.id
-                                  ? null
-                                  : { kind: "conversation", id: item.id },
-                              )
-                            }
-                            onDragStart={setDraggingConversationId}
-                            onDragEnd={() => setDraggingConversationId(null)}
-                          />
-                        ))
-                      ) : (
-                        <div className="px-3 py-2 text-[11px] text-muted">拖动对话到这里</div>
-                      )}
-                    </div>
-                  ) : null}
+              {isExpanded ? (
+                <div id={`folder-${folder.id}`} className="mt-0.5 ml-4 flex flex-col gap-0.5 border-l border-line pl-2.5">
+                  {folderConversations.length > 0 ? (
+                    folderConversations.map((item) => (
+                      <ConversationRow
+                        key={item.id}
+                        conversation={item}
+                        isActive={activeConversationId === item.id}
+                        onRename={handleOpenRenameConversationDialog}
+                        onDelete={handleDeleteConversation}
+                        isMenuOpen={
+                          openActionMenu?.kind === "conversation" && openActionMenu.id === item.id
+                        }
+                        onMenuToggle={() =>
+                          setOpenActionMenu((current) =>
+                            current?.kind === "conversation" && current.id === item.id
+                              ? null
+                              : { kind: "conversation", id: item.id },
+                          )
+                        }
+                        onDragStart={setDraggingConversationId}
+                        onDragEnd={() => setDraggingConversationId(null)}
+                      />
+                    ))
+                  ) : (
+                    <div className="px-3 py-2 text-[11px] text-muted">拖动对话到这里</div>
+                  )}
                 </div>
-              );
-            })}
-          </SidebarSection>
+              ) : null}
+            </div>
+          );
+        })}
+      </SidebarSection>
 
-          <SidebarSection
-            title="最近对话"
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={() => {
-              void handleDropToRecent();
-            }}
-          >
-            {sidebarViewModel.recentConversations.length > 0 ? (
-              sidebarViewModel.recentConversations.map((item) => (
-                <ConversationRow
-                  key={item.id}
-                  conversation={item}
-                  isActive={activeConversationId === item.id}
-                  onRename={handleOpenRenameConversationDialog}
-                  onDelete={handleDeleteConversation}
-                  isMenuOpen={
-                    openActionMenu?.kind === "conversation" && openActionMenu.id === item.id
-                  }
-                  onMenuToggle={() =>
-                    setOpenActionMenu((current) =>
-                      current?.kind === "conversation" && current.id === item.id
-                        ? null
-                        : { kind: "conversation", id: item.id },
-                    )
-                  }
-                  onDragStart={setDraggingConversationId}
-                  onDragEnd={() => setDraggingConversationId(null)}
-                />
-              ))
-            ) : (
-              <div className="px-3 py-2 text-[11px] text-muted">
-                {isHydrated ? getEmptyModeMessage(selectedMode) : "正在加载对话..."}
-              </div>
-            )}
-          </SidebarSection>
-        </>
-      ) : null}
+      <SidebarSection
+        title="最近对话"
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={() => {
+          void handleDropToRecent();
+        }}
+      >
+        {sidebarViewModel.recentConversations.length > 0 ? (
+          sidebarViewModel.recentConversations.map((item) => (
+            <ConversationRow
+              key={item.id}
+              conversation={item}
+              isActive={activeConversationId === item.id}
+              onRename={handleOpenRenameConversationDialog}
+              onDelete={handleDeleteConversation}
+              isMenuOpen={
+                openActionMenu?.kind === "conversation" && openActionMenu.id === item.id
+              }
+              onMenuToggle={() =>
+                setOpenActionMenu((current) =>
+                  current?.kind === "conversation" && current.id === item.id
+                    ? null
+                    : { kind: "conversation", id: item.id },
+                )
+              }
+              onDragStart={setDraggingConversationId}
+              onDragEnd={() => setDraggingConversationId(null)}
+            />
+          ))
+        ) : <div className="px-3 py-2 text-[11px] text-muted">{isHydrated ? getEmptyModeMessage(selectedMode) : "正在加载对话..."}</div>}
+      </SidebarSection>
 
       {deleteTarget ? (
         <DeleteDialog

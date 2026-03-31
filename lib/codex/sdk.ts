@@ -1,17 +1,10 @@
 import { Codex } from "@openai/codex-sdk";
 import { execFile } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import { promisify } from "node:util";
 import type { AgentProfileDetail } from "@/lib/agents/types";
-import {
-  buildChromeDevtoolsMcpConfig,
-  ensureBrowserSessionWarmup,
-  getBrowserSessionStatus,
-} from "@/lib/codex/browser-session";
-import {
-  prependCodexRuntimePath,
-  resolveCodexExecutablePath,
-} from "@/lib/codex/codex-executable";
+import { buildChromeDevtoolsMcpConfig, ensureBrowserSession } from "@/lib/codex/browser-session";
 import {
   getCodexOptions,
   resolvePreferredModelOption,
@@ -21,10 +14,6 @@ import { getAppLanguagePromptInstruction } from "@/lib/opencrab/languages";
 import { listSkills } from "@/lib/skills/skill-store";
 import { getSnapshot } from "@/lib/resources/local-store";
 import { OPENCRAB_DEFAULT_WORKSPACE_DIR } from "@/lib/resources/runtime-paths";
-import {
-  markCurrentRuntimeAsNode,
-  prependBundledRuntimeBinToPath,
-} from "@/lib/runtime/resource-paths";
 import type { CodexReasoningEffort, CodexSandboxMode } from "@/lib/resources/opencrab-api-types";
 
 const execFileAsync = promisify(execFile);
@@ -36,21 +25,6 @@ const DEFAULT_REASONING_EFFORT = normalizeReasoningEffort(
 const DEFAULT_SANDBOX_MODE = normalizeSandboxMode(process.env.OPENCRAB_CODEX_SANDBOX_MODE);
 const DEFAULT_NETWORK_ACCESS = process.env.OPENCRAB_CODEX_NETWORK_ACCESS === "true";
 const DEFAULT_APPROVAL_POLICY = "never" as const;
-const DEFAULT_LOGIN_STATUS_SUCCESS_CACHE_MS = 60_000;
-
-type CodexLoginStatus =
-  | {
-      ok: true;
-    }
-  | {
-      ok: false;
-      error: string;
-    };
-
-type CachedCodexLoginStatus = {
-  value: CodexLoginStatus;
-  expiresAt: number;
-};
 
 type GenerateCodexReplyInput = {
   conversationTitle?: string;
@@ -78,16 +52,6 @@ type CodexUsage = {
   cached_input_tokens: number;
   output_tokens: number;
 } | null;
-
-type CodexClientContext = {
-  codex: Codex;
-  browserToolsAvailable: boolean;
-};
-
-declare global {
-  var __opencrabCodexLoginStatusCache: CachedCodexLoginStatus | undefined;
-  var __opencrabCodexLoginStatusPromise: Promise<CodexLoginStatus> | undefined;
-}
 
 export type CodexReplyStreamEvent =
   | {
@@ -125,12 +89,13 @@ export async function generateCodexReply({
   onThreadReady,
 }: GenerateCodexReplyInput) {
   try {
+    await ensureBrowserSession();
     await ensureCodexLogin();
     const modelConfig = resolveModelConfig({
       model,
       reasoningEffort,
     });
-    const { codex, browserToolsAvailable } = await getCodexClient();
+    const codex = getCodexClient();
     const thread = threadId
       ? codex.resumeThread(threadId, buildThreadOptions({ ...modelConfig, sandboxMode, workingDirectory }))
       : codex.startThread(buildThreadOptions({ ...modelConfig, sandboxMode, workingDirectory }));
@@ -142,7 +107,7 @@ export async function generateCodexReply({
       content,
       agentProfile,
       textAttachments,
-    }, browserToolsAvailable);
+    });
 
     const result = await thread.run([
       {
@@ -214,12 +179,13 @@ export async function* streamCodexReply({
   signal,
 }: StreamCodexReplyInput): AsyncGenerator<CodexReplyStreamEvent> {
   try {
+    await ensureBrowserSession();
     await ensureCodexLogin();
     const modelConfig = resolveModelConfig({
       model,
       reasoningEffort,
     });
-    const { codex, browserToolsAvailable } = await getCodexClient();
+    const codex = getCodexClient();
     const thread = threadId
       ? codex.resumeThread(threadId, buildThreadOptions({ ...modelConfig, sandboxMode, workingDirectory }))
       : codex.startThread(buildThreadOptions({ ...modelConfig, sandboxMode, workingDirectory }));
@@ -229,7 +195,7 @@ export async function* streamCodexReply({
       content,
       agentProfile,
       textAttachments,
-    }, browserToolsAvailable);
+    });
 
     const { events } = await thread.runStreamed(
       [
@@ -320,33 +286,25 @@ export async function* streamCodexReply({
   }
 }
 
-async function getCodexClient(): Promise<CodexClientContext> {
+function getCodexClient() {
   const runtimeSkillEntries = listSkills()
     .filter((skill) => Boolean(skill.sourcePath))
     .map((skill) => ({
       path: skill.sourcePath!,
       enabled: skill.status === "installed",
     }));
-  const browserToolsAvailable = await isBrowserMcpAvailable();
 
-  return {
-    codex: new Codex({
-      codexPathOverride: resolveCodexExecutablePath(),
-      env: buildChatGptLoginEnv(),
-      config: {
-        show_raw_agent_reasoning: true,
-        ...(browserToolsAvailable
-          ? {
-              mcp_servers: buildChromeDevtoolsMcpConfig(),
-            }
-          : {}),
-        skills: {
-          config: runtimeSkillEntries,
-        },
+  return new Codex({
+    codexPathOverride: resolveBundledCodexExecutablePath(),
+    env: buildChatGptLoginEnv(),
+    config: {
+      show_raw_agent_reasoning: true,
+      mcp_servers: buildChromeDevtoolsMcpConfig(),
+      skills: {
+        config: runtimeSkillEntries,
       },
-    }),
-    browserToolsAvailable,
-  };
+    },
+  });
 }
 
 export function buildChatGptLoginEnv() {
@@ -369,14 +327,7 @@ export function buildChatGptLoginEnv() {
     nextEnv[key] = value;
   }
 
-  return markCurrentRuntimeAsNode(
-    prependCodexRuntimePath(prependBundledRuntimeBinToPath(nextEnv)),
-  );
-}
-
-export function invalidateCodexLoginStatusCache() {
-  globalThis.__opencrabCodexLoginStatusCache = undefined;
-  globalThis.__opencrabCodexLoginStatusPromise = undefined;
+  return nextEnv;
 }
 
 function buildThreadOptions(input?: {
@@ -425,7 +376,6 @@ function buildPrompt(
     GenerateCodexReplyInput,
     "conversationTitle" | "content" | "textAttachments" | "agentProfile"
   >,
-  browserToolsAvailable: boolean,
 ) {
   const settings = getSnapshot().settings;
   const skills = listSkills();
@@ -458,15 +408,9 @@ function buildPrompt(
           .filter(Boolean)
           .join("\n")
       : null,
-    browserToolsAvailable
-      ? "涉及浏览器、网页、页面交互、表单填写、点击、抓取页面可见内容时，优先使用 chrome-devtools MCP。"
-      : "当前浏览器工具暂不可用。只有在用户明确要求浏览器能力时，才说明这一点，并优先尝试不依赖浏览器的替代办法。",
-    browserToolsAvailable
-      ? "只有在 chrome-devtools MCP 当前不可用、明确做不到，或者连续失败时，才降级到其他方式，例如命令行、Playwright 或直接请求网页。"
-      : "如果当前任务离不开浏览器工具，而浏览器工具仍不可用，要直接说明阻塞原因，不要假装已经完成浏览器操作。",
-    browserToolsAvailable
-      ? "如果浏览器操作发生了降级，最终回复里用一句短话说明你改用了其他办法。"
-      : null,
+    "涉及浏览器、网页、页面交互、表单填写、点击、抓取页面可见内容时，优先使用 chrome-devtools MCP。",
+    "只有在 chrome-devtools MCP 当前不可用、明确做不到，或者连续失败时，才降级到其他方式，例如命令行、Playwright 或直接请求网页。",
+    "如果浏览器操作发生了降级，最终回复里用一句短话说明你改用了其他办法。",
     enabledSkills.length > 0
       ? [
           "OpenCrab 当前已启用的 skills（只有这些算可用）：",
@@ -489,22 +433,6 @@ function buildPrompt(
   ]
     .filter(Boolean)
     .join("\n");
-}
-
-async function isBrowserMcpAvailable() {
-  try {
-    const status = await getBrowserSessionStatus();
-
-    if (status.ok) {
-      return true;
-    }
-
-    void ensureBrowserSessionWarmup().catch(() => undefined);
-    return false;
-  } catch {
-    void ensureBrowserSessionWarmup().catch(() => undefined);
-    return false;
-  }
 }
 
 function buildAgentPromptSection(title: string, content: string) {
@@ -591,46 +519,9 @@ function getThinkingEntry(item: {
   }
 }
 
-export async function getCodexLoginStatus(input: { force?: boolean } = {}) {
-  if (!input.force) {
-    const cached = globalThis.__opencrabCodexLoginStatusCache;
-
-    if (cached && cached.expiresAt > Date.now()) {
-      return cached.value;
-    }
-
-    if (globalThis.__opencrabCodexLoginStatusPromise) {
-      return globalThis.__opencrabCodexLoginStatusPromise;
-    }
-  }
-
-  const task = readCodexLoginStatus();
-
-  globalThis.__opencrabCodexLoginStatusPromise = task;
-
+export async function getCodexLoginStatus() {
   try {
-    const status = await task;
-
-    if (status.ok) {
-      globalThis.__opencrabCodexLoginStatusCache = {
-        value: status,
-        expiresAt: Date.now() + resolveCodexLoginStatusSuccessCacheMs(),
-      };
-    } else {
-      globalThis.__opencrabCodexLoginStatusCache = undefined;
-    }
-
-    return status;
-  } finally {
-    if (globalThis.__opencrabCodexLoginStatusPromise === task) {
-      globalThis.__opencrabCodexLoginStatusPromise = undefined;
-    }
-  }
-}
-
-async function readCodexLoginStatus(): Promise<CodexLoginStatus> {
-  try {
-    const { stdout, stderr } = await execFileAsync(resolveCodexExecutablePath(), ["login", "status"], {
+    const { stdout, stderr } = await execFileAsync(resolveBundledCodexExecutablePath(), ["login", "status"], {
       env: buildChatGptLoginEnv() as NodeJS.ProcessEnv,
     });
     const output = `${stdout}\n${stderr}`.trim();
@@ -653,17 +544,6 @@ async function readCodexLoginStatus(): Promise<CodexLoginStatus> {
   }
 }
 
-function resolveCodexLoginStatusSuccessCacheMs() {
-  const parsed = Number.parseInt(
-    process.env.OPENCRAB_CODEX_LOGIN_STATUS_CACHE_MS || "",
-    10,
-  );
-
-  return Number.isFinite(parsed) && parsed > 0
-    ? parsed
-    : DEFAULT_LOGIN_STATUS_SUCCESS_CACHE_MS;
-}
-
 async function ensureCodexLogin() {
   const login = await getCodexLoginStatus();
 
@@ -672,12 +552,28 @@ async function ensureCodexLogin() {
   }
 }
 
+function resolveBundledCodexExecutablePath() {
+  const override = process.env.OPENCRAB_CODEX_PATH?.trim();
+
+  if (override) {
+    return override;
+  }
+
+  const localBinPath = path.join(process.cwd(), "node_modules", ".bin", process.platform === "win32" ? "codex.cmd" : "codex");
+
+  if (existsSync(localBinPath)) {
+    return localBinPath;
+  }
+
+  return "codex";
+}
+
 function normalizeCodexRuntimeError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
 
   if (/Unable to locate Codex CLI binaries/i.test(message)) {
     return new Error(
-      "OpenCrab 当前找不到可用的 Codex 执行入口。请先重新安装项目依赖，或确认内置/本地 `codex` 运行时可用后再试。",
+      "OpenCrab 当前找不到本机可用的 Codex 执行入口。请先重新安装项目依赖，或确认 `node_modules/.bin/codex` 可用后再试。",
     );
   }
 

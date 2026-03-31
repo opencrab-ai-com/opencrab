@@ -5,7 +5,6 @@ import {
   OPENCRAB_LOCAL_STORE_PATH,
   OPENCRAB_UPLOADS_DIR,
 } from "@/lib/resources/runtime-paths";
-import { getOpenCrabExecutionArtifactRoots } from "@/lib/runtime/resource-paths";
 
 type StoredProjectRooms = {
   rooms?: Array<{
@@ -20,8 +19,11 @@ type StoredConversations = {
 };
 
 const STATIC_ATTACHMENT_ROOTS = [
+  process.cwd(),
   OPENCRAB_UPLOADS_DIR,
-  ...getOpenCrabExecutionArtifactRoots(),
+  path.join(process.cwd(), "output"),
+  path.join(process.cwd(), "tmp"),
+  path.join(process.cwd(), ".playwright-cli"),
 ];
 
 export function isAttachmentPathAllowed(filePath: string) {

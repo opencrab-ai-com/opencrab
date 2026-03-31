@@ -11,7 +11,6 @@ import { getSnapshot } from "@/lib/resources/local-store";
 import type { UploadedAttachment } from "@/lib/resources/opencrab-api-types";
 import { runConversationTurn } from "@/lib/conversations/run-conversation-turn";
 import { getProjectDetail, runProject } from "@/lib/projects/project-store";
-import { ensureRuntimeLock } from "@/lib/runtime/runtime-lock";
 import { logServerError } from "@/lib/server/observability";
 import {
   completeTaskRun,
@@ -32,8 +31,6 @@ declare global {
 }
 
 export function ensureTaskRunner() {
-  ensureRuntimeLock();
-
   const lastRunAt = globalThis.__opencrabTaskRunnerLastRunAt ?? 0;
 
   if (globalThis.__opencrabTaskRunnerPromise) {

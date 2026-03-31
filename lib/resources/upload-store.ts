@@ -13,7 +13,6 @@ import {
   resolveExistingPath,
 } from "@/lib/resources/attachment-access-policy";
 import { createSyncJsonFileStore } from "@/lib/infrastructure/json-store/sync-json-file-store";
-import { getOpenCrabPdfExtractScriptPath } from "@/lib/runtime/resource-paths";
 const execFileAsync = promisify(execFile);
 
 type StoredAttachment = UploadedAttachment & {
@@ -394,7 +393,7 @@ function isPlainTextLike(extension: string, mimeType: string) {
 
 async function extractDocumentText(filePath: string, extension: string) {
   if (extension === ".pdf") {
-    const { stdout } = await execFileAsync("node", [getOpenCrabPdfExtractScriptPath(), filePath]);
+    const { stdout } = await execFileAsync("node", [path.join(process.cwd(), "scripts/pdf_extract.mjs"), filePath]);
     const text = stdout.trim();
 
     if (!text) {

@@ -6,7 +6,6 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUTPUT_DIR="$ROOT_DIR/public/branding/png"
 WHITE_OUTPUT_DIR="$ROOT_DIR/public/branding/png-white"
 CIRCLE_OUTPUT_DIR="$ROOT_DIR/public/branding/png-circle"
-APP_OUTPUT_DIR="$ROOT_DIR/public/branding/png-app"
 MARK_SOURCE="$ROOT_DIR/public/opencrab-mark.svg"
 LOGO_SOURCE="$ROOT_DIR/public/opencrab-logo.svg"
 
@@ -18,7 +17,6 @@ fi
 mkdir -p "$OUTPUT_DIR"
 mkdir -p "$WHITE_OUTPUT_DIR"
 mkdir -p "$CIRCLE_OUTPUT_DIR"
-mkdir -p "$APP_OUTPUT_DIR"
 
 mark_sizes=(16 32 48 64 128 180 192 256 512 1024)
 logo_sizes=(
@@ -41,7 +39,7 @@ for pair in "${logo_sizes[@]}"; do
     --out "$OUTPUT_DIR/opencrab-logo-${width}x${height}.png" >/dev/null
 done
 
-python3 - "$OUTPUT_DIR" "$WHITE_OUTPUT_DIR" "$CIRCLE_OUTPUT_DIR" "$APP_OUTPUT_DIR" <<'PY'
+python3 - "$OUTPUT_DIR" "$WHITE_OUTPUT_DIR" "$CIRCLE_OUTPUT_DIR" <<'PY'
 from pathlib import Path
 import sys
 
@@ -50,10 +48,8 @@ from PIL import Image, ImageDraw
 source_dir = Path(sys.argv[1])
 target_dir = Path(sys.argv[2])
 circle_dir = Path(sys.argv[3])
-app_dir = Path(sys.argv[4])
 target_dir.mkdir(parents=True, exist_ok=True)
 circle_dir.mkdir(parents=True, exist_ok=True)
-app_dir.mkdir(parents=True, exist_ok=True)
 
 for source_path in sorted(source_dir.glob("*.png")):
     image = Image.open(source_path).convert("RGBA")
@@ -88,36 +84,6 @@ for source_path in sorted(source_dir.glob("opencrab-mark-*.png")):
     avatar.alpha_composite(icon, icon_offset)
 
     avatar.save(circle_dir / source_path.name)
-
-for source_path in sorted(source_dir.glob("opencrab-mark-*.png")):
-    image = Image.open(source_path).convert("RGBA")
-    width, height = image.size
-    size = min(width, height)
-
-    app_icon = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-
-    # Match the rounded-square app icon silhouette used by macOS packaging.
-    oversample = 4
-    mask = Image.new("L", (size * oversample, size * oversample), 0)
-    draw = ImageDraw.Draw(mask)
-    inset = int(size * oversample * 0.07)
-    radius = int(size * oversample * 0.24)
-    draw.rounded_rectangle(
-        (inset, inset, size * oversample - inset, size * oversample - inset),
-        radius=radius,
-        fill=255,
-    )
-    mask = mask.resize((size, size), Image.Resampling.LANCZOS)
-
-    card = Image.new("RGBA", (size, size), (255, 255, 255, 255))
-    app_icon.paste(card, (0, 0), mask)
-
-    icon_target = max(1, int(size * 0.74))
-    icon = image.resize((icon_target, icon_target), Image.Resampling.LANCZOS)
-    icon_offset = ((size - icon_target) // 2, (size - icon_target) // 2)
-    app_icon.alpha_composite(icon, icon_offset)
-
-    app_icon.save(app_dir / source_path.name)
 PY
 
 cat <<'EOF'
@@ -126,5 +92,4 @@ Generated PNG brand assets:
 - horizontal logo: 384x128, 768x256, 1152x384, 1200x400, 1536x512
 - white-background copies: public/branding/png-white/
 - circular avatar copies: public/branding/png-circle/
-- app icon copies: public/branding/png-app/
 EOF

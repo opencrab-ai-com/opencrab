@@ -21,7 +21,6 @@ import {
   OPENCRAB_SKILLS_STORE_PATH,
 } from "@/lib/resources/runtime-paths";
 import { createSyncJsonFileStore } from "@/lib/infrastructure/json-store/sync-json-file-store";
-import { getOpenCrabBundledSkillsSourceRoot } from "@/lib/runtime/resource-paths";
 
 type CatalogSeed = {
   id: string;
@@ -56,6 +55,7 @@ type SkillStoreState = {
 
 const STORE_PATH = OPENCRAB_SKILLS_STORE_PATH;
 const CODEX_SKILLS_ROOT = path.join(process.env.HOME || process.cwd(), ".codex", "skills");
+const BUNDLED_SKILLS_SOURCE_ROOT = path.join(process.cwd(), "skills");
 let hasEnsuredBundledSkills = false;
 const store = createSyncJsonFileStore<SkillStoreState>({
   filePath: STORE_PATH,
@@ -993,20 +993,18 @@ function collectSkillFiles(root: string) {
 }
 
 function ensureBundledSkillsInstalled() {
-  const bundledSkillsSourceRoot = getOpenCrabBundledSkillsSourceRoot();
-
   if (hasEnsuredBundledSkills) {
     return;
   }
 
-  if (!existsSync(bundledSkillsSourceRoot)) {
+  if (!existsSync(BUNDLED_SKILLS_SOURCE_ROOT)) {
     hasEnsuredBundledSkills = true;
     return;
   }
 
-  copyBundledSkillDirectories(bundledSkillsSourceRoot, OPENCRAB_SKILLS_DIR, [".system"]);
+  copyBundledSkillDirectories(BUNDLED_SKILLS_SOURCE_ROOT, OPENCRAB_SKILLS_DIR, [".system"]);
   copyBundledSkillDirectories(
-    path.join(bundledSkillsSourceRoot, ".system"),
+    path.join(BUNDLED_SKILLS_SOURCE_ROOT, ".system"),
     path.join(OPENCRAB_SKILLS_DIR, ".system"),
   );
   hasEnsuredBundledSkills = true;
