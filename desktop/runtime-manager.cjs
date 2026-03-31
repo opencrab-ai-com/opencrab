@@ -7,7 +7,7 @@ const {
   isOpenCrabAppUrl,
   normalizeOpenCrabBaseUrl,
   parsePositiveInt,
-} = require("../lib/runtime/runtime-network-config.shared.js");
+} = require("./runtime-network-config.shared.cjs");
 
 const OPENCRAB_ROOT = path.resolve(__dirname, "..");
 const DEFAULT_BUNDLE_ROOT = path.join(OPENCRAB_ROOT, ".opencrab-desktop", "runtime");

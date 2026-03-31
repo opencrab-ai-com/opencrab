@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { describe, expect, it } from "vitest";
 
@@ -11,6 +12,13 @@ const {
 } = require("../desktop/runtime-manager.cjs");
 
 describe("desktop runtime manager", () => {
+  it("uses a package-local runtime network config helper", () => {
+    const source = readFileSync(new URL("../desktop/runtime-manager.cjs", import.meta.url), "utf8");
+
+    expect(source).toContain('require("./runtime-network-config.shared.cjs")');
+    expect(source).not.toContain("../lib/runtime/runtime-network-config.shared.js");
+  });
+
   it("normalizes explicit attached urls", () => {
     const config = resolveDesktopRuntimeConfig({
       OPENCRAB_DESKTOP_TARGET_URL: "http://127.0.0.1:4567/app?foo=bar",
