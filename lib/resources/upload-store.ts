@@ -13,6 +13,8 @@ import {
   resolveExistingPath,
 } from "@/lib/resources/attachment-access-policy";
 import { createSyncJsonFileStore } from "@/lib/infrastructure/json-store/sync-json-file-store";
+import { resolveOpenCrabResourcePath } from "@/lib/runtime/app-resource-paths";
+import { execOpenCrabNodeScript } from "@/lib/runtime/node-exec";
 const execFileAsync = promisify(execFile);
 
 type StoredAttachment = UploadedAttachment & {
@@ -393,7 +395,10 @@ function isPlainTextLike(extension: string, mimeType: string) {
 
 async function extractDocumentText(filePath: string, extension: string) {
   if (extension === ".pdf") {
-    const { stdout } = await execFileAsync("node", [path.join(process.cwd(), "scripts/pdf_extract.mjs"), filePath]);
+    const { stdout } = await execOpenCrabNodeScript(
+      resolveOpenCrabResourcePath("scripts", "pdf_extract.mjs"),
+      [filePath],
+    );
     const text = stdout.trim();
 
     if (!text) {

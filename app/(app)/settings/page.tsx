@@ -3,6 +3,7 @@
 import { useMemo, useRef } from "react";
 import { AgentAvatar } from "@/components/agents/agent-avatar";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
+import { BrowserSessionPanel } from "@/components/browser/browser-session-panel";
 import { ChatGptConnectionPanel } from "@/components/chatgpt/chatgpt-connection-panel";
 import { AppPage } from "@/components/ui/app-page";
 import { PageHeader } from "@/components/ui/page-header";
@@ -144,9 +145,13 @@ export default function SettingsPage() {
               <option value="managed-browser">使用独立浏览器</option>
             </SelectField>
             <p className="text-[12px] text-muted-strong">
-              你当前要求的推荐配置是“连接当前浏览器”。这样 OpenCrab 会尽量复用你平时正在用的 Chrome 会话；同一服务进程内会持续复用连接。
+              OpenCrab 会优先连接你当前正在使用的 Chrome，并在同一服务进程内持续复用这条连接。
             </p>
           </label>
+
+          <div className="md:col-span-2">
+            <BrowserSessionPanel />
+          </div>
 
           <label className="space-y-2">
             <span className="text-[13px] font-medium text-text">默认模型</span>

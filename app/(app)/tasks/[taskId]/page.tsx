@@ -1,7 +1,7 @@
 import { AppPage } from "@/components/ui/app-page";
 import { TaskDetailScreen } from "@/components/tasks/task-detail-screen";
 import { PageHeader } from "@/components/ui/page-header";
-import { ensureTaskRunner } from "@/lib/tasks/task-runner";
+import { ensureTaskRuntimeReady } from "@/lib/runtime/runtime-startup";
 
 export default async function TaskDetailPage({
   params,
@@ -9,7 +9,7 @@ export default async function TaskDetailPage({
   params: Promise<{ taskId: string }>;
 }) {
   const { taskId } = await params;
-  void ensureTaskRunner();
+  ensureTaskRuntimeReady();
 
   return (
     <AppPage width="wide" contentClassName="space-y-8">

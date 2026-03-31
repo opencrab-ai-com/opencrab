@@ -5,8 +5,9 @@ import { getUserFacingError } from "@/lib/opencrab/messages";
 import {
   cancelChatGptConnection as cancelChatGptConnectionResource,
   disconnectChatGptConnection as disconnectChatGptConnectionResource,
-  getChatGptConnectionStatus as getChatGptConnectionStatusResource,
-  getCodexStatus as getCodexStatusResource,
+  getRuntimeConnectionSnapshot as getRuntimeConnectionSnapshotResource,
+  getRuntimeReadiness as getRuntimeReadinessResource,
+  openPendingChatGptConnectionInChrome as openPendingChatGptConnectionInChromeResource,
   startChatGptConnection as startChatGptConnectionResource,
   updateSettings as updateSettingsResource,
   warmCodexBrowserSession as warmCodexBrowserSessionResource,
@@ -20,6 +21,8 @@ import type {
   CodexReasoningEffort,
   CodexSandboxMode,
   CodexStatusResponse,
+  RuntimeConnectionSnapshotResponse,
+  RuntimeReadinessResponse,
 } from "@/lib/resources/opencrab-api-types";
 import type { AppLanguage, AppSettings } from "@/lib/seed-data";
 
@@ -47,6 +50,12 @@ type UseOpenCrabSettingsControllerInput = {
   ) => void;
   onBrowserSessionStatusChange: (
     status: CodexBrowserSessionStatus | null,
+  ) => void;
+  onRuntimeReadinessChange: (
+    status: RuntimeReadinessResponse | null,
+  ) => void;
+  onRuntimeConnectionSnapshotChange: (
+    snapshot: RuntimeConnectionSnapshotResponse,
   ) => void;
   onError: (message: string | null) => void;
   onChatGptPendingChange: (pending: boolean) => void;
@@ -150,6 +159,13 @@ export function useOpenCrabSettingsController(
     [input],
   );
 
+  const applyRuntimeConnectionSnapshot = useCallback(
+    (snapshot: RuntimeConnectionSnapshotResponse) => {
+      input.onRuntimeConnectionSnapshotChange(snapshot);
+    },
+    [input],
+  );
+
   const persistSettings = useCallback(
     async (
       patch: PersistedSettingsPatch,
@@ -165,11 +181,13 @@ export function useOpenCrabSettingsController(
       hydrateFromSnapshot(result.snapshot);
 
       if (options?.warmBrowserSession) {
-        const nextStatus = await warmCodexBrowserSessionResource();
-        input.onBrowserSessionStatusChange(nextStatus);
+        await warmCodexBrowserSessionResource();
+        applyRuntimeConnectionSnapshot(
+          await getRuntimeConnectionSnapshotResource(),
+        );
       }
     },
-    [hydrateFromSnapshot, input, persistedSettings],
+    [applyRuntimeConnectionSnapshot, hydrateFromSnapshot, input, persistedSettings],
   );
 
   const setSelectedModel = useCallback(
@@ -329,16 +347,27 @@ export function useOpenCrabSettingsController(
     input.onError(null);
 
     try {
-      const [chatGptConnection, status] = await Promise.all([
-        getChatGptConnectionStatusResource(),
-        getCodexStatusResource(),
-      ]);
-      input.onChatGptConnectionStatusChange(chatGptConnection);
-      input.onCodexStatusChange(status);
-      return chatGptConnection;
+      const snapshot = await getRuntimeConnectionSnapshotResource();
+      applyRuntimeConnectionSnapshot(snapshot);
+      return snapshot.chatGptConnectionStatus;
     } catch (error) {
       input.onError(
         getUserFacingError(error, "刷新 ChatGPT 连接状态失败，请稍后再试。"),
+      );
+      return null;
+    }
+  }, [input]);
+
+  const refreshRuntimeReadiness = useCallback(async () => {
+    input.onError(null);
+
+    try {
+      const readiness = await getRuntimeReadinessResource();
+      input.onRuntimeReadinessChange(readiness);
+      return readiness;
+    } catch (error) {
+      input.onError(
+        getUserFacingError(error, "刷新首次准备状态失败，请稍后再试。"),
       );
       return null;
     }
@@ -353,13 +382,10 @@ export function useOpenCrabSettingsController(
       input.onError(null);
 
       try {
-        const [chatGptConnection, status] = await Promise.all([
-          action(),
-          getCodexStatusResource(),
-        ]);
-        input.onChatGptConnectionStatusChange(chatGptConnection);
-        input.onCodexStatusChange(status);
-        return chatGptConnection;
+        await action();
+        const snapshot = await getRuntimeConnectionSnapshotResource();
+        applyRuntimeConnectionSnapshot(snapshot);
+        return snapshot.chatGptConnectionStatus;
       } catch (error) {
         input.onError(getUserFacingError(error, errorMessage));
         return null;
@@ -367,7 +393,7 @@ export function useOpenCrabSettingsController(
         input.onChatGptPendingChange(false);
       }
     },
-    [input],
+    [applyRuntimeConnectionSnapshot, input],
   );
 
   const startChatGptConnection = useCallback(async () => {
@@ -381,6 +407,13 @@ export function useOpenCrabSettingsController(
     return runChatGptConnectionAction(
       cancelChatGptConnectionResource,
       "取消 ChatGPT 连接失败，请稍后再试。",
+    );
+  }, [runChatGptConnectionAction]);
+
+  const openPendingChatGptConnectionInChrome = useCallback(async () => {
+    return runChatGptConnectionAction(
+      openPendingChatGptConnectionInChromeResource,
+      "在 Chrome 中打开 ChatGPT 失败，请稍后再试。",
     );
   }, [runChatGptConnectionAction]);
 
@@ -413,7 +446,9 @@ export function useOpenCrabSettingsController(
     setSelectedBrowserConnectionMode,
     setAllowOpenAiApiKeyForCommands,
     refreshChatGptConnectionStatus,
+    refreshRuntimeReadiness,
     startChatGptConnection,
+    openPendingChatGptConnectionInChrome,
     cancelChatGptConnection,
     disconnectChatGptConnection,
   };

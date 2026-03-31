@@ -7,6 +7,9 @@ import {
   saveManagedTunnelConfig,
 } from "@/lib/runtime/runtime-config-store";
 import { OPENCRAB_TUNNEL_LOG_DIR } from "@/lib/resources/runtime-paths";
+import runtimeNetworkConfig from "@/lib/runtime/runtime-network-config.shared.js";
+
+const { resolveOpenCrabLocalBaseUrl } = runtimeNetworkConfig;
 
 type ManagedTunnelProvider = "cloudflared" | "localtunnel";
 
@@ -81,8 +84,7 @@ export async function ensurePublicBaseUrl(): Promise<ProvisionPublicBaseUrlResul
 }
 
 function getLocalOpenCrabUrl() {
-  const port = process.env.PORT?.trim() || "3000";
-  return `http://127.0.0.1:${port}`;
+  return resolveOpenCrabLocalBaseUrl(process.env);
 }
 
 function getTunnelProviderCandidates(): ManagedTunnelProvider[] {

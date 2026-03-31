@@ -1,1 +1,0 @@
-self.__BUILD_MANIFEST={"__rewrites":{"beforeFiles":[],"afterFiles":[],"fallback":[]},"sortedPages":["/","/_app","/_document","/_error","/install"],"/_error":["pages/_error.js"],"/":["pages/index.js"],"/_document":["pages/_document.js"],"/install":["pages/install.js"]};self.__BUILD_MANIFEST_CB && self.__BUILD_MANIFEST_CB()

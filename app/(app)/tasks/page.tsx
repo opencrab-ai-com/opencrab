@@ -1,10 +1,10 @@
 import { AppPage } from "@/components/ui/app-page";
 import { TasksScreen } from "@/components/tasks/tasks-screen";
 import { PageHeader } from "@/components/ui/page-header";
-import { ensureTaskRunner } from "@/lib/tasks/task-runner";
+import { ensureTaskRuntimeReady } from "@/lib/runtime/runtime-startup";
 
 export default function TasksPage() {
-  void ensureTaskRunner();
+  ensureTaskRuntimeReady();
 
   return (
     <AppPage width="wide" contentClassName="space-y-5">

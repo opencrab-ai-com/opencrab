@@ -1,14 +1,13 @@
-import {
-  ensureChannelStartupSync,
-  ensureChannelWatchdog,
-} from "@/lib/channels/channel-startup";
 import { getChannelDetail } from "@/lib/channels/channel-store";
 import {
   resolveChannelId,
   saveChannelConfiguration,
   type ChannelPatchPayload,
 } from "@/lib/channels/channel-management";
-import { syncAllChannelConfigsFromSecrets } from "@/lib/channels/secret-store";
+import {
+  ensureChannelRuntimeReady,
+  ensureChannelRuntimeWatchdog,
+} from "@/lib/runtime/runtime-startup";
 import {
   json,
   notFoundJson,
@@ -26,9 +25,7 @@ export async function GET(
     return notFoundJson("不支持的 channel。");
   }
 
-  syncAllChannelConfigsFromSecrets();
-  ensureChannelWatchdog();
-  void ensureChannelStartupSync();
+  ensureChannelRuntimeReady();
 
   return json({
     detail: getChannelDetail(channelId),
@@ -39,7 +36,7 @@ export async function PATCH(
   request: Request,
   context: RouteContext<{ channelId: string }>,
 ) {
-  ensureChannelWatchdog();
+  ensureChannelRuntimeWatchdog();
   const channelId = await resolveChannelId(context.params);
 
   if (!channelId) {

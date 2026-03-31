@@ -1,10 +1,17 @@
 import { Codex } from "@openai/codex-sdk";
-import { execFile } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { promisify } from "node:util";
 import type { AgentProfileDetail } from "@/lib/agents/types";
+import { createCodexAppServerClient } from "@/lib/codex/app-server-client";
 import { buildChromeDevtoolsMcpConfig, ensureBrowserSession } from "@/lib/codex/browser-session";
+import {
+  isCodexTransportNoiseMessage,
+  normalizeCodexTransportNoiseMessage,
+} from "@/lib/codex/stream-noise";
+import {
+  execCodexCommand,
+  resolveCodexExecutablePath,
+} from "@/lib/codex/executable";
 import {
   getCodexOptions,
   resolvePreferredModelOption,
@@ -15,8 +22,6 @@ import { listSkills } from "@/lib/skills/skill-store";
 import { getSnapshot } from "@/lib/resources/local-store";
 import { OPENCRAB_DEFAULT_WORKSPACE_DIR } from "@/lib/resources/runtime-paths";
 import type { CodexReasoningEffort, CodexSandboxMode } from "@/lib/resources/opencrab-api-types";
-
-const execFileAsync = promisify(execFile);
 
 const CONFIGURED_DEFAULT_MODEL = process.env.OPENCRAB_CODEX_MODEL;
 const DEFAULT_REASONING_EFFORT = normalizeReasoningEffort(
@@ -295,7 +300,7 @@ function getCodexClient() {
     }));
 
   return new Codex({
-    codexPathOverride: resolveBundledCodexExecutablePath(),
+    codexPathOverride: resolveCodexExecutablePath(),
     env: buildChatGptLoginEnv(),
     config: {
       show_raw_agent_reasoning: true,
@@ -483,7 +488,7 @@ function getThinkingEntry(item: {
 }) {
   switch (item.type) {
     case "reasoning":
-      return item.text?.trim() || null;
+      return sanitizeThinkingEntry(item.text);
     case "command_execution":
       if (!item.command) {
         return null;
@@ -513,29 +518,59 @@ function getThinkingEntry(item: {
             .join("；")}`
         : null;
     case "error":
-      return item.message ? `遇到一个中间错误：${item.message}` : null;
+      if (!item.message || isCodexTransportNoiseMessage(item.message)) {
+        return null;
+      }
+
+      return `遇到一个中间错误：${item.message}`;
     default:
       return null;
   }
 }
 
+function sanitizeThinkingEntry(value: string | undefined) {
+  const normalized = value?.trim();
+
+  if (!normalized || isCodexTransportNoiseMessage(normalized)) {
+    return null;
+  }
+
+  return normalized;
+}
+
 export async function getCodexLoginStatus() {
   try {
-    const { stdout, stderr } = await execFileAsync(resolveBundledCodexExecutablePath(), ["login", "status"], {
-      env: buildChatGptLoginEnv() as NodeJS.ProcessEnv,
-    });
-    const output = `${stdout}\n${stderr}`.trim();
+    const appServer = await createCodexAppServerClient(
+      buildChatGptLoginEnv() as NodeJS.ProcessEnv,
+    );
 
-    if (/Logged in using ChatGPT/i.test(output)) {
+    try {
+      const response = await appServer.request<{
+        account: {
+          type: "apiKey" | "chatgpt";
+          email?: string;
+          planType?: string;
+        } | null;
+        requiresOpenaiAuth: boolean;
+      }>("account/read", {
+        refreshToken: false,
+      });
+
+      if (response.account?.type === "chatgpt") {
+        return {
+          ok: true as const,
+        };
+      }
+
       return {
-        ok: true as const,
+        ok: false as const,
+        error: response.requiresOpenaiAuth
+          ? "当前没有检测到可用的 ChatGPT 登录状态。"
+          : "当前没有检测到可用的本机执行环境登录状态。",
       };
+    } finally {
+      appServer.close();
     }
-
-    return {
-      ok: false as const,
-      error: output || "当前没有检测到可用的本机执行环境登录状态。",
-    };
   } catch (error) {
     return {
       ok: false as const,
@@ -552,24 +587,13 @@ async function ensureCodexLogin() {
   }
 }
 
-function resolveBundledCodexExecutablePath() {
-  const override = process.env.OPENCRAB_CODEX_PATH?.trim();
-
-  if (override) {
-    return override;
-  }
-
-  const localBinPath = path.join(process.cwd(), "node_modules", ".bin", process.platform === "win32" ? "codex.cmd" : "codex");
-
-  if (existsSync(localBinPath)) {
-    return localBinPath;
-  }
-
-  return "codex";
-}
-
 function normalizeCodexRuntimeError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
+  const normalizedTransportNoiseMessage = normalizeCodexTransportNoiseMessage(message);
+
+  if (normalizedTransportNoiseMessage) {
+    return new Error(normalizedTransportNoiseMessage);
+  }
 
   if (/Unable to locate Codex CLI binaries/i.test(message)) {
     return new Error(

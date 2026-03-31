@@ -1,11 +1,19 @@
 import type { NextConfig } from "next";
 
+const defaultAllowedDevOrigins = [
+  "localhost",
+  "127.0.0.1",
+];
+
+const extraAllowedDevOrigins = (process.env.OPENCRAB_ALLOWED_DEV_ORIGINS || "")
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
+
 const nextConfig: NextConfig = {
+  output: "standalone",
   allowedDevOrigins: [
-    "localhost",
-    "127.0.0.1",
-    "192.168.3.37",
-    "cadiboklkpojfamcoggejbbdjcoiljjk",
+    ...new Set([...defaultAllowedDevOrigins, ...extraAllowedDevOrigins]),
   ],
   devIndicators: false,
 };

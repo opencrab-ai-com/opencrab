@@ -1,5 +1,5 @@
-import { ensureTaskRunner } from "@/lib/tasks/task-runner";
 import { taskService } from "@/lib/modules/tasks/task-service";
+import { ensureTaskRuntimeReady } from "@/lib/runtime/runtime-startup";
 import {
   errorResponse,
   noStoreJson,
@@ -8,7 +8,7 @@ import {
 import type { TaskCreateInput } from "@/lib/tasks/types";
 
 export async function GET() {
-  void ensureTaskRunner();
+  ensureTaskRuntimeReady();
 
   return noStoreJson({
     tasks: taskService.list(),

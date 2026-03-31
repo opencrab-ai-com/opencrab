@@ -7,10 +7,6 @@ import { ChannelSetupForm } from "@/components/channels/channel-setup-form";
 import { ChannelStatusBadge } from "@/components/channels/channel-status-badge";
 import { AppPage } from "@/components/ui/app-page";
 import { PageHeader } from "@/components/ui/page-header";
-import {
-  ensureChannelStartupSync,
-  ensureChannelWatchdog,
-} from "@/lib/channels/channel-startup";
 import { getChannelDetail, getPublicBaseUrl } from "@/lib/channels/channel-store";
 import {
   buildFeishuStatusSummary,
@@ -20,9 +16,9 @@ import {
 import {
   getFeishuCredentialPreview,
   getTelegramBotTokenPreview,
-  syncAllChannelConfigsFromSecrets,
 } from "@/lib/channels/secret-store";
 import type { ChannelId } from "@/lib/channels/types";
+import { ensureChannelRuntimeReady } from "@/lib/runtime/runtime-startup";
 
 export const dynamic = "force-dynamic";
 
@@ -37,9 +33,7 @@ export default async function ChannelDetailPage({
     notFound();
   }
 
-  syncAllChannelConfigsFromSecrets();
-  ensureChannelWatchdog();
-  void ensureChannelStartupSync();
+  ensureChannelRuntimeReady();
 
   const channel = getChannelDetail(channelId as ChannelId);
   const webhookTarget = channel.configSummary.webhookUrl || channel.configSummary.webhookPath;

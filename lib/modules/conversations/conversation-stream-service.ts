@@ -45,6 +45,7 @@ export async function buildConversationReplyStream(
       let latestThinking: string[] = [];
       let latestThreadId: string | null = prepared.conversation.codexThreadId ?? null;
       let didComplete = false;
+      let emittedErrorMessage: string | null = null;
 
       function emit(event: ReplyStreamEvent) {
         controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`));
@@ -132,16 +133,20 @@ export async function buildConversationReplyStream(
             status: "stopped",
           });
         } else {
+          emittedErrorMessage =
+            error instanceof Error ? error.message : "OpenCrab 回复生成失败。";
           emit({
             type: "error",
-            error: error instanceof Error ? error.message : "OpenCrab 回复生成失败。",
+            error: emittedErrorMessage,
           });
         }
       } finally {
-        if (!didComplete && !input.request.signal.aborted && !latestText.trim()) {
+        if (!didComplete && !input.request.signal.aborted && !emittedErrorMessage) {
           emit({
             type: "error",
-            error: "OpenCrab 当前没有返回可用内容，请稍后再试。",
+            error: latestText.trim()
+              ? "OpenCrab 回复在完成前中断了，请重试。"
+              : "OpenCrab 当前没有返回可用内容，请稍后再试。",
           });
         }
 

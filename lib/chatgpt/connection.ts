@@ -1,29 +1,43 @@
-import { execFile, spawn } from "node:child_process";
-import { promisify } from "node:util";
-import type { ChildProcess } from "node:child_process";
-import type { ChatGptConnectionStatusResponse } from "@/lib/resources/opencrab-api-types";
+import { execCodexCommand } from "@/lib/codex/executable";
+import {
+  createCodexAppServerClient,
+  type CodexAppServerClient,
+  type CodexAppServerNotification,
+} from "@/lib/codex/app-server-client";
 import { buildChatGptLoginEnv, getCodexLoginStatus } from "@/lib/codex/sdk";
+import type { ChatGptConnectionStatusResponse } from "@/lib/resources/opencrab-api-types";
+import { openUrlInChrome } from "@/lib/runtime/chrome";
 
-const execFileAsync = promisify(execFile);
-const DEVICE_AUTH_URL = "https://auth.openai.com/codex/device";
-const DEFAULT_BROWSER_AUTH_PATH = "http://localhost:1455";
-const DEFAULT_DEVICE_CODE_TTL_MS = 15 * 60 * 1000;
 const STATUS_POLL_INTERVAL_MS = 2000;
 
+type LoginAccountResponse = {
+  type: "chatgpt";
+  loginId: string;
+  authUrl: string;
+};
+
+type AccountLoginCompletedNotification = {
+  loginId: string | null;
+  success: boolean;
+  error: string | null;
+};
+
 type ActiveConnection = {
-  child: ChildProcess | null;
+  appServer: CodexAppServerClient | null;
+  unsubscribeNotifications: (() => void) | null;
   authMode: ChatGptConnectionStatusResponse["authMode"];
   stage: ChatGptConnectionStatusResponse["stage"];
   authUrl: string | null;
+  loginId: string | null;
   deviceCode: string | null;
   codeExpiresAt: string | null;
   startedAt: string;
   connectedAt: string | null;
   error: string | null;
   message: string;
-  output: string;
   pollTimer: NodeJS.Timeout | null;
   loginStatusCheckInFlight: boolean;
+  hasAttemptedBrowserOpen: boolean;
 };
 
 let activeConnection: ActiveConnection | null = null;
@@ -68,14 +82,6 @@ export async function getChatGptConnectionStatus(): Promise<ChatGptConnectionSta
     });
   }
 
-  if (activeConnection.codeExpiresAt && Date.now() >= Date.parse(activeConnection.codeExpiresAt)) {
-    finalizeConnection({
-      stage: "expired",
-      error: "这次连接码已经过期。",
-      message: "这次连接码已经过期，请重新连接 ChatGPT。",
-    });
-  }
-
   return buildResponse({
     authMode: activeConnection.authMode,
     stage: activeConnection.stage,
@@ -115,101 +121,98 @@ export async function startChatGptConnection(): Promise<ChatGptConnectionStatusR
   finalizeConnection();
 
   activeConnection = {
-    child: null,
+    appServer: null,
+    unsubscribeNotifications: null,
     authMode: "browser",
     stage: "connecting",
     authUrl: null,
+    loginId: null,
     deviceCode: null,
     codeExpiresAt: null,
     startedAt: new Date().toISOString(),
     connectedAt: null,
     error: null,
     message: "正在准备 ChatGPT 连接...",
-    output: "",
     pollTimer: null,
     loginStatusCheckInFlight: false,
+    hasAttemptedBrowserOpen: false,
   };
 
-  const child = spawn("codex", ["login"], {
-    env: buildChatGptLoginEnv() as NodeJS.ProcessEnv,
-    stdio: ["ignore", "pipe", "pipe"],
-  });
+  try {
+    const appServer = await createCodexAppServerClient(
+      buildChatGptLoginEnv() as NodeJS.ProcessEnv,
+    );
 
-  activeConnection.child = child;
-
-  child.stdout.on("data", (chunk: Buffer | string) => {
-    appendProcessOutput(chunk);
-  });
-
-  child.stderr.on("data", (chunk: Buffer | string) => {
-    appendProcessOutput(chunk);
-  });
-
-  child.on("exit", (code, signal) => {
     if (!activeConnection) {
-      return;
+      appServer.close();
+      return buildDisconnectedResponse("已取消这次 ChatGPT 连接。");
     }
 
-    activeConnection.child = null;
+    activeConnection.appServer = appServer;
+    activeConnection.unsubscribeNotifications = appServer.onNotification(
+      handleAppServerNotification,
+    );
 
-    if (activeConnection.stage === "connected" || activeConnection.stage === "not_connected") {
-      return;
+    const loginResponse = await appServer.request<LoginAccountResponse>(
+      "account/login/start",
+      { type: "chatgpt" },
+    );
+
+    if (!activeConnection) {
+      return buildDisconnectedResponse("已取消这次 ChatGPT 连接。");
     }
 
-    if (activeConnection.codeExpiresAt && Date.now() >= Date.parse(activeConnection.codeExpiresAt)) {
-      finalizeConnection({
-        stage: "expired",
-        error: "这次连接码已经过期。",
-        message: "这次连接码已经过期，请重新连接 ChatGPT。",
-      });
-      return;
+    if (
+      !loginResponse ||
+      loginResponse.type !== "chatgpt" ||
+      !loginResponse.loginId ||
+      !loginResponse.authUrl
+    ) {
+      throw new Error("OpenCrab 没有拿到有效的 ChatGPT 登录地址。");
     }
 
-    if (signal === "SIGTERM") {
-      finalizeConnection({
-        stage: "not_connected",
-        error: null,
-        message: "已取消这次 ChatGPT 连接。",
-      });
-      return;
-    }
+    activeConnection.loginId = loginResponse.loginId;
+    activeConnection.authUrl = loginResponse.authUrl;
+    activeConnection.stage = "waiting_browser_auth";
+    activeConnection.message =
+      "Google Chrome 登录页已经准备好。请在打开的 ChatGPT 页面里完成登录。";
 
-    if (code === 0) {
-      return;
-    }
+    ensureStatusPolling();
+    await tryOpenPendingAuthUrlInChrome();
 
+    return getChatGptConnectionStatus();
+  } catch (error) {
     finalizeConnection({
       stage: "error",
-      error: buildProcessErrorMessage(activeConnection.output),
+      error:
+        error instanceof Error
+          ? error.message
+          : "OpenCrab 暂时无法发起 ChatGPT 连接。",
       message: "这次 ChatGPT 连接没有完成，请重试。",
     });
-  });
 
-  ensureStatusPolling();
-  await waitForDeviceCode();
-
-  return getChatGptConnectionStatus();
+    return getChatGptConnectionStatus();
+  }
 }
 
 export async function cancelChatGptConnection(): Promise<ChatGptConnectionStatusResponse> {
+  if (activeConnection?.appServer && activeConnection.loginId) {
+    try {
+      await activeConnection.appServer.request("account/login/cancel", {
+        loginId: activeConnection.loginId,
+      });
+    } catch {
+      // If cancellation fails, we still tear down the local pending session.
+    }
+  }
+
   finalizeConnection({
     stage: "not_connected",
     error: null,
     message: "已取消这次 ChatGPT 连接。",
   });
 
-  return buildResponse({
-    authMode: null,
-    stage: "not_connected",
-    isConnected: false,
-    authUrl: null,
-    deviceCode: null,
-    codeExpiresAt: null,
-    startedAt: null,
-    connectedAt: null,
-    error: null,
-    message: "已取消这次 ChatGPT 连接。",
-  });
+  return buildDisconnectedResponse("已取消这次 ChatGPT 连接。");
 }
 
 export async function disconnectChatGptConnection(): Promise<ChatGptConnectionStatusResponse> {
@@ -220,14 +223,14 @@ export async function disconnectChatGptConnection(): Promise<ChatGptConnectionSt
   });
 
   try {
-    await execFileAsync("codex", ["logout"], {
+    await execCodexCommand(["logout"], {
       env: buildChatGptLoginEnv() as NodeJS.ProcessEnv,
     });
   } catch (error) {
-        return buildResponse({
-          authMode: null,
-          stage: "error",
-          isConnected: false,
+    return buildResponse({
+      authMode: null,
+      stage: "error",
+      isConnected: false,
       authUrl: null,
       deviceCode: null,
       codeExpiresAt: null,
@@ -238,76 +241,36 @@ export async function disconnectChatGptConnection(): Promise<ChatGptConnectionSt
     });
   }
 
-  return buildResponse({
-    authMode: null,
-    stage: "not_connected",
-    isConnected: false,
-    authUrl: null,
-    deviceCode: null,
-    codeExpiresAt: null,
-    startedAt: null,
-    connectedAt: null,
-    error: null,
-    message: "ChatGPT 已断开连接。需要时可以重新连接。",
-  });
+  return buildDisconnectedResponse("ChatGPT 已断开连接。需要时可以重新连接。");
 }
 
-function appendProcessOutput(chunk: Buffer | string) {
-  if (!activeConnection) {
-    return;
+export async function openPendingChatGptConnectionInChrome(): Promise<ChatGptConnectionStatusResponse> {
+  const status = await getChatGptConnectionStatus();
+
+  if (status.stage !== "waiting_browser_auth" || status.isConnected) {
+    return status;
   }
 
-  activeConnection.output += stripAnsi(String(chunk));
-  updateConnectionFromOutput();
-}
+  if (!status.authUrl) {
+    finalizeConnection({
+      stage: "expired",
+      error: "这次登录页已经失效，请重新连接 ChatGPT。",
+      message: "这次登录页已经失效，请重新连接 ChatGPT。",
+    });
 
-function updateConnectionFromOutput() {
-  if (!activeConnection) {
-    return;
+    return getChatGptConnectionStatus();
   }
 
-  const authUrlMatch = activeConnection.output.match(/https:\/\/auth\.openai\.com\/oauth\/authorize\S*/i);
-  const localServerMatch = activeConnection.output.match(/http:\/\/localhost:1455\S*/i);
-  const codeMatch = activeConnection.output.match(
-    /Enter this one-time code[\s\S]*?\n\s*([A-Z0-9]{4,}(?:-[A-Z0-9]{4,})+)\b/i,
-  );
-  const expiresMatch = activeConnection.output.match(/expires in (\d+) minutes/i);
+  const authUrl = status.authUrl;
+  await openUrlInChrome(authUrl, buildChatGptLoginEnv() as NodeJS.ProcessEnv);
 
-  if (authUrlMatch && !activeConnection.authUrl) {
-    activeConnection.authUrl = authUrlMatch[0];
-  }
-
-  if (/device-auth/i.test(activeConnection.output) && !activeConnection.authUrl) {
-    activeConnection.authMode = "device_code";
-    activeConnection.authUrl = DEVICE_AUTH_URL;
-  }
-
-  if (codeMatch && !activeConnection.deviceCode) {
-    activeConnection.authMode = "device_code";
-    activeConnection.deviceCode = codeMatch[1];
-  }
-
-  if (expiresMatch && !activeConnection.codeExpiresAt) {
-    const expiresInMinutes = Number.parseInt(expiresMatch[1], 10);
-    activeConnection.codeExpiresAt = new Date(
-      Date.now() + expiresInMinutes * 60 * 1000,
-    ).toISOString();
-  }
-
-  if (activeConnection.deviceCode && !activeConnection.codeExpiresAt) {
-    activeConnection.codeExpiresAt = new Date(Date.now() + DEFAULT_DEVICE_CODE_TTL_MS).toISOString();
-  }
-
-  if (activeConnection.authUrl || activeConnection.deviceCode || localServerMatch) {
-    activeConnection.stage = "waiting_browser_auth";
-    activeConnection.authUrl =
-      activeConnection.authUrl ||
-      (activeConnection.authMode === "device_code" ? DEVICE_AUTH_URL : localServerMatch?.[0] || DEFAULT_BROWSER_AUTH_PATH);
+  if (activeConnection) {
+    activeConnection.hasAttemptedBrowserOpen = true;
     activeConnection.message =
-      activeConnection.authMode === "device_code"
-        ? "浏览器授权页已经准备好。请在打开的 ChatGPT 页面里输入一次性代码完成连接。"
-        : "浏览器授权页已经准备好。请在打开的 ChatGPT 页面里完成授权。";
+      "Google Chrome 已重新打开 ChatGPT 登录页。请在那个页面里完成登录。";
   }
+
+  return getChatGptConnectionStatus();
 }
 
 function ensureStatusPolling() {
@@ -339,14 +302,6 @@ async function refreshPendingConnection() {
       });
       return;
     }
-
-    if (activeConnection.codeExpiresAt && Date.now() >= Date.parse(activeConnection.codeExpiresAt)) {
-      finalizeConnection({
-        stage: "expired",
-        error: "这次连接码已经过期。",
-        message: "这次连接码已经过期，请重新连接 ChatGPT。",
-      });
-    }
   } finally {
     if (activeConnection) {
       activeConnection.loginStatusCheckInFlight = false;
@@ -354,24 +309,34 @@ async function refreshPendingConnection() {
   }
 }
 
-async function waitForDeviceCode(timeoutMs = 4000) {
-  const startedAt = Date.now();
-
-  while (Date.now() - startedAt < timeoutMs) {
-    if (!activeConnection) {
-      return;
-    }
-
-    if (
-      activeConnection.stage === "waiting_browser_auth" ||
-      activeConnection.stage === "connected" ||
-      activeConnection.stage === "error"
-    ) {
-      return;
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 120));
+function handleAppServerNotification(notification: CodexAppServerNotification) {
+  if (notification.method !== "account/login/completed" || !activeConnection) {
+    return;
   }
+
+  const payload = notification.params as AccountLoginCompletedNotification | undefined;
+
+  if (
+    payload?.loginId &&
+    activeConnection.loginId &&
+    payload.loginId !== activeConnection.loginId
+  ) {
+    return;
+  }
+
+  if (payload?.success) {
+    activeConnection.stage = "connecting";
+    activeConnection.error = null;
+    activeConnection.message = "已检测到 ChatGPT 网页登录完成，正在同步连接状态...";
+    void refreshPendingConnection();
+    return;
+  }
+
+  finalizeConnection({
+    stage: "error",
+    error: payload?.error || "这次 ChatGPT 连接没有完成，请重试。",
+    message: "这次 ChatGPT 连接没有完成，请重试。",
+  });
 }
 
 function finalizeConnection(
@@ -386,11 +351,12 @@ function finalizeConnection(
     activeConnection.pollTimer = null;
   }
 
-  if (activeConnection.child && !activeConnection.child.killed) {
-    activeConnection.child.kill("SIGTERM");
-  }
+  activeConnection.unsubscribeNotifications?.();
+  activeConnection.unsubscribeNotifications = null;
 
-  activeConnection.child = null;
+  activeConnection.appServer?.close();
+  activeConnection.appServer = null;
+
   activeConnection.stage = patch.stage || activeConnection.stage;
   activeConnection.connectedAt = patch.connectedAt ?? activeConnection.connectedAt;
   activeConnection.error = patch.error ?? activeConnection.error;
@@ -398,6 +364,7 @@ function finalizeConnection(
 
   if (activeConnection.stage === "connected") {
     activeConnection.authUrl = null;
+    activeConnection.loginId = null;
     activeConnection.deviceCode = null;
     activeConnection.codeExpiresAt = null;
     return;
@@ -405,10 +372,6 @@ function finalizeConnection(
 
   if (activeConnection.stage === "not_connected") {
     activeConnection = null;
-    return;
-  }
-
-  if (activeConnection.stage === "expired" || activeConnection.stage === "error") {
     return;
   }
 }
@@ -422,19 +385,50 @@ function buildResponse(
   };
 }
 
-function buildProcessErrorMessage(output: string) {
-  const normalized = output
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  return normalized.at(-1) || "OpenCrab 暂时无法发起 ChatGPT 连接。";
+function buildDisconnectedResponse(message: string): ChatGptConnectionStatusResponse {
+  return buildResponse({
+    authMode: null,
+    stage: "not_connected",
+    isConnected: false,
+    authUrl: null,
+    deviceCode: null,
+    codeExpiresAt: null,
+    startedAt: null,
+    connectedAt: null,
+    error: null,
+    message,
+  });
 }
 
 function isPendingStage(stage: ChatGptConnectionStatusResponse["stage"]) {
   return stage === "connecting" || stage === "waiting_browser_auth";
 }
 
-function stripAnsi(value: string) {
-  return value.replace(/\u001B\[[0-9;]*m/g, "");
+async function tryOpenPendingAuthUrlInChrome() {
+  if (!activeConnection || activeConnection.hasAttemptedBrowserOpen) {
+    return;
+  }
+
+  if (!activeConnection.authUrl) {
+    finalizeConnection({
+      stage: "expired",
+      error: "这次登录页已经失效，请重新连接 ChatGPT。",
+      message: "这次登录页已经失效，请重新连接 ChatGPT。",
+    });
+    return;
+  }
+
+  const authUrl = activeConnection.authUrl;
+  activeConnection.hasAttemptedBrowserOpen = true;
+
+  try {
+    await openUrlInChrome(authUrl, buildChatGptLoginEnv() as NodeJS.ProcessEnv);
+  } catch {
+    if (!activeConnection || activeConnection.stage !== "waiting_browser_auth") {
+      return;
+    }
+
+    activeConnection.message =
+      "登录页已经准备好，但 OpenCrab 没能自动在 Google Chrome 中打开。请点击“在 Chrome 中重新打开”，然后完成登录。";
+  }
 }

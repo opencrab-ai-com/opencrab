@@ -13,6 +13,8 @@ import type {
   SkillDetailResponse,
   SkillsCatalogResponse,
   SnapshotMutationResult,
+  RuntimeReadinessResponse,
+  RuntimeConnectionSnapshotResponse,
   TaskDetailResponse,
   TaskListResponse,
   TaskSchedule,
@@ -89,8 +91,29 @@ export async function disconnectChatGptConnection() {
   );
 }
 
+export async function openPendingChatGptConnectionInChrome() {
+  return request<ChatGptConnectionStatusResponse>(
+    "/api/chatgpt/connect/open",
+    {
+      method: "POST",
+    },
+  );
+}
+
 export async function getCodexBrowserSessionStatus() {
   return request<CodexBrowserSessionStatus>("/api/codex/browser-session", {
+    method: "GET",
+  });
+}
+
+export async function getRuntimeReadiness() {
+  return request<RuntimeReadinessResponse>("/api/runtime/readiness", {
+    method: "GET",
+  });
+}
+
+export async function getRuntimeConnectionSnapshot() {
+  return request<RuntimeConnectionSnapshotResponse>("/api/runtime/connection-state", {
     method: "GET",
   });
 }
@@ -544,8 +567,18 @@ export async function streamReplyToConversation(
     throw new Error("流式响应不可用，请稍后再试。");
   }
 
+  let receivedTerminalEvent = false;
+
   for await (const event of readNdjsonStream<ReplyStreamEvent>(response)) {
+    if (event.type === "done" || event.type === "error") {
+      receivedTerminalEvent = true;
+    }
+
     options.onEvent(event);
+  }
+
+  if (!receivedTerminalEvent && !options.signal?.aborted) {
+    throw new Error("OpenCrab 回复流在完成前中断了，请重试。");
   }
 }
 

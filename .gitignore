@@ -26,6 +26,7 @@
 .playwright-cli/
 .opencrab/
 .opencrab-desktop/
+.artifacts/
 dist/
 app-builder-bin-*.tgz
 output/

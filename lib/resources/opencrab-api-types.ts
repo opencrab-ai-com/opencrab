@@ -83,6 +83,27 @@ export type ChatGptConnectionStatusResponse = {
   message: string;
 };
 
+export type RuntimeReadinessResponse = {
+  ready: boolean;
+  requiredBrowser: "chrome";
+  recommendedAction: "install_chrome" | "repair_codex" | "connect_chatgpt" | null;
+  chrome: {
+    ok: boolean;
+    chromePath: string | null;
+    message: string;
+  };
+  codex: {
+    ok: boolean;
+    executablePath: string | null;
+    message: string;
+  };
+  chatgpt: {
+    ok: boolean;
+    stage: ChatGptConnectionStage;
+    message: string;
+  };
+};
+
 export type CodexBrowserSessionStatus = {
   ok: boolean;
   status: "ready" | "launching" | "missing_browser" | "unreachable";
@@ -92,6 +113,13 @@ export type CodexBrowserSessionStatus = {
   launchedByOpenCrab: boolean;
   chromePath: string | null;
   message: string;
+};
+
+export type RuntimeConnectionSnapshotResponse = {
+  codexStatus: CodexStatusResponse;
+  chatGptConnectionStatus: ChatGptConnectionStatusResponse;
+  browserSessionStatus: CodexBrowserSessionStatus;
+  runtimeReadiness: RuntimeReadinessResponse;
 };
 
 export type UploadedAttachment = AttachmentItem;

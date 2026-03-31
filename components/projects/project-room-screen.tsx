@@ -24,6 +24,13 @@ import {
   runProject,
   updateProjectCheckpoint,
 } from "@/lib/resources/opencrab-api";
+import {
+  buildProjectRoomProjection,
+  type ProjectRoomActivityAnchor,
+  type ProjectRoomActivityDescriptor,
+  type ProjectRoomAgentTrajectory,
+  type ProjectRoomProjectionTone,
+} from "@/lib/modules/projects/project-room-projection";
 import { buildArtifactDependencyEdges, compactArtifactLabel } from "@/lib/projects/project-room-view-model";
 import type {
   ProjectAgentStatus,
@@ -206,6 +213,10 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
         : [],
     [conversationMessages, project?.teamConversationId],
   );
+  const projectRoomProjection = useMemo(
+    () => buildProjectRoomProjection({ detail, teamMessages }),
+    [detail, teamMessages],
+  );
   const agentsById = useMemo(
     () => new Map(agents.map((agent) => [agent.id, agent] as const)),
     [agents],
@@ -237,34 +248,13 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
   );
   const activeAgent = project?.activeAgentId ? agentsById.get(project.activeAgentId) ?? null : null;
   const nextAgent = project?.nextAgentId ? agentsById.get(project.nextAgentId) ?? null : null;
-  const runtimeMessages = useMemo(
-    () =>
-      [...teamMessages]
-        .filter((message) => message.role === "assistant" || message.role === "user")
-        .sort((left, right) => {
-          const rightTime = Date.parse(right.timestamp || "");
-          const leftTime = Date.parse(left.timestamp || "");
-
-          if (Number.isFinite(rightTime) && Number.isFinite(leftTime) && rightTime !== leftTime) {
-            return rightTime - leftTime;
-          }
-
-          if (Number.isFinite(rightTime) && !Number.isFinite(leftTime)) {
-            return -1;
-          }
-
-          if (!Number.isFinite(rightTime) && Number.isFinite(leftTime)) {
-            return 1;
-          }
-
-          return right.id.localeCompare(left.id, "en");
-        })
-        .slice(0, 8),
-    [teamMessages],
-  );
+  const runtimeMessages = projectRoomProjection.runtimeMessages;
   const selectedAgent = selectedAgentId ? agentsById.get(selectedAgentId) ?? null : null;
   const selectedAgentTrajectory =
-    selectedAgent && project ? resolveAgentTrajectory(selectedAgent, project, agentsById) : null;
+    selectedAgent ? projectRoomProjection.agentTrajectoriesByAgentId[selectedAgent.id] ?? null : null;
+  const selectedAgentTrajectoryPresentation = selectedAgentTrajectory
+    ? describeAgentTrajectory(selectedAgentTrajectory)
+    : null;
   const displayActiveAgent =
     activeAgent ||
     sortedAgents.find((agent) => agent.status === "working") ||
@@ -279,23 +269,16 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
     [activeAgentThinkingState?.entries],
   );
   const selectedActivityMessage =
-    teamMessages.find((message) => message.id === selectedActivityMessageId) ?? null;
-  const selectedActivityDescriptor =
-    selectedActivityMessage && project
-      ? resolveActivityDescriptor(selectedActivityMessage, project, agentsById)
-      : null;
-  const selectedActivityAnchor = useMemo(
-    () =>
-      selectedActivityMessage
-        ? resolveActivityAnchorTarget(
-            selectedActivityMessage,
-            detail?.project?.latestUserRequest ?? null,
-            learningSuggestions,
-            recoveryActions,
-          )
-        : null,
-    [detail?.project?.latestUserRequest, learningSuggestions, recoveryActions, selectedActivityMessage],
-  );
+    runtimeMessages.find((message) => message.id === selectedActivityMessageId) ?? null;
+  const selectedActivityDescriptor = selectedActivityMessage
+    ? projectRoomProjection.activityDescriptorsByMessageId[selectedActivityMessage.id] ?? null
+    : null;
+  const selectedActivityDescriptorPresentation = selectedActivityDescriptor
+    ? describeActivityDescriptor(selectedActivityDescriptor)
+    : null;
+  const selectedActivityAnchor: ProjectRoomActivityAnchor | null = selectedActivityMessage
+    ? projectRoomProjection.activityAnchorsByMessageId[selectedActivityMessage.id] ?? null
+    : null;
   const tasksById = useMemo(
     () => new Map(tasks.map((task) => [task.id, task] as const)),
     [tasks],
@@ -616,10 +599,10 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
       null,
     [projectMemory, teamMemory],
   );
-  const latestActivityDescriptor = useMemo(
-    () => (runtimeMessages[0] && project ? resolveActivityDescriptor(runtimeMessages[0], project, agentsById) : null),
-    [agentsById, project, runtimeMessages],
-  );
+  const latestActivityDescriptor = projectRoomProjection.latestActivityDescriptor;
+  const latestActivityDescriptorPresentation = latestActivityDescriptor
+    ? describeActivityDescriptor(latestActivityDescriptor)
+    : null;
 
   useEffect(() => {
     if (focusedArtifactId && !artifactsById.has(focusedArtifactId)) {
@@ -950,7 +933,7 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
   const coordinationSummary = buildCoordinationFocusSummary(
     latestOpenMailboxThread,
     runtimeMessages[0] ?? null,
-    latestActivityDescriptor,
+    latestActivityDescriptorPresentation,
   );
   const workspaceTabs: Array<{
     id: ProjectRoomWorkspaceView;
@@ -1175,10 +1158,10 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
       activeWorkspaceCards = [
         {
           label: "最近一条",
-          title: latestActivityDescriptor?.label || "还没有最近活动",
+          title: latestActivityDescriptorPresentation?.label || "还没有最近活动",
           summary:
             compactActivityText(runtimeMessages[0]?.content || "团队活动还没有开始。启动后，这里会先显示项目经理派工和成员接力结果。"),
-          tone: latestActivityDescriptor?.tone || "default",
+          tone: latestActivityDescriptorPresentation?.tone || "default",
           actionLabel: "看完整活动流",
           onAction: scrollToActivity,
         },
@@ -2856,7 +2839,8 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
 
               <div className="mt-5 grid gap-3 lg:grid-cols-2">
                 {sortedAgents.map((agent) => {
-                  const trajectory = resolveAgentTrajectory(agent, project, agentsById);
+                  const trajectory = projectRoomProjection.agentTrajectoriesByAgentId[agent.id] ?? null;
+                  const trajectoryPresentation = trajectory ? describeAgentTrajectory(trajectory) : null;
 
                   return (
                     <button
@@ -2882,20 +2866,20 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
                             {formatRuntimeCardStatus(agent, agentsById)}
                           </p>
                         </div>
-                        <StatusPill status={mapAgentStatusToProjectStatus(agent.status)}>
+                        <StatusPill status={projectRoomProjection.agentProjectStatusesByAgentId[agent.id] ?? "ready"}>
                           {formatAgentStatus(agent.status)}
                         </StatusPill>
                       </div>
 
-                      <div className={`mt-4 rounded-[18px] border px-4 py-3 ${getTrajectoryTone(trajectory.tone)}`}>
+                      <div className={`mt-4 rounded-[18px] border px-4 py-3 ${getTrajectoryTone(trajectoryPresentation?.tone || "default")}`}>
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="text-[11px] uppercase tracking-[0.14em] text-muted">接力轨迹</span>
-                          <span className={`rounded-full border px-2.5 py-1 text-[11px] font-medium ${getActivityTone(trajectory.tone)}`}>
-                            {trajectory.label}
+                          <span className={`rounded-full border px-2.5 py-1 text-[11px] font-medium ${getActivityTone(trajectoryPresentation?.tone || "default")}`}>
+                            {trajectoryPresentation?.label || "待命"}
                           </span>
                         </div>
                         <p className="mt-2 line-clamp-2 text-[13px] leading-6 text-muted-strong">
-                          {trajectory.description}
+                          {trajectoryPresentation?.description || "当前还没有更多公开的接力说明。"}
                         </p>
                       </div>
 
@@ -2966,7 +2950,8 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
             <div className="mt-5 space-y-3">
               {runtimeMessages.length > 0 ? (
                 runtimeMessages.map((message) => {
-                  const descriptor = resolveActivityDescriptor(message, project, agentsById);
+                  const descriptor = projectRoomProjection.activityDescriptorsByMessageId[message.id] ?? null;
+                  const descriptorPresentation = descriptor ? describeActivityDescriptor(descriptor) : null;
 
                   return (
                     <button
@@ -2981,8 +2966,8 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
                             <div className="text-[12px] font-medium text-text">
                               {message.role === "user" ? "你" : message.actorLabel || "OpenCrab"}
                             </div>
-                            <span className={`rounded-full border px-2.5 py-1 text-[11px] font-medium ${getActivityTone(descriptor.tone)}`}>
-                              {descriptor.label}
+                            <span className={`rounded-full border px-2.5 py-1 text-[11px] font-medium ${getActivityTone(descriptorPresentation?.tone || "default")}`}>
+                              {descriptorPresentation?.label || "团队活动"}
                             </span>
                             <span className="text-[11px] text-muted-strong">
                               {formatActivityTimestamp(message.timestamp)}
@@ -3022,16 +3007,16 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
             <div className="space-y-4">
-            {selectedAgentTrajectory ? (
-              <div className={`rounded-[18px] border px-4 py-4 ${getTrajectoryTone(selectedAgentTrajectory.tone)}`}>
+            {selectedAgentTrajectoryPresentation ? (
+              <div className={`rounded-[18px] border px-4 py-4 ${getTrajectoryTone(selectedAgentTrajectoryPresentation.tone)}`}>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-[11px] uppercase tracking-[0.14em] text-muted">接力轨迹</span>
-                  <span className={`rounded-full border px-2.5 py-1 text-[11px] font-medium ${getActivityTone(selectedAgentTrajectory.tone)}`}>
-                    {selectedAgentTrajectory.label}
+                  <span className={`rounded-full border px-2.5 py-1 text-[11px] font-medium ${getActivityTone(selectedAgentTrajectoryPresentation.tone)}`}>
+                    {selectedAgentTrajectoryPresentation.label}
                   </span>
                 </div>
                 <p className="mt-2 text-[13px] leading-6 text-muted-strong">
-                  {selectedAgentTrajectory.description}
+                  {selectedAgentTrajectoryPresentation.description}
                 </p>
               </div>
             ) : null}
@@ -3304,21 +3289,21 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
           <div className="shrink-0 border-b border-line px-6 py-5">
             <DialogHeader
               title={selectedActivityMessage.role === "user" ? "你的消息" : selectedActivityMessage.actorLabel || "团队活动"}
-              description={buildActivityDialogDescription(selectedActivityMessage, selectedActivityDescriptor?.description)}
+              description={buildActivityDialogDescription(selectedActivityMessage, selectedActivityDescriptorPresentation?.description)}
             />
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
             <div className="space-y-4">
-            {selectedActivityDescriptor ? (
-              <div className={`rounded-[18px] border px-4 py-4 ${getActivityPanelTone(selectedActivityDescriptor.tone)}`}>
+            {selectedActivityDescriptorPresentation ? (
+              <div className={`rounded-[18px] border px-4 py-4 ${getActivityPanelTone(selectedActivityDescriptorPresentation.tone)}`}>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-[11px] uppercase tracking-[0.14em] text-muted">活动类型</span>
-                  <span className={`rounded-full border px-2.5 py-1 text-[11px] font-medium ${getActivityTone(selectedActivityDescriptor.tone)}`}>
-                    {selectedActivityDescriptor.label}
+                  <span className={`rounded-full border px-2.5 py-1 text-[11px] font-medium ${getActivityTone(selectedActivityDescriptorPresentation.tone)}`}>
+                    {selectedActivityDescriptorPresentation.label}
                   </span>
                 </div>
                 <p className="mt-2 text-[13px] leading-6 text-muted-strong">
-                  {selectedActivityDescriptor.description}
+                  {selectedActivityDescriptorPresentation.description}
                 </p>
               </div>
             ) : null}
@@ -3333,7 +3318,7 @@ export function ProjectRoomScreen({ detail: initialDetail }: { detail: ProjectDe
             <div className="flex items-center justify-end gap-3">
               {selectedActivityAnchor ? (
                 <DialogSecondaryButton onClick={openActivityAnchor}>
-                  {selectedActivityAnchor.label}
+                  {formatActivityAnchorLabel(selectedActivityAnchor)}
                 </DialogSecondaryButton>
               ) : null}
               <DialogPrimaryButton onClick={() => setSelectedActivityMessageId(null)}>关闭</DialogPrimaryButton>
@@ -3730,7 +3715,7 @@ function buildLearningFocusSummary(
 function buildCoordinationFocusSummary(
   thread: ProjectMailboxThreadRecord | null,
   latestMessage: ConversationMessage | null,
-  descriptor: ReturnType<typeof resolveActivityDescriptor> | null,
+  descriptor: ReturnType<typeof describeActivityDescriptor> | null,
 ) {
   if (thread) {
     return {
@@ -4354,193 +4339,137 @@ function buildProjectSummaryPanelText(value: string) {
   return lines.join("\n");
 }
 
-function resolveActivityAnchorTarget(
-  message: ConversationMessage,
-  latestUserRequest: string | null,
-  learningSuggestions: ProjectLearningSuggestionRecord[],
-  recoveryActions: ProjectRecoveryActionRecord[],
-) {
-  const linkedSuggestion =
-    learningSuggestions.find(
-      (suggestion) =>
-        message.content.includes(suggestion.title) ||
-        suggestion.evidenceLabels.some((label) => label && message.content.includes(label)),
-    ) ?? null;
-
-  if (linkedSuggestion) {
-    return {
-      kind: "learning" as const,
-      label: "定位关联建议",
-      suggestionId: linkedSuggestion.id,
-    };
+function formatActivityAnchorLabel(anchor: ProjectRoomActivityAnchor) {
+  switch (anchor.kind) {
+    case "learning":
+      return "定位关联建议";
+    case "runtime_health":
+      return "看恢复上下文";
+    default:
+      return "看检查点";
   }
-
-  if (
-    (latestUserRequest && message.role === "user" && message.content.trim() === latestUserRequest.trim()) ||
-    /(确认|补充|等待你|checkpoint|待确认|待补充)/.test(message.content)
-  ) {
-    return {
-      kind: "checkpoint" as const,
-      label: "看检查点",
-    };
-  }
-
-  const linkedRecovery =
-    recoveryActions.find(
-      (action) =>
-        (action.taskTitle && message.content.includes(action.taskTitle)) ||
-        message.content.includes(compactActivityText(action.summary, 24)),
-    ) ?? null;
-
-  if (linkedRecovery || /(恢复|改派|回滚|卡住|阻塞|接力仍有不稳定点)/.test(message.content)) {
-    return {
-      kind: "runtime_health" as const,
-      label: "看恢复上下文",
-    };
-  }
-
-  return null;
 }
 
-function resolveActivityDescriptor(
-  message: ConversationMessage,
-  project: NonNullable<ProjectDetail["project"]>,
-  agentsById: Map<string, ProjectAgentRecord>,
-) {
-  if (message.role === "user") {
-    const normalized = message.content.trim();
-
-    if (project.runStatus === "waiting_user" && normalized === (project.latestUserRequest || "").trim()) {
+function describeActivityDescriptor(
+  descriptor: ProjectRoomActivityDescriptor,
+): {
+  label: string;
+  description: string;
+  tone: ProjectRoomProjectionTone;
+} {
+  switch (descriptor.kind) {
+    case "user_checkpoint_update":
       return {
         label: "用户补充",
         description: "你补充了新的目标、边界或修改意见，项目经理会据此组织下一轮推进。",
-        tone: "warning" as const,
+        tone: "warning",
       };
-    }
-
-    return {
-      label: "用户指令",
-      description: "这是你在 frontstage 群聊里给团队的新要求或新问题。",
-      tone: "default" as const,
-    };
-  }
-
-  const actor =
-    [...agentsById.values()].find((agent) => agent.name === message.actorLabel) ?? null;
-
-  if (actor?.canDelegate) {
-    if (/@\S+/.test(message.content)) {
+    case "user_instruction":
+      return {
+        label: "用户指令",
+        description: "这是你在 frontstage 群聊里给团队的新要求或新问题。",
+        tone: "default",
+      };
+    case "manager_assignment":
       return {
         label: "PM 派工",
         description: "项目经理正在点名下一棒成员，并把这轮任务继续往下推进。",
-        tone: "info" as const,
+        tone: "info",
       };
-    }
-
-    if (/(确认|结束|补充|反馈|告诉我|等待你)/.test(message.content)) {
+    case "manager_waiting_user":
       return {
-        label: project.runStatus === "waiting_user" ? "PM 等补充" : "PM 待确认",
-        description:
-          project.runStatus === "waiting_user"
-            ? "项目经理判断现在更需要你的补充，而不是继续派工。"
-            : "项目经理判断当前已有可交付结果，正在等你确认或反馈。",
-        tone: "warning" as const,
+        label: "PM 等补充",
+        description: "项目经理判断现在更需要你的补充，而不是继续派工。",
+        tone: "warning",
       };
-    }
-
-    return {
-      label: "PM 收束",
-      description: "项目经理正在汇总当前进展、判断依赖，并准备决定下一步。",
-      tone: "info" as const,
-    };
+    case "manager_waiting_approval":
+      return {
+        label: "PM 待确认",
+        description: "项目经理判断当前已有可交付结果，正在等你确认或反馈。",
+        tone: "warning",
+      };
+    case "manager_coordination":
+      return {
+        label: "PM 收束",
+        description: "项目经理正在汇总当前进展、判断依赖，并准备决定下一步。",
+        tone: "info",
+      };
+    case "agent_result":
+      return {
+        label: "成员结果",
+        description: `${descriptor.agentName} 已交回这一步的真实执行结果，项目经理会基于它继续判断下一步。`,
+        tone: "success",
+      };
+    default:
+      return {
+        label: "团队活动",
+        description: "这是当前 Team Runtime 的一条过程消息。",
+        tone: "default",
+      };
   }
-
-  if (actor) {
-    return {
-      label: "成员结果",
-      description: `${actor.name} 已交回这一步的真实执行结果，项目经理会基于它继续判断下一步。`,
-      tone: "success" as const,
-    };
-  }
-
-  return {
-    label: "团队活动",
-    description: "这是当前 Team Runtime 的一条过程消息。",
-    tone: "default" as const,
-  };
 }
 
-function resolveAgentTrajectory(
-  agent: ProjectAgentRecord,
-  project: NonNullable<ProjectDetail["project"]>,
-  agentsById: Map<string, ProjectAgentRecord>,
-) {
-  if (agent.canDelegate) {
-    if (project.runStatus === "waiting_approval") {
+function describeAgentTrajectory(
+  trajectory: ProjectRoomAgentTrajectory,
+): {
+  label: string;
+  description: string;
+  tone: ProjectRoomProjectionTone;
+} {
+  switch (trajectory.kind) {
+    case "manager_waiting_approval":
       return {
         label: "等待确认",
         description: "项目经理已经完成阶段收束，当前在等你确认结束或提出补充。",
-        tone: "warning" as const,
+        tone: "warning",
       };
-    }
-
-    if (project.runStatus === "waiting_user") {
+    case "manager_waiting_user":
       return {
         label: "等待补充",
         description: "项目经理判断现在更缺你的补充信息，所以暂时没有继续派工。",
-        tone: "warning" as const,
+        tone: "warning",
       };
-    }
-
-    if (project.activeAgentId === agent.id || project.nextAgentId) {
+    case "manager_coordinating_handoff":
       return {
         label: "统筹推进",
-        description: project.nextAgentId
-          ? `项目经理已点名 ${agentsById.get(project.nextAgentId)?.name || "下一位成员"} 接力，并会在结果回来后继续判断下一步。`
+        description: trajectory.nextAgentName
+          ? `项目经理已点名 ${trajectory.nextAgentName} 接力，并会在结果回来后继续判断下一步。`
           : "项目经理正在观察当前结果，准备决定下一步是继续派工还是收束总结。",
-        tone: "info" as const,
+        tone: "info",
       };
-    }
-
-    return {
-      label: "待命统筹",
-      description: "项目经理是这轮协作的 owner，随时会根据群聊内容重新编排成员接力。",
-      tone: "default" as const,
-    };
+    case "manager_standby":
+      return {
+        label: "待命统筹",
+        description: "项目经理是这轮协作的 owner，随时会根据群聊内容重新编排成员接力。",
+        tone: "default",
+      };
+    case "agent_working":
+      return {
+        label: "已被点名",
+        description: "这位成员已经被项目经理点名启动，当前正在处理这一棒任务。",
+        tone: "info",
+      };
+    case "agent_waiting_upstream":
+      return {
+        label: "等待上游",
+        description: trajectory.blockerName
+          ? `这位成员已经在接力链上，但要等 ${trajectory.blockerName} 先交回结果后才会真正开工。`
+          : "这位成员在接力链上，但仍在等待上游阶段结果。",
+        tone: "warning",
+      };
+    case "agent_handed_back":
+      return {
+        label: "已交回 PM",
+        description: `这位成员已经完成这一棒，最近一次结果已交回给项目经理${formatAgentCompletionTime(trajectory.completedAt)}。`,
+        tone: "success",
+      };
+    default:
+      return {
+        label: "尚未上场",
+        description: "这位成员当前还没被安排到这一轮接力链里，项目经理后续会按需要点名。",
+        tone: "default",
+      };
   }
-
-  if (agent.status === "working") {
-    return {
-      label: "已被点名",
-      description: "这位成员已经被项目经理点名启动，当前正在处理这一棒任务。",
-      tone: "info" as const,
-    };
-  }
-
-  if (agent.blockedByAgentId) {
-    const blocker = agentsById.get(agent.blockedByAgentId);
-    return {
-      label: "等待上游",
-      description: blocker
-        ? `这位成员已经在接力链上，但要等 ${blocker.name} 先交回结果后才会真正开工。`
-        : "这位成员在接力链上，但仍在等待上游阶段结果。",
-      tone: "warning" as const,
-    };
-  }
-
-  if (agent.lastCompletedAt || agent.status === "reviewing") {
-    return {
-      label: "已交回 PM",
-      description: `这位成员已经完成这一棒，最近一次结果已交回给项目经理${formatAgentCompletionTime(agent.lastCompletedAt)}。`,
-      tone: "success" as const,
-    };
-  }
-
-  return {
-    label: "尚未上场",
-    description: "这位成员当前还没被安排到这一轮接力链里，项目经理后续会按需要点名。",
-    tone: "default" as const,
-  };
 }
 
 function resolveDisplayedStageLabel(
@@ -5060,19 +4989,6 @@ function formatAgentDependency(
 
   const blocker = agentsById.get(agent.blockedByAgentId);
   return blocker ? `当前依赖 ${blocker.name} 的阶段结果。` : "当前依赖上游阶段结果。";
-}
-
-function mapAgentStatusToProjectStatus(status: ProjectAgentStatus): ProjectRunStatus {
-  switch (status) {
-    case "working":
-      return "running";
-    case "reviewing":
-      return "completed";
-    case "planning":
-      return "waiting_approval";
-    default:
-      return "ready";
-  }
 }
 
 function formatTaskStatus(status: ProjectTaskRecord["status"]) {

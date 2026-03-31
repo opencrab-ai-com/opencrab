@@ -9,6 +9,7 @@ import { MetaPill as UnifiedMetaPill } from "@/components/ui/pill";
 import { WorkspacePickerDialog } from "@/components/workspace/workspace-picker-dialog";
 import {
   formatBrowserSessionLabel,
+  getBrowserSessionPresentation,
   formatReasoningEffortLabel,
   formatSandboxModeLabel,
 } from "@/lib/opencrab/labels";
@@ -90,6 +91,7 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
       ? teamMentionState.options
       : [];
   const activeSandboxMode = activeConversation?.sandboxMode ?? "workspace-write";
+  const browserSessionPresentation = getBrowserSessionPresentation(browserSessionStatus);
   useEffect(() => {
     if (!activeConversation?.projectId) {
       return;
@@ -408,6 +410,11 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
           {codexStatus?.ok === false ? (
             <p className="text-[13px] text-[#a34942]">
               先连接 ChatGPT，OpenCrab 才能继续发送和回复这条对话。
+            </p>
+          ) : null}
+          {browserSessionStatus && !browserSessionStatus.ok ? (
+            <p className="text-[13px] text-muted-strong">
+              浏览器控制暂未就绪：{browserSessionPresentation.detail}
             </p>
           ) : null}
           {errorMessage ? <p className="text-[13px] text-[#a34942]">{errorMessage}</p> : null}

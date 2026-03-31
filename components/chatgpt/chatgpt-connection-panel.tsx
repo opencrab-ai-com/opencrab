@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { resolveChatGptPrimaryAction } from "@/components/chatgpt/chatgpt-connection-view-model";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
 import { Button, buttonClassName } from "@/components/ui/button";
 
@@ -16,6 +17,7 @@ export function ChatGptConnectionPanel({ compact = false }: ChatGptConnectionPan
     chatGptConnectionStatus,
     isChatGptConnectionPending,
     startChatGptConnection,
+    openPendingChatGptConnectionInChrome,
     cancelChatGptConnection,
     disconnectChatGptConnection,
     refreshChatGptConnectionStatus,
@@ -29,9 +31,14 @@ export function ChatGptConnectionPanel({ compact = false }: ChatGptConnectionPan
   const isConnected = chatGptConnectionStatus?.isConnected === true;
   const isWaiting = stage === "waiting_browser_auth";
   const isConnecting = stage === "connecting";
+  const primaryAction = resolveChatGptPrimaryAction(stage, isChatGptConnectionPending);
 
   async function handleConnect() {
     await startChatGptConnection();
+  }
+
+  async function handleOpenInChrome() {
+    await openPendingChatGptConnectionInChrome();
   }
 
   async function handleCopyCode() {
@@ -48,6 +55,19 @@ export function ChatGptConnectionPanel({ compact = false }: ChatGptConnectionPan
       setCopyFeedback("failed");
       window.setTimeout(() => setCopyFeedback("idle"), 1800);
     }
+  }
+
+  async function handlePrimaryAction() {
+    if (!primaryAction || primaryAction.disabled) {
+      return;
+    }
+
+    if (primaryAction.kind === "open_in_chrome") {
+      await handleOpenInChrome();
+      return;
+    }
+
+    await handleConnect();
   }
 
   return (
@@ -78,13 +98,13 @@ export function ChatGptConnectionPanel({ compact = false }: ChatGptConnectionPan
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {!isConnected ? (
+          {primaryAction ? (
             <Button
-              onClick={() => void handleConnect()}
-              disabled={isChatGptConnectionPending}
+              onClick={() => void handlePrimaryAction()}
+              disabled={primaryAction.disabled}
               variant="primary"
             >
-              {isWaiting || isConnecting ? "重新打开 ChatGPT" : "连接 ChatGPT"}
+              {primaryAction.label}
             </Button>
           ) : null}
           {isWaiting || isConnecting ? (
@@ -122,8 +142,8 @@ export function ChatGptConnectionPanel({ compact = false }: ChatGptConnectionPan
           </p>
           <p className="mt-2 text-[13px] leading-6 text-muted-strong">
             {authMode === "device_code"
-              ? "打开 ChatGPT 授权页，然后输入下面这组一次性代码。"
-              : "OpenCrab 已经尝试在系统浏览器里打开 ChatGPT 授权页。请在那个浏览器窗口里完成授权。"}
+              ? "OpenCrab 已经在 Google Chrome 中准备好了 ChatGPT 登录页。如页面要求输入一次性代码，请填写下面这组代码。"
+              : "OpenCrab 已经尝试在 Google Chrome 中打开 ChatGPT 登录页。请在那个 Chrome 窗口里完成登录。"}
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             {authMode === "device_code" ? (
@@ -144,18 +164,25 @@ export function ChatGptConnectionPanel({ compact = false }: ChatGptConnectionPan
                 </Button>
               </>
             ) : null}
+            <Button
+              onClick={() => void handleOpenInChrome()}
+              variant="secondary"
+              size="sm"
+            >
+              在 Chrome 中重新打开
+            </Button>
             <a
               href={authUrl}
               target="_blank"
               rel="noreferrer"
-              className={buttonClassName({ variant: "secondary", size: "sm" })}
+              className={buttonClassName({ variant: "ghost", size: "sm" })}
             >
-              手动打开 ChatGPT
+              复制链接备用
             </a>
           </div>
           {!compact ? (
             <p className="mt-3 text-[12px] leading-6 text-muted">
-              第 2 步：如果你当前这个 Chrome 顶部出现“正在受到自动测试软件控制”，请改用你平时的浏览器窗口，或换一个未被 OpenCrab 接管的浏览器来完成登录。然后回到这里等待状态自动刷新。
+              第 2 步：登录完成后回到 OpenCrab，这里的状态会自动刷新。你不需要理解底层登录细节，只要把它当成一次普通的 ChatGPT 网页登录即可。
             </p>
           ) : null}
         </div>
@@ -163,7 +190,7 @@ export function ChatGptConnectionPanel({ compact = false }: ChatGptConnectionPan
 
       {!isConnected && !isWaiting && !isConnecting ? (
         <p className="mt-4 text-[12px] leading-6 text-muted">
-          OpenCrab 不会为你单独创建新账号，这里只是帮你把底层连接流程包装成网页交互。
+          OpenCrab 不会单独创建新账号。点击“连接 ChatGPT”后，它会直接在 Google Chrome 里打开登录页，你完成网页登录后即可返回继续使用。
         </p>
       ) : null}
     </div>

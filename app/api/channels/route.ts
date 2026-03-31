@@ -1,15 +1,9 @@
-import {
-  ensureChannelStartupSync,
-  ensureChannelWatchdog,
-} from "@/lib/channels/channel-startup";
 import { getChannelOverviewList } from "@/lib/channels/channel-store";
-import { syncAllChannelConfigsFromSecrets } from "@/lib/channels/secret-store";
+import { ensureChannelRuntimeReady } from "@/lib/runtime/runtime-startup";
 import { json } from "@/lib/server/api-route";
 
 export async function GET() {
-  syncAllChannelConfigsFromSecrets();
-  ensureChannelWatchdog();
-  void ensureChannelStartupSync();
+  ensureChannelRuntimeReady();
 
   return json({
     channels: getChannelOverviewList(),

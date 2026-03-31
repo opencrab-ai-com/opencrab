@@ -3,24 +3,16 @@ import { AppPage } from "@/components/ui/app-page";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusPill as UnifiedStatusPill } from "@/components/ui/pill";
 import {
-  ensureChannelStartupSync,
-  ensureChannelWatchdog,
-} from "@/lib/channels/channel-startup";
-import {
   getChannelOverviewList,
   getChannelStatusLabel,
 } from "@/lib/channels/channel-store";
-import {
-  syncAllChannelConfigsFromSecrets,
-} from "@/lib/channels/secret-store";
+import { ensureChannelRuntimeReady } from "@/lib/runtime/runtime-startup";
 import type { ChannelOverview } from "@/lib/channels/types";
 
 export const dynamic = "force-dynamic";
 
 export default async function ChannelsPage() {
-  syncAllChannelConfigsFromSecrets();
-  ensureChannelWatchdog();
-  void ensureChannelStartupSync();
+  ensureChannelRuntimeReady();
 
   const channels = getChannelOverviewList();
 
