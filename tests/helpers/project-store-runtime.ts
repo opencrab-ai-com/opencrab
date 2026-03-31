@@ -76,7 +76,7 @@ export async function waitForProjectRuntime(projectId: string) {
   await (queues?.get(projectId) ?? Promise.resolve());
 }
 
-export function setupProjectStoreTestHome(runConversationTurnMock: { mockReset: () => void }) {
+function createProjectStoreTestHomeSetup(runConversationTurnMock: { mockReset: () => void }) {
   const originalOpencrabHome = process.env.OPENCRAB_HOME;
   const tempHomes: string[] = [];
 
@@ -112,4 +112,12 @@ export function setupProjectStoreTestHome(runConversationTurnMock: { mockReset: 
       return { tempHome, workspaceDir };
     },
   };
+}
+
+export function setupProjectStoreTestHome(runConversationTurnMock: { mockReset: () => void }) {
+  return createProjectStoreTestHomeSetup(runConversationTurnMock);
+}
+
+export function useProjectStoreTestHome(runConversationTurnMock: { mockReset: () => void }) {
+  return createProjectStoreTestHomeSetup(runConversationTurnMock);
 }
