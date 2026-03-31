@@ -1,11 +1,26 @@
 
+<p align="center">
+  <img src="./public/opencrab-logo.svg" alt="OpenCrab" width="320">
+</p>
 
+<p align="center">
+  <a href="https://github.com/KetteyMan/opencrab"><img alt="OpenCrab Repo" src="https://img.shields.io/badge/GitHub-opencrab-black?logo=github"></a>
+  <a href="https://github.com/KetteyMan/opencrab/releases/tag/v0.1.0"><img alt="OpenCrab Desktop v0.1.0" src="https://img.shields.io/badge/macOS%20App-v0.1.0-111111?logo=apple"></a>
+  <a href="./LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-green.svg"></a>
+  <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs">
+  <img alt="React 19" src="https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white">
+  <img alt="Local First" src="https://img.shields.io/badge/Local-First-111111">
+</p>
 
-
-中文 README ｜ [English](./README-en.md)
+<p align="center">
+  中文 README ｜ <a href="./README-en.md">English</a>
+</p>
 
 OpenCrab 是一个中文优先、本地优先、chat-native 的开源 AI 工作台。  
 当前 `OpenCrab for Mac` 已经发布，你可以直接下载桌面 App：`[OpenCrab Desktop v0.1.0](https://github.com/KetteyMan/opencrab/releases/tag/v0.1.0)`。
+
+- 官网：[opencrab-ai.com](https://opencrab-ai.com)
+- 联系邮箱：[sky@opencrab-ai.com](mailto:sky@opencrab-ai.com)
 
 ## 什么是 OpenCrab
 
@@ -98,19 +113,19 @@ OpenCrab 不追求“每个方向都浅浅做一点”。
 
 | 对话页 | 智能体页 |
 | --- | ---- |
-|     |      |
+| <img src="./docs/screenshots/conversation.png" alt="OpenCrab 对话页" width="480"> | <img src="./docs/screenshots/agents.png" alt="OpenCrab 智能体页" width="480"> |
 
 
 
 | 团队模式页 | 渠道页 |
 | ----- | --- |
-|       |     |
+| <img src="./docs/screenshots/team-mode.png" alt="OpenCrab 团队模式页" width="480"> | <img src="./docs/screenshots/channels.png" alt="OpenCrab 渠道页" width="480"> |
 
 
 
 | 定时任务页 | 技能页 |
 | ----- | --- |
-|       |     |
+| <img src="./docs/screenshots/tasks.png" alt="OpenCrab 定时任务页" width="480"> | <img src="./docs/screenshots/skills.png" alt="OpenCrab 技能页" width="480"> |
 
 
 ## 代码结构介绍

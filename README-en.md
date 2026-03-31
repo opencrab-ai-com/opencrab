@@ -18,6 +18,9 @@
 OpenCrab is a Chinese-first, local-first, chat-native open-source AI workspace.  
 `OpenCrab for Mac` is already available as a desktop app: [`OpenCrab Desktop v0.1.0`](https://github.com/KetteyMan/opencrab/releases/tag/v0.1.0).
 
+- Website: [opencrab-ai.com](https://opencrab-ai.com)
+- Email: [sky@opencrab-ai.com](mailto:sky@opencrab-ai.com)
+
 ## What OpenCrab Is
 
 ### What it is
