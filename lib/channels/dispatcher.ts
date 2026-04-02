@@ -3,8 +3,8 @@ import {
   findBinding,
   markChannelError,
   markChannelReady,
+  reconcileConversationBinding,
   recordChannelEvent,
-  upsertBinding,
   updateBindingActivity,
 } from "@/lib/channels/channel-store";
 import type { ChannelBinding, ChannelId } from "@/lib/channels/types";
@@ -158,18 +158,32 @@ export function recordIgnoredInboundEvent(input: {
   });
 }
 
-function ensureBinding(input: HandleInboundChannelTextMessageInput) {
+function ensureBinding(input: HandleInboundChannelTextMessageInput): ChannelBinding {
   const existing = findBinding(input.channelId, input.remoteChatId);
 
   if (existing) {
-    updateConversation(existing.conversationId, {
-      source: input.channelId,
-      channelLabel: input.channelId === "telegram" ? "Telegram" : "飞书",
-      remoteChatLabel: input.remoteChatLabel,
-      remoteUserLabel: input.remoteUserLabel ?? existing.remoteUserLabel ?? null,
-    });
+    if (existing.kind === "product_bound") {
+      updateConversation(existing.conversationId, {
+        remoteChatLabel: input.remoteChatLabel,
+        remoteUserLabel: input.remoteUserLabel ?? existing.remoteUserLabel ?? null,
+        ...(input.channelId === "feishu"
+          ? { feishuChatSessionId: input.remoteChatId }
+          : {}),
+      });
+    } else {
+      updateConversation(existing.conversationId, {
+        source: input.channelId,
+        channelLabel: input.channelId === "telegram" ? "Telegram" : "飞书",
+        remoteChatLabel: input.remoteChatLabel,
+        remoteUserLabel: input.remoteUserLabel ?? existing.remoteUserLabel ?? null,
+        ...(input.channelId === "feishu"
+          ? { feishuChatSessionId: input.remoteChatId }
+          : {}),
+      });
+    }
 
-    return upsertBinding({
+    const binding = reconcileConversationBinding({
+      kind: existing.kind,
       channelId: input.channelId,
       remoteChatId: input.remoteChatId,
       remoteChatLabel: input.remoteChatLabel,
@@ -177,6 +191,12 @@ function ensureBinding(input: HandleInboundChannelTextMessageInput) {
       remoteUserLabel: input.remoteUserLabel ?? existing.remoteUserLabel,
       conversationId: existing.conversationId,
     });
+
+    if (!binding) {
+      throw new Error("渠道会话绑定失败，暂时无法继续处理这条消息。");
+    }
+
+    return binding;
   }
 
   const created = createConversation({
@@ -186,9 +206,11 @@ function ensureBinding(input: HandleInboundChannelTextMessageInput) {
     channelLabel: input.channelId === "telegram" ? "Telegram" : "飞书",
     remoteChatLabel: input.remoteChatLabel,
     remoteUserLabel: input.remoteUserLabel ?? null,
+    feishuChatSessionId: input.channelId === "feishu" ? input.remoteChatId : null,
   });
 
-  return upsertBinding({
+  const binding = reconcileConversationBinding({
+    kind: "channel_inbound",
     channelId: input.channelId,
     remoteChatId: input.remoteChatId,
     remoteChatLabel: input.remoteChatLabel,
@@ -196,6 +218,12 @@ function ensureBinding(input: HandleInboundChannelTextMessageInput) {
     remoteUserLabel: input.remoteUserLabel ?? null,
     conversationId: created.conversationId,
   });
+
+  if (!binding) {
+    throw new Error("渠道会话创建成功，但绑定远程会话失败。");
+  }
+
+  return binding;
 }
 
 function buildConversationTitle(

@@ -40,6 +40,7 @@ export type ConversationItem = {
   channelLabel?: string | null;
   remoteChatLabel?: string | null;
   remoteUserLabel?: string | null;
+  feishuChatSessionId?: string | null;
   codexThreadId?: string | null;
   lastAssistantModel?: string | null;
   agentProfileId?: string | null;

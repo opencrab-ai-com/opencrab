@@ -1,4 +1,5 @@
 export type ChannelId = "telegram" | "feishu";
+export type ChannelBindingKind = "channel_inbound" | "product_bound";
 
 export type ChannelStatus = "not_configured" | "connecting" | "ready" | "error" | "disconnected";
 
@@ -44,6 +45,7 @@ export type ChannelRecord = {
 
 export type ChannelBinding = {
   id: string;
+  kind: ChannelBindingKind;
   channelId: ChannelId;
   remoteChatId: string;
   remoteChatLabel: string;

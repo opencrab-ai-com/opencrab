@@ -58,6 +58,7 @@ export async function PATCH(
       note?: string | null;
       workspaceDir?: string;
       sandboxMode?: CodexSandboxMode;
+      feishuChatSessionId?: string | null;
     }>(request);
 
     const detail =
@@ -65,6 +66,8 @@ export async function PATCH(
         ? projectManagementService.updateWorkspaceDir(projectId, body.workspaceDir)
         : body.sandboxMode
           ? projectManagementService.updateSandboxMode(projectId, body.sandboxMode)
+        : Object.prototype.hasOwnProperty.call(body, "feishuChatSessionId")
+          ? projectManagementService.updateFeishuChatSessionId(projectId, body.feishuChatSessionId)
         : body.action
           ? await projectRuntimeService.updateCheckpoint(projectId, {
               action: body.action,
@@ -72,7 +75,12 @@ export async function PATCH(
             })
           : null;
 
-    if (!body.action && typeof body.workspaceDir !== "string" && !body.sandboxMode) {
+    if (
+      !body.action &&
+      typeof body.workspaceDir !== "string" &&
+      !body.sandboxMode &&
+      !Object.prototype.hasOwnProperty.call(body, "feishuChatSessionId")
+    ) {
       throw new Error("缺少要更新的团队字段。");
     }
 

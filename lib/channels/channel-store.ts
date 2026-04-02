@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { getSnapshot } from "@/lib/resources/local-store";
+import type { ConversationItem } from "@/lib/seed-data";
 import {
   OPENCRAB_CHANNEL_STORE_PATH,
   OPENCRAB_STATE_DIR,
@@ -7,6 +8,7 @@ import {
 import { getStoredPublicBaseUrl } from "@/lib/runtime/runtime-config-store";
 import type {
   ChannelBinding,
+  ChannelBindingKind,
   ChannelDetail,
   ChannelEvent,
   ChannelId,
@@ -135,18 +137,54 @@ export function markChannelNotConfigured(channelId: ChannelId) {
 
 export function findBinding(channelId: ChannelId, remoteChatId: string) {
   const state = readState();
-
-  return (
+  const snapshot = getSnapshot();
+  const stored =
     state.bindings.find(
       (binding) => binding.channelId === channelId && binding.remoteChatId === remoteChatId,
-    ) ?? null
+    ) ?? null;
+
+  if (stored && isBindingUsable(snapshot.conversations, stored)) {
+    return structuredClone(stored);
+  }
+
+  if (channelId !== "feishu") {
+    return null;
+  }
+
+  const conversation = snapshot.conversations.find(
+    (item) => normalizeRemoteChatId(item.feishuChatSessionId) === remoteChatId,
   );
+
+  if (!conversation) {
+    return null;
+  }
+
+  return reconcileConversationBinding(buildFeishuConversationBinding(conversation));
 }
 
 export function findBindingByConversationId(conversationId: string) {
   const state = readState();
+  const snapshot = getSnapshot();
+  const conversation = snapshot.conversations.find((item) => item.id === conversationId) ?? null;
 
-  return state.bindings.find((binding) => binding.conversationId === conversationId) ?? null;
+  if (!conversation) {
+    return null;
+  }
+
+  const stored =
+    state.bindings.find(
+      (binding) => binding.conversationId === conversationId && isBindingUsable(snapshot.conversations, binding),
+    ) ?? null;
+
+  if (stored) {
+    return structuredClone(stored);
+  }
+
+  if (!conversation.feishuChatSessionId) {
+    return null;
+  }
+
+  return reconcileConversationBinding(buildFeishuConversationBinding(conversation));
 }
 
 export function getAllBindings() {
@@ -156,6 +194,7 @@ export function getAllBindings() {
 export function upsertBinding(
   input: Pick<
     ChannelBinding,
+    | "kind"
     | "channelId"
     | "remoteChatId"
     | "remoteChatLabel"
@@ -167,7 +206,10 @@ export function upsertBinding(
   return mutateState((state) => {
     const now = new Date().toISOString();
     const current = state.bindings.find(
-      (binding) => binding.channelId === input.channelId && binding.remoteChatId === input.remoteChatId,
+      (binding) =>
+        binding.channelId === input.channelId &&
+        (binding.remoteChatId === input.remoteChatId ||
+          binding.conversationId === input.conversationId),
     );
 
     const next: ChannelBinding = current
@@ -187,10 +229,58 @@ export function upsertBinding(
 
     state.bindings = [
       next,
-      ...state.bindings.filter((binding) => binding.id !== next.id),
+      ...state.bindings.filter(
+        (binding) =>
+          binding.id !== next.id &&
+          !(
+            binding.channelId === input.channelId &&
+            (binding.remoteChatId === input.remoteChatId ||
+              binding.conversationId === input.conversationId)
+          ),
+      ),
     ];
 
     return next;
+  });
+}
+
+export function reconcileConversationBinding(input: {
+  channelId: ChannelId;
+  conversationId: string;
+  remoteChatId: string | null;
+  remoteChatLabel?: string | null;
+  remoteUserId?: string | null;
+  remoteUserLabel?: string | null;
+  kind?: ChannelBindingKind;
+}) {
+  const normalizedRemoteChatId = normalizeRemoteChatId(input.remoteChatId);
+
+  if (!normalizedRemoteChatId) {
+    clearConversationBindings(input.conversationId, input.channelId);
+    return null;
+  }
+
+  return upsertBinding({
+    kind: input.kind ?? "channel_inbound",
+    channelId: input.channelId,
+    remoteChatId: normalizedRemoteChatId,
+    remoteChatLabel: normalizeRemoteChatLabel(input.remoteChatLabel, normalizedRemoteChatId),
+    remoteUserId: normalizeOptionalText(input.remoteUserId),
+    remoteUserLabel: normalizeOptionalText(input.remoteUserLabel),
+    conversationId: input.conversationId,
+  });
+}
+
+export function clearConversationBindings(conversationId: string, channelId?: ChannelId) {
+  return mutateState((state) => {
+    const beforeCount = state.bindings.length;
+    state.bindings = state.bindings.filter(
+      (binding) =>
+        binding.conversationId !== conversationId ||
+        (channelId !== undefined && binding.channelId !== channelId),
+    );
+
+    return beforeCount !== state.bindings.length;
   });
 }
 
@@ -346,9 +436,72 @@ function normalizeState(state: Partial<ChannelStoreState>): ChannelStoreState {
 
   return {
     channels,
-    bindings: structuredClone(state.bindings || []),
+    bindings: structuredClone(state.bindings || []).map((binding) => ({
+      ...binding,
+      kind: binding.kind ?? "channel_inbound",
+      remoteChatLabel: normalizeRemoteChatLabel(binding.remoteChatLabel, binding.remoteChatId),
+      remoteUserId: normalizeOptionalText(binding.remoteUserId),
+      remoteUserLabel: normalizeOptionalText(binding.remoteUserLabel),
+    })),
     events: structuredClone(state.events || []).slice(0, MAX_EVENTS),
   };
+}
+
+function isBindingUsable(conversations: ConversationItem[], binding: ChannelBinding) {
+  const conversation = conversations.find((item) => item.id === binding.conversationId) ?? null;
+
+  if (!conversation) {
+    return false;
+  }
+
+  if (binding.channelId === "feishu" && binding.kind === "product_bound") {
+    return normalizeRemoteChatId(conversation.feishuChatSessionId) === binding.remoteChatId;
+  }
+
+  return true;
+}
+
+function buildFeishuConversationBinding(conversation: ConversationItem) {
+  const remoteChatId = normalizeRemoteChatId(conversation.feishuChatSessionId);
+
+  if (!remoteChatId) {
+    throw new Error("Feishu conversation binding requires a remote chat id.");
+  }
+
+  return {
+    kind:
+      conversation.source === "feishu"
+        ? ("channel_inbound" as const)
+        : ("product_bound" as const),
+    channelId: "feishu" as const,
+    conversationId: conversation.id,
+    remoteChatId,
+    remoteChatLabel: normalizeRemoteChatLabel(conversation.remoteChatLabel, remoteChatId),
+    remoteUserId: null,
+    remoteUserLabel: normalizeOptionalText(conversation.remoteUserLabel),
+  };
+}
+
+function normalizeRemoteChatId(value: string | null | undefined) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
+function normalizeOptionalText(value: string | null | undefined) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
+function normalizeRemoteChatLabel(value: string | null | undefined, fallback: string) {
+  return normalizeOptionalText(value) ?? fallback;
 }
 
 function createId(prefix: string) {

@@ -1,5 +1,9 @@
 import path from "node:path";
 import { getAgentProfile } from "@/lib/agents/agent-store";
+import {
+  clearConversationBindings,
+  reconcileConversationBinding,
+} from "@/lib/channels/channel-store";
 import { runConversationTurn } from "@/lib/conversations/run-conversation-turn";
 import {
   addMessage,
@@ -487,6 +491,7 @@ export function deleteProject(projectId: string) {
     });
 
   relatedConversationIds.forEach((conversationId) => {
+    clearConversationBindings(conversationId);
     deleteConversation(conversationId);
   });
 
@@ -1790,6 +1795,60 @@ export function updateProjectSandboxMode(
   return getProjectDetail(projectId);
 }
 
+export function updateProjectFeishuChatSessionId(
+  projectId: string,
+  feishuChatSessionId: string | null | undefined,
+) {
+  const state = readState();
+  const room = state.rooms.find((item) => item.id === projectId) ?? null;
+
+  if (!room) {
+    return null;
+  }
+
+  const normalizedFeishuChatSessionId = normalizeFeishuChatSessionId(feishuChatSessionId);
+  const teamConversationId = normalizedFeishuChatSessionId
+    ? ensureTeamConversation(state, {
+        ...room,
+        feishuChatSessionId: normalizedFeishuChatSessionId,
+      })
+    : room.teamConversationId;
+  const now = new Date().toISOString();
+
+  state.rooms = state.rooms.map((item) =>
+    item.id === projectId
+      ? {
+          ...item,
+          teamConversationId: teamConversationId ?? null,
+          feishuChatSessionId: normalizedFeishuChatSessionId,
+          updatedAt: now,
+        }
+      : item,
+  );
+
+  if (teamConversationId) {
+    updateStoredConversation(teamConversationId, {
+      projectId: room.id,
+      workspaceDir: room.workspaceDir,
+      sandboxMode: room.sandboxMode,
+      feishuChatSessionId: normalizedFeishuChatSessionId,
+    });
+    reconcileConversationBinding({
+      kind: "product_bound",
+      channelId: "feishu",
+      conversationId: teamConversationId,
+      remoteChatId: normalizedFeishuChatSessionId,
+      remoteChatLabel: normalizedFeishuChatSessionId ?? `${room.teamName} · 群聊`,
+      remoteUserId: null,
+      remoteUserLabel: null,
+    });
+  }
+
+  writeState(state);
+
+  return getProjectDetail(projectId);
+}
+
 function ensureAgentRuntimeConversation(
   state: ProjectStoreState,
   room: ProjectRoomRecord,
@@ -1808,6 +1867,7 @@ function ensureAgentRuntimeConversation(
       return agent.runtimeConversationId;
     }
 
+    clearConversationBindings(agent.runtimeConversationId);
     deleteConversation(agent.runtimeConversationId);
     updateProjectAgent(state, agent.id, {
       runtimeConversationId: null,
@@ -2373,6 +2433,7 @@ function recoverStalledProjectRuntime(input: {
   });
 
   if (activeAgent.runtimeConversationId) {
+    clearConversationBindings(activeAgent.runtimeConversationId);
     deleteConversation(activeAgent.runtimeConversationId);
   }
   const nextRecoveryAttemptCount = (activeTask?.recoveryAttemptCount ?? 0) + 1;
@@ -5041,6 +5102,7 @@ function buildManualRoom(input: {
     workspaceDir: input.workspaceDir,
     sandboxMode: input.sandboxMode,
     teamConversationId: null,
+    feishuChatSessionId: null,
     summary: `围绕“${stripTrailingSentencePunctuation(shortLabel)}”启动的新团队，已装配 ${normalizedAgents.length} 位智能体，默认产出目录已设置完成。`,
     status: "active",
     runStatus: "ready",
@@ -5509,6 +5571,7 @@ function ensureTeamConversation(state: ProjectStoreState, room: ProjectRoomRecor
       projectId: room.id,
       workspaceDir: room.workspaceDir,
       sandboxMode: room.sandboxMode,
+      feishuChatSessionId: room.feishuChatSessionId ?? null,
     });
     return room.teamConversationId;
   }
@@ -5520,6 +5583,7 @@ function ensureTeamConversation(state: ProjectStoreState, room: ProjectRoomRecor
     workspaceDir: room.workspaceDir,
     sandboxMode: room.sandboxMode,
     projectId: room.id,
+    feishuChatSessionId: room.feishuChatSessionId ?? null,
   });
 
   state.rooms = state.rooms.map((item) =>
@@ -9486,6 +9550,7 @@ function normalizeProjectStoreState(parsed: Partial<ProjectStoreState>): Project
             ? room.sandboxMode
             : "workspace-write",
         teamConversationId: room.teamConversationId ?? null,
+        feishuChatSessionId: normalizeFeishuChatSessionId(room.feishuChatSessionId),
         currentStageLabel: room.currentStageLabel ?? null,
         activeAgentId: room.activeAgentId ?? null,
         nextAgentId: room.nextAgentId ?? null,
@@ -9729,6 +9794,15 @@ function filterSourceProjectScopedRecords<T extends { sourceProjectId: string }>
   activeProjectIds: Set<string>,
 ) {
   return records.filter((record) => activeProjectIds.has(record.sourceProjectId));
+}
+
+function normalizeFeishuChatSessionId(value: string | null | undefined) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : null;
 }
 
 function stripLegacyProjectRoomFields(

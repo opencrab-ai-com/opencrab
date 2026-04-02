@@ -15,6 +15,7 @@ import {
   resolveConversationListMode,
   type ConversationListMode,
 } from "@/lib/conversations/list-mode";
+import { shouldShowConversationSidebar } from "@/lib/app-shell/sidebar-visibility";
 import type { ConversationItem, NavKey } from "@/lib/seed-data";
 
 type AppShellProps = {
@@ -125,6 +126,7 @@ export function AppShell({ sidebar, children }: AppShellProps) {
   const isFirstRunBlocked = Boolean(isHydrated && runtimeReadiness && !runtimeReadiness.ready);
   const isDesktopMac = desktopShellMode === DESKTOP_MAC_SHELL_MODE;
   const isDesktopShell = desktopShellMode.startsWith(DESKTOP_SHELL_MODE);
+  const showConversationSidebar = shouldShowConversationSidebar(pathname);
 
   useEffect(() => {
     if (isConversationPath(pathname) && activeConversationMode === "direct") {
@@ -245,8 +247,12 @@ export function AppShell({ sidebar, children }: AppShellProps) {
             })}
           </nav>
 
-          <div className="mt-2 min-h-0 flex-1 overflow-y-auto pr-1">
-            {sidebar}
+          <div
+            className={
+              showConversationSidebar ? "mt-2 min-h-0 flex-1 overflow-y-auto pr-1" : "min-h-0 flex-1"
+            }
+          >
+            {showConversationSidebar ? sidebar : null}
           </div>
 
           <nav

@@ -437,6 +437,7 @@ export async function createConversation(input?: {
   sandboxMode?: CodexSandboxMode | null;
   projectId?: string | null;
   agentProfileId?: string | null;
+  feishuChatSessionId?: string | null;
 }) {
   return request<CreateConversationResult>("/api/conversations", {
     method: "POST",
@@ -455,6 +456,7 @@ export async function updateConversation(
     sandboxMode: CodexSandboxMode | null;
     projectId: string | null;
     agentProfileId: string | null;
+    feishuChatSessionId: string | null;
     codexThreadId: string | null;
     lastAssistantModel: string | null;
   }>,
@@ -604,6 +606,19 @@ export async function updateProjectSandboxMode(
     {
       method: "PATCH",
       body: JSON.stringify({ sandboxMode }),
+    },
+  );
+}
+
+export async function updateProjectFeishuChatSessionId(
+  projectId: string,
+  feishuChatSessionId: string | null,
+) {
+  return request<import("@/lib/projects/types").ProjectDetailResponse>(
+    `/api/projects/${projectId}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ feishuChatSessionId }),
     },
   );
 }

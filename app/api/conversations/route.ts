@@ -1,4 +1,4 @@
-import { createConversation } from "@/lib/resources/local-store";
+import { conversationManagementService } from "@/lib/modules/conversations/conversation-management-service";
 import { json, readJsonBody } from "@/lib/server/api-route";
 
 export async function POST(request: Request) {
@@ -9,17 +9,19 @@ export async function POST(request: Request) {
     sandboxMode?: "read-only" | "workspace-write" | "danger-full-access" | null;
     projectId?: string | null;
     agentProfileId?: string | null;
+    feishuChatSessionId?: string | null;
   }>(
     request,
     {},
   );
-  const result = createConversation({
+  const result = conversationManagementService.create({
     title: body.title,
     folderId: body.folderId ?? null,
     workspaceDir: body.workspaceDir ?? null,
     sandboxMode: body.sandboxMode ?? null,
     projectId: body.projectId ?? null,
     agentProfileId: body.agentProfileId ?? null,
+    feishuChatSessionId: body.feishuChatSessionId ?? null,
   });
 
   return json(result);

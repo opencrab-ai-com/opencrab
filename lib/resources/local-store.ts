@@ -133,6 +133,7 @@ export function createConversation(input?: {
   channelLabel?: string | null;
   remoteChatLabel?: string | null;
   remoteUserLabel?: string | null;
+  feishuChatSessionId?: string | null;
 }) {
   const state = readState();
   const conversationId = createId("conversation");
@@ -155,6 +156,7 @@ export function createConversation(input?: {
     channelLabel: input?.channelLabel ?? null,
     remoteChatLabel: input?.remoteChatLabel ?? null,
     remoteUserLabel: input?.remoteUserLabel ?? null,
+    feishuChatSessionId: normalizeFeishuChatSessionId(input?.feishuChatSessionId),
     codexThreadId: null,
     lastAssistantModel: null,
     agentProfileId: input?.agentProfileId ?? null,
@@ -187,6 +189,7 @@ export function updateConversation(
       | "channelLabel"
       | "remoteChatLabel"
       | "remoteUserLabel"
+      | "feishuChatSessionId"
       | "codexThreadId"
       | "lastAssistantModel"
       | "agentProfileId"
@@ -209,6 +212,10 @@ export function updateConversation(
             Object.prototype.hasOwnProperty.call(patch, "sandboxMode")
               ? normalizeConversationSandboxMode(patch.sandboxMode)
               : item.sandboxMode,
+          feishuChatSessionId:
+            Object.prototype.hasOwnProperty.call(patch, "feishuChatSessionId")
+              ? normalizeFeishuChatSessionId(patch.feishuChatSessionId)
+              : item.feishuChatSessionId ?? null,
         }
       : item,
   );
@@ -296,6 +303,7 @@ export function syncConversationChannelMetadata(
     channelLabel: string;
     remoteChatLabel: string;
     remoteUserLabel: string | null;
+    feishuChatSessionId?: string | null;
   }>,
 ) {
   if (updates.length === 0) {
@@ -315,11 +323,19 @@ export function syncConversationChannelMetadata(
       return conversation;
     }
 
+    const nextFeishuChatSessionId = Object.prototype.hasOwnProperty.call(
+      update,
+      "feishuChatSessionId",
+    )
+      ? normalizeFeishuChatSessionId(update.feishuChatSessionId)
+      : conversation.feishuChatSessionId ?? null;
+
     if (
       conversation.source === update.source &&
       conversation.channelLabel === update.channelLabel &&
       conversation.remoteChatLabel === update.remoteChatLabel &&
-      conversation.remoteUserLabel === update.remoteUserLabel
+      conversation.remoteUserLabel === update.remoteUserLabel &&
+      (conversation.feishuChatSessionId ?? null) === nextFeishuChatSessionId
     ) {
       return conversation;
     }
@@ -332,6 +348,7 @@ export function syncConversationChannelMetadata(
       channelLabel: update.channelLabel,
       remoteChatLabel: update.remoteChatLabel,
       remoteUserLabel: update.remoteUserLabel,
+      feishuChatSessionId: nextFeishuChatSessionId,
     };
   });
 
@@ -392,6 +409,7 @@ function normalizeSnapshot(snapshot: Partial<AppSnapshot>): AppSnapshot {
       channelLabel: conversation.channelLabel ?? null,
       remoteChatLabel: conversation.remoteChatLabel ?? null,
       remoteUserLabel: conversation.remoteUserLabel ?? null,
+      feishuChatSessionId: normalizeFeishuChatSessionId(conversation.feishuChatSessionId),
       codexThreadId: conversation.codexThreadId ?? null,
       lastAssistantModel: conversation.lastAssistantModel ?? null,
       agentProfileId: conversation.agentProfileId ?? null,
@@ -466,6 +484,15 @@ function normalizeConversationSandboxMode(
   }
 
   return "workspace-write";
+}
+
+function normalizeFeishuChatSessionId(value: string | null | undefined) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : null;
 }
 
 function normalizeMessages(messages: ConversationMessage[]) {

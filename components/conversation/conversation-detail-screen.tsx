@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Composer, type ComposerMentionOption } from "@/components/composer/composer";
 import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
+import { FeishuChatSessionDialog } from "@/components/conversation/feishu-chat-session-dialog";
 import { ConversationThread } from "@/components/conversation/conversation-thread";
 import { MetaPill as UnifiedMetaPill } from "@/components/ui/pill";
 import { WorkspacePickerDialog } from "@/components/workspace/workspace-picker-dialog";
@@ -17,6 +18,7 @@ import { usePersistedDraft } from "@/lib/opencrab/use-persisted-draft";
 import type { ProjectDetail } from "@/lib/projects/types";
 import {
   getProjectDetail as getProjectDetailResource,
+  updateProjectFeishuChatSessionId as updateProjectFeishuChatSessionIdResource,
   updateProjectSandboxMode as updateProjectSandboxModeResource,
   updateProjectWorkspaceDir as updateProjectWorkspaceDirResource,
 } from "@/lib/resources/opencrab-api";
@@ -48,6 +50,7 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
     setSelectedReasoningEffort,
     setConversationSandboxMode,
     setConversationWorkspaceDir,
+    setConversationFeishuChatSessionId,
     isHydrated,
     isUploadingAttachments,
     stopMessage,
@@ -73,6 +76,7 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
   const [, setTeamProjectDetail] = useState<ProjectDetail | null>(null);
   const [isReplayActive, setIsReplayActive] = useState(false);
   const [isWorkspaceDialogOpen, setIsWorkspaceDialogOpen] = useState(false);
+  const [isFeishuDialogOpen, setIsFeishuDialogOpen] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const replayFrameRef = useRef<number | null>(null);
   const replayLastTickRef = useRef<number | null>(null);
@@ -91,6 +95,8 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
       ? teamMentionState.options
       : [];
   const activeSandboxMode = activeConversation?.sandboxMode ?? "workspace-write";
+  const canBindFeishuChatSession =
+    conversationMode === "default" || conversationMode === "agent" || conversationMode === "team";
   const browserSessionPresentation = getBrowserSessionPresentation(browserSessionStatus);
   useEffect(() => {
     if (!activeConversation?.projectId) {
@@ -314,6 +320,24 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
     await setConversationSandboxMode(conversationId, nextSandboxMode);
   }
 
+  async function handleSaveFeishuChatSessionId(nextFeishuChatSessionId: string | null) {
+    if (!activeConversation) {
+      return;
+    }
+
+    if (conversationMode === "team" && activeConversation.projectId) {
+      const detail = await updateProjectFeishuChatSessionIdResource(
+        activeConversation.projectId,
+        nextFeishuChatSessionId,
+      );
+      setTeamProjectDetail(detail);
+      await refreshSnapshot();
+      return;
+    }
+
+    await setConversationFeishuChatSessionId(conversationId, nextFeishuChatSessionId);
+  }
+
   return (
     <div className="flex min-h-screen flex-col lg:h-full lg:min-h-0">
       <div className="shrink-0 border-b border-line bg-background px-5 py-3 lg:px-6">
@@ -325,6 +349,14 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
               </h1>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+              {canBindFeishuChatSession ? (
+                <ActionPillButton
+                  onClick={() => setIsFeishuDialogOpen(true)}
+                  tone={activeConversation.feishuChatSessionId ? "active" : "default"}
+                >
+                  {activeConversation.feishuChatSessionId ? "飞书已绑定" : "绑定飞书"}
+                </ActionPillButton>
+              ) : null}
               <ActionPillButton
                 onClick={handleToggleReplay}
                 tone={isReplayActive ? "active" : "default"}
@@ -394,6 +426,9 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
                 <StatusMetaPill>{activeAgent.roleLabel}</StatusMetaPill>
               </>
             ) : null}
+            {canBindFeishuChatSession && activeConversation.feishuChatSessionId ? (
+              <StatusMetaPill>飞书会话：{activeConversation.feishuChatSessionId}</StatusMetaPill>
+            ) : null}
             <StatusMetaPill>
               当前发送权限：{formatSandboxModeLabel(activeSandboxMode)}
             </StatusMetaPill>
@@ -461,6 +496,22 @@ export function ConversationDetailScreen({ conversationId }: ConversationDetailS
           confirmLabel={conversationMode === "team" ? "更新工作区" : "保存工作区"}
           onClose={() => setIsWorkspaceDialogOpen(false)}
           onConfirm={handleSaveWorkspace}
+        />
+      ) : null}
+      {isFeishuDialogOpen ? (
+        <FeishuChatSessionDialog
+          title={conversationMode === "team" ? "绑定 Team 飞书群聊" : "绑定飞书群聊"}
+          description={
+            conversationMode === "team"
+              ? "这里会把当前 Team 群聊绑定到一个飞书群聊会话 ID。保存后，同一个飞书群聊发来的消息会继续回到这条 Team 群聊。"
+              : "这里会把当前对话绑定到一个飞书群聊会话 ID。保存后，同一个飞书群聊发来的消息会继续回到这条对话。"
+          }
+          initialValue={activeConversation.feishuChatSessionId ?? null}
+          placeholder="oc_team_room_001"
+          clearLabel="清空绑定"
+          confirmLabel="保存绑定"
+          onClose={() => setIsFeishuDialogOpen(false)}
+          onConfirm={handleSaveFeishuChatSessionId}
         />
       ) : null}
     </div>

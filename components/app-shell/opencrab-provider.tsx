@@ -126,6 +126,10 @@ type OpenCrabContextValue = {
     conversationId: string,
     workspaceDir: string | null,
   ) => Promise<void>;
+  setConversationFeishuChatSessionId: (
+    conversationId: string,
+    feishuChatSessionId: string | null,
+  ) => Promise<void>;
   setConversationSandboxMode: (
     conversationId: string,
     sandboxMode: CodexSandboxMode | null,
@@ -136,6 +140,7 @@ type OpenCrabContextValue = {
     workspaceDir?: string | null;
     sandboxMode?: CodexSandboxMode | null;
     agentProfileId?: string | null;
+    feishuChatSessionId?: string | null;
   }) => Promise<string>;
   createAgent: (input: {
     name: string;
@@ -733,6 +738,18 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
     [applySnapshot, runMutation],
   );
 
+  const setConversationFeishuChatSessionId = useCallback(
+    async (conversationId: string, feishuChatSessionId: string | null) => {
+      await runMutation(async () => {
+        const result = await updateConversation(conversationId, {
+          feishuChatSessionId,
+        });
+        applySnapshot(result.snapshot);
+      });
+    },
+    [applySnapshot, runMutation],
+  );
+
   const setConversationSandboxMode = useCallback(
     async (conversationId: string, sandboxMode: CodexSandboxMode | null) => {
       await runMutation(async () => {
@@ -750,6 +767,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       workspaceDir?: string | null;
       sandboxMode?: CodexSandboxMode | null;
       agentProfileId?: string | null;
+      feishuChatSessionId?: string | null;
     }) => {
       return runMutation(async () => {
         const result = await createConversationResource(input);
@@ -985,6 +1003,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       deleteConversation,
       moveConversation,
       setConversationWorkspaceDir,
+      setConversationFeishuChatSessionId,
       setConversationSandboxMode,
       createConversation,
       createAgent,
@@ -1053,6 +1072,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       deleteConversation,
       moveConversation,
       setConversationWorkspaceDir,
+      setConversationFeishuChatSessionId,
       setConversationSandboxMode,
       createConversation,
       createAgent,
@@ -1119,6 +1139,7 @@ function areConversationsEqual(
         conversation.channelLabel === target.channelLabel &&
         conversation.remoteChatLabel === target.remoteChatLabel &&
         conversation.remoteUserLabel === target.remoteUserLabel &&
+        conversation.feishuChatSessionId === target.feishuChatSessionId &&
         conversation.codexThreadId === target.codexThreadId &&
         conversation.lastAssistantModel === target.lastAssistantModel &&
         conversation.agentProfileId === target.agentProfileId &&

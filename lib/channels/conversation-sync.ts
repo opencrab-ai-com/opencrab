@@ -12,12 +12,17 @@ export function syncBoundConversationMetadata() {
   const bindings = getAllBindings();
 
   syncConversationChannelMetadata(
-    bindings.map((binding) => ({
+    bindings
+      .filter((binding) => binding.kind === "channel_inbound")
+      .map((binding) => ({
       conversationId: binding.conversationId,
       source: binding.channelId,
       channelLabel: binding.channelId === "telegram" ? "Telegram" : "飞书",
       remoteChatLabel: binding.remoteChatLabel,
       remoteUserLabel: binding.remoteUserLabel,
+      ...(binding.channelId === "feishu"
+        ? { feishuChatSessionId: binding.remoteChatId }
+        : {}),
     })),
   );
 }

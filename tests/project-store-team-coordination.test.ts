@@ -138,6 +138,36 @@ describe("project store team coordination", () => {
     ).toBe("danger-full-access");
   });
 
+  it("binds the Team group chat to a Feishu chat session id and syncs the underlying conversation", async () => {
+    const { workspaceDir } = createTempHome("opencrab-project-coordination-");
+
+    const projectStore = await loadProjectStore();
+    const localStore = await loadLocalStore();
+    const channelStore = await import("@/lib/channels/channel-store");
+    const created = projectStore.createProject({
+      goal: "验证 Team 群聊与飞书会话绑定",
+      workspaceDir,
+      agentProfileIds: ["project-manager"],
+    });
+    const projectId = created?.project?.id ?? null;
+
+    if (!projectId) {
+      throw new Error("projectId should exist after createProject");
+    }
+
+    const updated = projectStore.updateProjectFeishuChatSessionId(projectId, "oc_team_room_1");
+    const teamConversationId = updated?.project?.teamConversationId ?? null;
+    const teamConversation = teamConversationId ? localStore.findConversation(teamConversationId) : null;
+    const binding = channelStore.findBinding("feishu", "oc_team_room_1");
+
+    expect(updated?.project?.feishuChatSessionId).toBe("oc_team_room_1");
+    expect(teamConversationId).toBeTruthy();
+    expect(teamConversation?.projectId).toBe(projectId);
+    expect(teamConversation?.feishuChatSessionId).toBe("oc_team_room_1");
+    expect(binding?.kind).toBe("product_bound");
+    expect(binding?.conversationId).toBe(teamConversationId);
+  });
+
   it("creates mailbox coordination threads across delegation, handoff, review, and self-claim", async () => {
     const { tempHome, workspaceDir } = createTempHome("opencrab-project-coordination-");
     seedTestTeamAgents(tempHome);

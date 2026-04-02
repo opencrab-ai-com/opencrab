@@ -195,6 +195,7 @@ export type ProjectRoomRecord = {
   workspaceDir: string | null;
   sandboxMode: CodexSandboxMode;
   teamConversationId: string | null;
+  feishuChatSessionId?: string | null;
   summary: string;
   status: ProjectRoomStatus;
   runStatus: ProjectRunStatus;

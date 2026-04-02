@@ -1,7 +1,6 @@
 import {
-  deleteConversation,
-  updateConversation,
-} from "@/lib/resources/local-store";
+  conversationManagementService,
+} from "@/lib/modules/conversations/conversation-management-service";
 import {
   json,
   readJsonBody,
@@ -25,8 +24,9 @@ export async function PATCH(
     agentProfileId?: string | null;
     codexThreadId?: string | null;
     lastAssistantModel?: string | null;
+    feishuChatSessionId?: string | null;
   }>(request, {});
-  const snapshot = updateConversation(conversationId, body);
+  const snapshot = conversationManagementService.update(conversationId, body);
 
   return json({ snapshot });
 }
@@ -36,7 +36,7 @@ export async function DELETE(
   context: RouteContext<{ conversationId: string }>,
 ) {
   const { conversationId } = await readRouteParams(context);
-  const snapshot = deleteConversation(conversationId);
+  const snapshot = conversationManagementService.remove(conversationId);
 
   return json({ snapshot });
 }
