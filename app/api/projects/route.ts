@@ -1,5 +1,6 @@
 import { projectManagementService } from "@/lib/modules/projects/project-management-service";
 import { projectQueryService } from "@/lib/modules/projects/project-query-service";
+import type { ProjectPlanningSnapshot } from "@/lib/projects/project-planning";
 import type {
   CodexReasoningEffort,
   CodexSandboxMode,
@@ -22,6 +23,7 @@ export async function POST(request: Request) {
       goal?: string;
       workspaceDir?: string;
       agentProfileIds?: string[];
+      planningSnapshot?: ProjectPlanningSnapshot | null;
       model?: string;
       reasoningEffort?: CodexReasoningEffort;
       sandboxMode?: CodexSandboxMode;
@@ -33,14 +35,15 @@ export async function POST(request: Request) {
       sandboxMode: body.sandboxMode,
     };
 
-    if (!body.goal) {
+    if (!body.goal && !body.planningSnapshot?.brief?.goal) {
       throw new Error("请先填写团队目标。");
     }
 
     const detail = projectManagementService.create({
-      goal: body.goal,
+      goal: body.goal || "",
       workspaceDir: body.workspaceDir || "",
       agentProfileIds: Array.isArray(body.agentProfileIds) ? body.agentProfileIds : [],
+      planningSnapshot: body.planningSnapshot ?? null,
       ...settingsInput,
     });
 

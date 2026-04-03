@@ -1,17 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
-import { isSelectableTeamAgent } from "@/lib/agents/display";
+import { useState } from "react";
+import { ProjectCreateDialog } from "@/components/projects/project-create-dialog";
 import { Button, buttonClassName } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { MetaPill as UnifiedMetaPill, StatusPill as UnifiedStatusPill } from "@/components/ui/pill";
-import {
-  createProject as createProjectResource,
-  pickLocalDirectory,
-} from "@/lib/resources/opencrab-api";
 import type { ProjectRoomRecord } from "@/lib/projects/types";
 
 type ProjectsOverviewScreenProps = {
@@ -19,111 +13,7 @@ type ProjectsOverviewScreenProps = {
 };
 
 export function ProjectsOverviewScreen({ projects }: ProjectsOverviewScreenProps) {
-  const router = useRouter();
-  const {
-    agents,
-    selectedModel,
-    selectedReasoningEffort,
-  } = useOpenCrabApp();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [goal, setGoal] = useState("");
-  const [workspaceDir, setWorkspaceDir] = useState("");
-  const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([]);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isPickingWorkspace, setIsPickingWorkspace] = useState(false);
-
-  const teamAgents = useMemo(
-    () => agents.filter(isSelectableTeamAgent),
-    [agents],
-  );
-  const validTeamAgentIds = useMemo(() => new Set(teamAgents.map((agent) => agent.id)), [teamAgents]);
-
-  useEffect(() => {
-    setSelectedAgentIds((current) => current.filter((agentId) => validTeamAgentIds.has(agentId)));
-  }, [validTeamAgentIds]);
-
-  function handleToggleAgent(agentId: string) {
-    if (!validTeamAgentIds.has(agentId)) {
-      return;
-    }
-
-    setSelectedAgentIds((current) =>
-      current.includes(agentId) ? current.filter((item) => item !== agentId) : [...current, agentId],
-    );
-  }
-
-  async function handleCreateProject() {
-    const trimmedGoal = goal.trim();
-    const normalizedSelectedAgentIds = Array.from(
-      new Set(selectedAgentIds.filter((agentId) => validTeamAgentIds.has(agentId))),
-    );
-
-    if (!trimmedGoal) {
-      setErrorMessage("请先填写这个团队的目标。");
-      return;
-    }
-
-    if (normalizedSelectedAgentIds.length === 0) {
-      setErrorMessage("请至少选择一个要加入团队的智能体。");
-      return;
-    }
-
-    if (!workspaceDir.trim()) {
-      setErrorMessage("请先指定这个团队的工作空间目录。");
-      return;
-    }
-
-    setIsSubmitting(true);
-    setErrorMessage(null);
-    setSelectedAgentIds(normalizedSelectedAgentIds);
-
-    try {
-      const response = await createProjectResource({
-        goal: trimmedGoal,
-        workspaceDir: workspaceDir.trim(),
-        agentProfileIds: normalizedSelectedAgentIds,
-        model: selectedModel,
-        reasoningEffort: selectedReasoningEffort,
-      });
-      const nextProjectId = response.project?.id;
-
-      if (!nextProjectId) {
-        throw new Error("创建团队失败。");
-      }
-
-      setIsCreateOpen(false);
-      setGoal("");
-      setWorkspaceDir("");
-      setSelectedAgentIds([]);
-      router.push(`/projects/${nextProjectId}`);
-      router.refresh();
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "创建团队失败。");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function handlePickWorkspace() {
-    setIsPickingWorkspace(true);
-    setErrorMessage(null);
-
-    try {
-      const result = await pickLocalDirectory({
-        title: "为 Team 选择工作区目录",
-        defaultPath: workspaceDir || undefined,
-      });
-
-      if (result.path) {
-        setWorkspaceDir(result.path);
-      }
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "打开目录选择器失败。");
-    } finally {
-      setIsPickingWorkspace(false);
-    }
-  }
 
   return (
     <>
@@ -154,7 +44,7 @@ export function ProjectsOverviewScreen({ projects }: ProjectsOverviewScreenProps
             <div className="mt-6 rounded-[22px] border border-dashed border-line bg-surface-muted px-5 py-8">
               <h3 className="text-[18px] font-semibold tracking-[-0.03em] text-text">还没有团队</h3>
               <p className="mt-2 text-[14px] leading-7 text-muted-strong">
-                点击右上角“新建团队”，填写目标并选择要加入的智能体，就可以直接创建一个 Team Room。
+                点击右上角“新建团队”，先让规划 Agent 收束任务，再启动一个更像真实协作班子的 Team Room。
               </p>
             </div>
           ) : (
@@ -247,156 +137,7 @@ export function ProjectsOverviewScreen({ projects }: ProjectsOverviewScreenProps
         </section>
       </div>
 
-      {isCreateOpen ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(17,17,17,0.16)] p-4 backdrop-blur-[2px]"
-          onClick={() => (isSubmitting ? null : setIsCreateOpen(false))}
-          role="presentation"
-        >
-          <div
-            className="w-full max-w-[860px] rounded-[28px] border border-line bg-surface p-6 shadow-[0_24px_80px_rgba(15,23,42,0.16)]"
-            onClick={(event) => event.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="text-[12px] uppercase tracking-[0.16em] text-muted">New Team</div>
-                <h2 className="mt-2 text-[28px] font-semibold tracking-[-0.05em] text-text">新建团队</h2>
-                <p className="mt-2 max-w-[60ch] text-[14px] leading-7 text-muted-strong">
-                  只需要定义两件事：这个团队要完成什么目标，以及哪些智能体要加入这次协作。项目经理会默认自动加入，负责统筹 Team 的推进。
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsCreateOpen(false)}
-                className={buttonClassName({ variant: "ghost", className: "h-10 w-10 rounded-full px-0" })}
-                disabled={isSubmitting}
-                aria-label="关闭"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="mt-6 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-              <section className="rounded-[24px] border border-line bg-background p-5">
-                <label className="block">
-                  <span className="text-[13px] font-medium text-text">目标是什么？</span>
-                  <textarea
-                    value={goal}
-                    onChange={(event) => setGoal(event.target.value)}
-                    rows={8}
-                    placeholder="例如：为 Team 模式设计一版智能体驱动的协作体验，并明确 MVP 的页面、数据结构和运行方式。"
-                    className="mt-3 w-full rounded-[18px] border border-line bg-surface px-4 py-3 text-[14px] leading-7 text-text outline-none transition focus:border-text"
-                  />
-                </label>
-
-                <label className="mt-5 block">
-                  <span className="text-[13px] font-medium text-text">工作空间目录</span>
-                  <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                    <input
-                      value={workspaceDir}
-                      onChange={(event) => setWorkspaceDir(event.target.value)}
-                      placeholder="~/OpenCrab/workspaces/team-alpha"
-                      className="min-w-0 flex-1 rounded-[18px] border border-line bg-surface px-4 py-3 text-[14px] text-text outline-none transition focus:border-text"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => void handlePickWorkspace()}
-                      disabled={isSubmitting || isPickingWorkspace}
-                      className={buttonClassName({
-                        variant: "secondary",
-                        className: "rounded-[18px] bg-surface-muted hover:bg-[#efeff1]",
-                      })}
-                    >
-                      {isPickingWorkspace ? "打开中..." : "选择目录"}
-                    </button>
-                  </div>
-                  <p className="mt-2 text-[12px] leading-6 text-muted-strong">
-                    这里是 Team 的默认写入目录。即使目标里提到了别的代码路径，也默认只把它们当参考输入；新 Team 会先使用“可写工作区”，后续你也可以在 Team 群聊输入框右侧继续修改权限模式。
-                  </p>
-                </label>
-              </section>
-
-              <section className="rounded-[24px] border border-line bg-background p-5">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                  <div>
-                    <h3 className="text-[18px] font-semibold tracking-[-0.03em] text-text">需要加入的智能体</h3>
-                    <p className="mt-2 text-[14px] leading-7 text-muted-strong">
-                      只展示可用于 Team 的智能体。系统项目经理会默认加入并承担团队牵引，下面这些是你额外希望拉进来的成员。
-                    </p>
-                  </div>
-                  <UnifiedMetaPill>已选 {selectedAgentIds.length} 个</UnifiedMetaPill>
-                </div>
-
-                {teamAgents.length === 0 ? (
-                  <div className="mt-5 rounded-[18px] border border-dashed border-line bg-surface-muted px-4 py-5 text-[13px] leading-6 text-muted-strong">
-                    当前还没有可加入团队的智能体。先去智能体页创建，或把已有智能体的可用范围设为“团队”或“单聊 + 团队”。
-                  </div>
-                ) : (
-                  <div className="mt-5 max-h-[420px] space-y-3 overflow-y-auto pr-1">
-                    {teamAgents.map((agent) => {
-                      const checked = selectedAgentIds.includes(agent.id);
-
-                      return (
-                        <label
-                          key={agent.id}
-                          className={`flex cursor-pointer gap-3 rounded-[20px] border p-4 transition ${
-                            checked
-                              ? "border-[#c9d8ff] bg-[#f6f9ff]"
-                              : "border-line bg-surface hover:border-text/12"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={() => handleToggleAgent(agent.id)}
-                            className="mt-1 h-4 w-4 rounded border-line"
-                          />
-                          <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <div className="text-[16px] font-semibold text-text">{agent.name}</div>
-                              <MetaPill>{agent.roleLabel}</MetaPill>
-                              <MetaPill>{formatTeamRole(agent.teamRole)}</MetaPill>
-                            </div>
-                            <p className="mt-2 text-[13px] leading-6 text-muted-strong">{agent.summary}</p>
-                          </div>
-                        </label>
-                      );
-                    })}
-                  </div>
-                )}
-              </section>
-            </div>
-
-            {errorMessage ? (
-              <div className="mt-5 rounded-[18px] border border-[#f3d0cb] bg-[#fff3f1] px-4 py-3 text-[13px] text-[#b42318]">
-                {errorMessage}
-              </div>
-            ) : null}
-
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setIsCreateOpen(false)}
-                className={buttonClassName({ variant: "secondary" })}
-                disabled={isSubmitting}
-              >
-                取消
-              </button>
-              <button
-                type="button"
-                onClick={() => void handleCreateProject()}
-                className={buttonClassName({ variant: "primary" })}
-                disabled={isSubmitting || teamAgents.length === 0}
-              >
-                {isSubmitting ? "创建中..." : "创建团队"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ProjectCreateDialog isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
     </>
   );
 }
@@ -449,19 +190,6 @@ function formatProjectStatus(status: ProjectRoomRecord["runStatus"]) {
       return "已完成";
     default:
       return "准备中";
-  }
-}
-
-function formatTeamRole(value: "lead" | "research" | "writer" | "specialist") {
-  switch (value) {
-    case "lead":
-      return "Lead";
-    case "research":
-      return "Research";
-    case "writer":
-      return "Writer";
-    default:
-      return "Specialist";
   }
 }
 

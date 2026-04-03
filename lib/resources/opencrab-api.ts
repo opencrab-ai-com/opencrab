@@ -25,6 +25,13 @@ import type {
   AgentProfileDetailResponse,
   AgentProfileListResponse,
 } from "@/lib/agents/types";
+import type {
+  ProjectPlanningBrief,
+  ProjectPlanningMode,
+  ProjectPlanningAnswers,
+  ProjectPlanningResponse,
+  ProjectPlanningSnapshot,
+} from "@/lib/projects/project-planning";
 import type { ProjectDetailResponse, ProjectListResponse } from "@/lib/projects/types";
 import type { AppLanguage, ConversationMessage } from "@/lib/seed-data";
 
@@ -239,10 +246,25 @@ export async function getProjectDetail(projectId: string) {
   });
 }
 
+export async function planProject(input: {
+  mode?: ProjectPlanningMode;
+  rawIntent: string;
+  answers?: ProjectPlanningAnswers;
+  brief?: ProjectPlanningBrief;
+  model?: string;
+  reasoningEffort?: CodexReasoningEffort;
+}) {
+  return request<ProjectPlanningResponse>("/api/projects/plan", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
 export async function createProject(input: {
   goal: string;
   workspaceDir: string;
   agentProfileIds: string[];
+  planningSnapshot?: ProjectPlanningSnapshot | null;
   model?: string;
   reasoningEffort?: CodexReasoningEffort;
   sandboxMode?: CodexSandboxMode;

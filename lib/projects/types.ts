@@ -2,6 +2,7 @@ import type {
   CodexReasoningEffort,
   CodexSandboxMode,
 } from "@/lib/resources/opencrab-api-types";
+import type { ProjectPlanningSnapshot } from "@/lib/projects/project-planning";
 
 export type ProjectRoomStatus = "active" | "paused";
 export type ProjectRunStatus =
@@ -192,6 +193,7 @@ export type ProjectRoomRecord = {
   title: string;
   teamName: string;
   goal: string;
+  planningSnapshot?: ProjectPlanningSnapshot | null;
   workspaceDir: string | null;
   sandboxMode: CodexSandboxMode;
   teamConversationId: string | null;

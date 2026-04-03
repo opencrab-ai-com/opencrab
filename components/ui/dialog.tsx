@@ -45,17 +45,19 @@ export function DialogShell({ children, onClose, panelClassName }: DialogShellPr
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(17,17,17,0.16)] p-4 backdrop-blur-[2px]"
+      className="fixed inset-0 z-50 overflow-y-auto bg-[rgba(17,17,17,0.16)] backdrop-blur-[2px]"
       onClick={onClose}
       role="presentation"
     >
-      <div
-        className={`w-full max-w-[420px] rounded-[28px] border border-line bg-surface px-6 py-6 shadow-[0_24px_80px_rgba(15,23,42,0.16)] ${panelClassName || ""}`}
-        onClick={(event) => event.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-      >
-        {children}
+      <div className="flex min-h-full items-start justify-center p-4 sm:items-center">
+        <div
+          className={`w-full max-w-[420px] rounded-[28px] border border-line bg-surface px-6 py-6 shadow-[0_24px_80px_rgba(15,23,42,0.16)] ${panelClassName || ""}`}
+          onClick={(event) => event.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+        >
+          {children}
+        </div>
       </div>
     </div>
   );

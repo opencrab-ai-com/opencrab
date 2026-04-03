@@ -1,6 +1,6 @@
 # OpenCrab Docs
 
-更新时间：2026-03-29
+更新时间：2026-04-02
 
 这份索引用于回答一个很实际的问题：
 
@@ -15,6 +15,7 @@ docs/
   README.md
   blogs/
   engineering/
+    codex-context-optimization/
   product/
   screenshots/
   tasks/
@@ -42,6 +43,8 @@ docs/
 - [System Agent Authoring](./engineering/system-agent-authoring.md)
 - [Codex Integration](./engineering/codex-sdk-integration.md)
 - [Codex Harness Feasibility](./engineering/codex-harness-feasibility.md)
+- [Codex Context Optimization](./engineering/codex-context-optimization/README.md)
+- [Prompt And Memory Optimization Backlog](./engineering/codex-context-optimization/optimization-backlog.md)
 
 ### 想看定时任务的产品判断与执行设计
 

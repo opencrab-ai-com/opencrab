@@ -25,6 +25,11 @@ import {
   normalizeDelegationArtifactTitles,
   resolveArtifactIdsByTitles,
 } from "@/lib/projects/project-artifact-runtime";
+import {
+  formatProjectGoalFromBrief,
+  normalizeProjectPlanningSnapshot,
+  type ProjectPlanningSnapshot,
+} from "@/lib/projects/project-planning";
 import type {
   ProjectAgentRecord,
   ProjectAutonomyGateRecord,
@@ -386,11 +391,16 @@ export function createProject(input: {
   goal: string;
   workspaceDir: string;
   agentProfileIds: string[];
+  planningSnapshot?: ProjectPlanningSnapshot | null;
   model?: string | null;
   reasoningEffort?: ProjectAgentRecord["reasoningEffort"] | null;
   sandboxMode?: ProjectAgentRecord["sandboxMode"] | null;
 }) {
-  const goal = input.goal.trim();
+  const planningSnapshot = normalizeProjectPlanningSnapshot(input.planningSnapshot);
+  const baseGoal = input.goal.trim() || planningSnapshot?.brief.goal || "";
+  const goal = planningSnapshot
+    ? formatProjectGoalFromBrief(planningSnapshot.brief)
+    : baseGoal;
 
   if (!goal) {
     throw new Error("请先填写这个团队的目标。");
@@ -440,6 +450,8 @@ export function createProject(input: {
   const room = buildManualRoom({
     projectId,
     goal,
+    displayGoalSource: planningSnapshot?.brief.goal || baseGoal,
+    planningSnapshot,
     workspaceDir,
     profiles: selectedProfiles,
     model,
@@ -5066,6 +5078,8 @@ export function reviewProjectLearningReuseCandidate(
 function buildManualRoom(input: {
   projectId: string;
   goal: string;
+  displayGoalSource?: string;
+  planningSnapshot?: ProjectPlanningSnapshot | null;
   workspaceDir: string;
   profiles: Array<{
     id: string;
@@ -5090,7 +5104,7 @@ function buildManualRoom(input: {
   });
   const conciseGoal = input.goal.replace(/\s+/g, " ").trim();
   const shortLabel = buildProjectDisplayTitle({
-    goal: conciseGoal,
+    goal: input.displayGoalSource?.trim() || conciseGoal,
     fallback: "新团队",
   });
   const teamName = buildProjectTeamName(shortLabel);
@@ -5099,11 +5113,14 @@ function buildManualRoom(input: {
     title: shortLabel,
     teamName,
     goal: input.goal,
+    planningSnapshot: input.planningSnapshot ?? null,
     workspaceDir: input.workspaceDir,
     sandboxMode: input.sandboxMode,
     teamConversationId: null,
     feishuChatSessionId: null,
-    summary: `围绕“${stripTrailingSentencePunctuation(shortLabel)}”启动的新团队，已装配 ${normalizedAgents.length} 位智能体，默认产出目录已设置完成。`,
+    summary:
+      input.planningSnapshot?.plannerSummary ||
+      `围绕“${stripTrailingSentencePunctuation(shortLabel)}”启动的新团队，已装配 ${normalizedAgents.length} 位智能体，默认产出目录已设置完成。`,
     status: "active",
     runStatus: "ready",
     latestUserRequest: input.goal,
@@ -5130,7 +5147,10 @@ function buildManualRoom(input: {
       projectId: input.projectId,
       actorName: "你",
       title: "已创建团队目标",
-      description: `${input.goal}\n\n工作空间目录：${input.workspaceDir}`,
+      description:
+        input.planningSnapshot
+          ? `${input.planningSnapshot.rawIntent}\n\n结构化 brief：\n${input.goal}\n\n工作空间目录：${input.workspaceDir}`
+          : `${input.goal}\n\n工作空间目录：${input.workspaceDir}`,
       visibility: "frontstage",
       createdAt: input.createdAt,
     },
@@ -5160,7 +5180,10 @@ function buildManualRoom(input: {
       projectId: input.projectId,
       title: "团队目标",
       typeLabel: "Brief",
-      summary: `${input.goal}\n工作空间目录：${input.workspaceDir}`,
+      summary:
+        input.planningSnapshot
+          ? `${input.goal}\n\n原始意图：${input.planningSnapshot.rawIntent}\n工作空间目录：${input.workspaceDir}`
+          : `${input.goal}\n工作空间目录：${input.workspaceDir}`,
       status: "ready",
       sourceTaskId: null,
       sourceTaskTitle: null,
@@ -9540,6 +9563,7 @@ function normalizeProjectStoreState(parsed: Partial<ProjectStoreState>): Project
 
         return {
         ...room,
+        planningSnapshot: normalizeProjectPlanningSnapshot(room.planningSnapshot),
         workspaceDir: room.workspaceDir
           ? normalizeProjectWorkspaceDir(room.workspaceDir)
           : null,
