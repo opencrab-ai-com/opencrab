@@ -8,7 +8,12 @@ import {
   updateBindingActivity,
 } from "@/lib/channels/channel-store";
 import type { ChannelBinding, ChannelId } from "@/lib/channels/types";
-import { createConversation, getSnapshot, updateConversation } from "@/lib/resources/local-store";
+import {
+  createConversation,
+  findConversation,
+  getSnapshot,
+  updateConversation,
+} from "@/lib/resources/local-store";
 
 type HandleInboundChannelTextMessageInput = {
   channelId: ChannelId;
@@ -48,6 +53,36 @@ export async function handleInboundChannelTextMessage(
   const settings = getSnapshot().settings;
 
   try {
+    const boundConversation = findConversation(binding.conversationId);
+
+    if (binding.kind === "product_bound" && boundConversation?.projectId) {
+      const { replyToProjectConversation } = await import("@/lib/projects/project-store");
+
+      await replyToProjectConversation({
+        projectId: boundConversation.projectId,
+        conversationId: binding.conversationId,
+        content: input.text ?? "",
+      });
+
+      const snapshot = getSnapshot();
+      const latestAssistantMessage =
+        [...(snapshot.conversationMessages[binding.conversationId] ?? [])]
+          .reverse()
+          .find((message) => message.role === "assistant") ?? null;
+      const latestConversation =
+        snapshot.conversations.find((conversation) => conversation.id === binding.conversationId) ?? null;
+
+      markChannelReady(input.channelId);
+
+      return {
+        binding,
+        replyText: latestAssistantMessage?.content ?? "",
+        replyAttachments: latestAssistantMessage?.attachments ?? [],
+        assistantModel: latestConversation?.lastAssistantModel ?? null,
+        conversationId: binding.conversationId,
+      };
+    }
+
     const result = await runConversationTurn({
       conversationId: binding.conversationId,
       content: input.text,
@@ -56,6 +91,7 @@ export async function handleInboundChannelTextMessage(
       reasoningEffort: settings.defaultReasoningEffort,
       userMessageSource: input.channelId,
       remoteUserMessageId: input.remoteMessageId,
+      remoteUserChatId: input.remoteChatId,
     });
 
     markChannelReady(input.channelId);

@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     request,
     {},
   );
-  const result = conversationManagementService.create({
+  const result = await conversationManagementService.create({
     title: body.title,
     folderId: body.folderId ?? null,
     workspaceDir: body.workspaceDir ?? null,

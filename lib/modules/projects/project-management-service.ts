@@ -5,6 +5,7 @@ import {
   updateProjectSandboxMode,
   updateProjectWorkspaceDir,
 } from "@/lib/projects/project-store";
+import { syncBoundConversationHistory } from "@/lib/channels/bound-conversation-sync";
 
 export type ProjectCreator = typeof createProject;
 export type ProjectRemover = typeof deleteProject;
@@ -37,7 +38,19 @@ export function createProjectManagementService(
     remove,
     updateWorkspaceDir,
     updateSandboxMode,
-    updateFeishuChatSessionId,
+    async updateFeishuChatSessionId(
+      projectId: string,
+      feishuChatSessionId: string | null | undefined,
+    ) {
+      const detail = updateFeishuChatSessionId(projectId, feishuChatSessionId);
+
+      if (!detail?.project?.teamConversationId) {
+        return detail;
+      }
+
+      await syncBoundConversationHistory(detail.project.teamConversationId);
+      return detail;
+    },
   };
 }
 

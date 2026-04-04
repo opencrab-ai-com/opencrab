@@ -4,6 +4,7 @@ import {
   clearConversationBindings,
   reconcileConversationBinding,
 } from "@/lib/channels/channel-store";
+import { scheduleBoundConversationHistorySync } from "@/lib/channels/bound-conversation-sync";
 import { runConversationTurn } from "@/lib/conversations/run-conversation-turn";
 import {
   addMessage,
@@ -558,6 +559,21 @@ export async function replyToProjectConversation(input: {
     throw new Error("请先输入你想让团队继续推进的内容。");
   }
 
+  const checkpointCommand = parseProjectConversationCheckpointCommand({
+    content,
+    runStatus: room.runStatus,
+    hasOpenAutonomyGates: findOpenProjectAutonomyGates(state, room.id).length > 0,
+  });
+
+  if (checkpointCommand) {
+    await updateProjectCheckpoint(room.id, {
+      action: checkpointCommand.action,
+      note: checkpointCommand.note,
+      conversationMessage: content,
+    });
+    return getVisibleSnapshot();
+  }
+
   const conversationId = ensureTeamConversation(state, room);
 
   if (conversationId !== input.conversationId) {
@@ -574,6 +590,7 @@ export async function replyToProjectConversation(input: {
     meta: "团队群聊",
     status: "done",
   });
+  void scheduleBoundConversationHistorySync(conversationId);
 
   const projectAgents = state.agents.filter((agent) => agent.projectId === room.id);
   const manager =
@@ -3266,11 +3283,11 @@ function buildProjectCheckpointSummary(
       completionLines || "- 这一轮还没有足够稳定的阶段结果。",
       "",
       "接下来需要你给什么",
-      `- 请补充这轮最希望交付的结果、边界或验收标准。`,
+      `- 直接在群里补充这轮最希望交付的结果、边界或验收标准。`,
       `- 当前团队目标：${room?.goal || "未指定"}`,
       "",
       "之后会怎么继续",
-      "- 你一旦补充，项目经理会重新判断第一棒该由谁接力，并继续推进后续阶段。",
+      "- 你一回复，项目经理就会据此重新判断第一棒该由谁接力，并继续推进后续阶段。",
     ].join("\n");
   }
 
@@ -3286,9 +3303,205 @@ function buildProjectCheckpointSummary(
     "- 现在更合适由你确认是否结束，或指出还要补充的问题。",
     "",
     "请你决定",
-    "- 如果认可当前结果：确认完成这一轮。",
-    "- 如果还不够：直接反馈问题，项目经理会基于你的意见继续组织下一轮。",
+    "- 如果可以收口：直接回“确认完成”。",
+    "- 如果还要补：直接在群里回我要补的问题或新方向。",
   ].join("\n");
+}
+
+function parseProjectConversationCheckpointCommand(input: {
+  content: string;
+  runStatus: ProjectRoomRecord["runStatus"];
+  hasOpenAutonomyGates: boolean;
+}): {
+  action: ProjectCheckpointAction;
+  note: string | null;
+} | null {
+  const content = input.content.trim();
+
+  if (!content) {
+    return null;
+  }
+
+  if (input.runStatus === "running") {
+    const pauseCommand = matchProjectCheckpointCommand(
+      content,
+      /^(?:暂停|先暂停|暂停当前运行|阻断|先阻断|打断|先停一下|先停住|别继续了|先不要继续|pause)(?:[\s，,:：-]+(.+))?.*$/iu,
+    );
+
+    return pauseCommand.matched
+      ? {
+          action: "pause",
+          note: pauseCommand.note,
+        }
+      : null;
+  }
+
+  if (input.runStatus === "waiting_approval") {
+    const rollbackCommand = matchProjectCheckpointCommand(
+      content,
+      /^(?:回滚重跑|回滚|重跑|rollback)(?:[\s，,:：-]+(.+))?$/iu,
+    );
+
+    if (rollbackCommand.matched) {
+      return {
+        action: "rollback",
+        note: rollbackCommand.note,
+      };
+    }
+
+    const approveCommand = matchProjectCheckpointCommand(
+      content,
+      /^(?:确认(?:完成|结束|通过|收尾)?|确认收尾|结束(?:这一轮)?|完成(?:这一轮)?|通过|approve|approved|ok|okay|可以结束(?:了)?|就这样吧)(?:[\s，,:：-]+(.+))?$/iu,
+    );
+
+    if (approveCommand.matched) {
+      return {
+        action: "approve",
+        note: approveCommand.note,
+      };
+    }
+
+    if (input.hasOpenAutonomyGates) {
+      const gateApproveCommand = matchProjectCheckpointCommand(
+        content,
+        /^(?:确认放行|放行继续|放行|继续推进|继续在当前安全边界内推进|继续往下跑|继续跑|继续吧)(?:[\s，,:：-]+(.+))?$/iu,
+      );
+
+      if (gateApproveCommand.matched) {
+        return {
+          action: "approve",
+          note: gateApproveCommand.note,
+        };
+      }
+    }
+
+    return {
+      action: "request_changes",
+      note: content,
+    };
+  }
+
+  if (input.runStatus === "waiting_user") {
+    const rollbackCommand = matchProjectCheckpointCommand(
+      content,
+      /^(?:回滚重跑|回滚|重跑|rollback)(?:[\s，,:：-]+(.+))?$/iu,
+    );
+
+    if (rollbackCommand.matched) {
+      return {
+        action: "rollback",
+        note: rollbackCommand.note,
+      };
+    }
+
+    const resumeCommand = matchProjectCheckpointCommand(
+      content,
+      /^(?:继续推进|继续|恢复运行|resume|按这个继续|重新开始|开始吧|继续吧)(?:[\s，,:：-]+(.+))?$/iu,
+    );
+
+    return {
+      action: "resume",
+      note: resumeCommand.matched ? resumeCommand.note : content,
+    };
+  }
+
+  if (input.runStatus === "completed") {
+    const rollbackCommand = matchProjectCheckpointCommand(
+      content,
+      /^(?:回滚重跑|回滚|重跑|rollback)(?:[\s，,:：-]+(.+))?$/iu,
+    );
+
+    if (rollbackCommand.matched) {
+      return {
+        action: "rollback",
+        note: rollbackCommand.note,
+      };
+    }
+  }
+
+  return null;
+}
+
+function matchProjectCheckpointCommand(value: string, pattern: RegExp) {
+  const matched = value.trim().match(pattern);
+
+  if (!matched) {
+    return {
+      matched: false,
+      note: null,
+    };
+  }
+
+  return {
+    matched: true,
+    note: matched[1]?.trim() || null,
+  };
+}
+
+function buildProjectCheckpointConversationGuide(input: {
+  decision: "waiting_user" | "waiting_approval";
+  hasOpenAutonomyGates: boolean;
+}) {
+  if (input.decision === "waiting_user") {
+    return [
+      "这轮我先停在这里，你现在直接在这里回我就行：",
+      "- 直接发新的要求、目标或补充，我会把它当成下一轮输入。",
+      "- 回“继续推进”，我会按当前补充接着往下跑。",
+      "- 回“回滚重跑：原因”，我会从最近 checkpoint 重新启动。",
+    ].join("\n");
+  }
+
+  if (input.hasOpenAutonomyGates) {
+    return [
+      "这轮已经碰到安全边界，你现在直接在这里回我就行：",
+      "- 回“确认放行”或“继续推进”，我会继续在当前边界内往下跑。",
+      "- 直接发新的要求或补充，我会带着这些要求继续推进。",
+      "- 回“回滚重跑：原因”，我会从最近 checkpoint 重新启动。",
+    ].join("\n");
+  }
+
+  return [
+    "这轮已经可以收口了，你现在直接在这里回我就行：",
+    "- 回“确认完成”，我就结束这一轮并完成收尾。",
+    "- 直接发新的要求、要补的问题或新方向，我会把它当成下一轮输入继续推进。",
+    "- 回“回滚重跑：原因”，我会从最近 checkpoint 重新启动。",
+  ].join("\n");
+}
+
+function buildProjectCompletedConversationGuide() {
+  return [
+    "这轮已经收尾完成，你现在直接在这里回我就行：",
+    "- 直接发新的要求、目标或补充，我会把它当成下一轮输入，继续拉起团队。",
+    "- 回“回滚重跑：原因”，我会从最近 checkpoint 重新启动。",
+  ].join("\n");
+}
+
+function appendProjectCheckpointConversationGuide(
+  state: ProjectStoreState,
+  input: {
+    projectId: string;
+    decision: "waiting_user" | "waiting_approval";
+    managerName: string;
+  },
+) {
+  const room = state.rooms.find((item) => item.id === input.projectId) ?? null;
+
+  if (!room) {
+    return;
+  }
+
+  const teamConversationId = ensureTeamConversation(state, room);
+  const guide = buildProjectCheckpointConversationGuide({
+    decision: input.decision,
+    hasOpenAutonomyGates: findOpenProjectAutonomyGates(state, input.projectId).length > 0,
+  });
+
+  appendTeamConversationMessages(teamConversationId, [
+    {
+      actorLabel: input.managerName || findProjectActorLabel(state, input.projectId, "lead"),
+      content: guide,
+    },
+  ]);
 }
 
 function inferRuntimeStageLabel(agent: ProjectAgentRecord | null, task?: string | null) {
@@ -3663,6 +3876,11 @@ function applyProjectManagerCheckpoint(
     phase: runStatus,
   });
   syncProjectArtifactCount(state, input.projectId);
+  appendProjectCheckpointConversationGuide(state, {
+    projectId: input.projectId,
+    decision: input.decision,
+    managerName,
+  });
 }
 
 export async function runProject(
@@ -4001,6 +4219,7 @@ export async function runProject(
     meta: triggerLabel,
     status: "done",
   });
+  void scheduleBoundConversationHistorySync(teamConversationId);
 
   if (!manager) {
     appendTeamConversationMessages(teamConversationId, [
@@ -4207,6 +4426,7 @@ export async function updateProjectCheckpoint(
   input: {
     action: ProjectCheckpointAction;
     note?: string | null;
+    conversationMessage?: string | null;
   },
 ) {
   const state = readState();
@@ -4219,6 +4439,7 @@ export async function updateProjectCheckpoint(
   }
 
   const note = input.note?.trim() || null;
+  const conversationMessage = input.conversationMessage?.trim() || null;
   const latestRun = state.runs.find((item) => item.projectId === projectId) ?? null;
   const now = new Date().toISOString();
   const teamConversationId = ensureTeamConversation(state, room);
@@ -4275,12 +4496,24 @@ export async function updateProjectCheckpoint(
       ...state.events,
     ];
 
-    if (manager) {
+    if (conversationMessage || manager) {
       appendTeamConversationMessages(teamConversationId, [
-        {
-          actorLabel: manager.name,
-          content: pauseReply,
-        },
+        ...(conversationMessage
+          ? [
+              {
+                role: "user" as const,
+                content: conversationMessage,
+              },
+            ]
+          : []),
+        ...(manager
+          ? [
+              {
+                actorLabel: manager.name,
+                content: pauseReply,
+              },
+            ]
+          : []),
       ]);
     }
 
@@ -4402,11 +4635,11 @@ export async function updateProjectCheckpoint(
     ];
 
     appendTeamConversationMessages(teamConversationId, [
-      ...(note
+      ...((conversationMessage || note)
         ? [
             {
               role: "user" as const,
-              content: note,
+              content: conversationMessage || note || "",
             },
           ]
         : []),
@@ -4525,7 +4758,12 @@ export async function updateProjectCheckpoint(
       ];
 
       appendTeamConversationMessages(teamConversationId, [
-        note
+        conversationMessage
+          ? {
+              role: "user" as const,
+              content: conversationMessage,
+            }
+          : note
           ? {
               role: "user" as const,
               content: note,
@@ -4651,6 +4889,7 @@ export async function updateProjectCheckpoint(
       now,
       latestRunId: latestRun?.id ?? null,
       approvalNote: note,
+      conversationMessage,
     });
   }
 
@@ -4783,13 +5022,18 @@ export async function updateProjectCheckpoint(
     appendTeamConversationMessages(teamConversationId, [
       {
         role: "user",
-        content: note,
+        content: conversationMessage || note,
       },
       {
         actorLabel: findProjectActorLabel(state, projectId, "lead"),
         content: "收到新的补充方向。我会先暂停当前收尾流程，等确认后按这个更新重启团队协作。",
       },
     ]);
+    appendProjectCheckpointConversationGuide(state, {
+      projectId,
+      decision: "waiting_user",
+      managerName,
+    });
     writeState(state);
 
     return getProjectDetail(projectId);
@@ -4865,7 +5109,7 @@ export async function updateProjectCheckpoint(
   appendTeamConversationMessages(teamConversationId, [
     {
       role: "user",
-      content: nextPrompt,
+      content: conversationMessage || nextPrompt,
     },
     {
       actorLabel: findProjectActorLabel(state, projectId, "lead"),
@@ -5625,6 +5869,7 @@ function ensureTeamConversation(state: ProjectStoreState, room: ProjectRoomRecor
     meta: "Team Room 已启动",
     status: "done",
   });
+  void scheduleBoundConversationHistorySync(created.conversationId);
 
   return created.conversationId;
 }
@@ -5646,6 +5891,8 @@ function appendTeamConversationMessages(
       status: "done",
     });
   });
+
+  void scheduleBoundConversationHistorySync(conversationId);
 }
 
 function buildProjectConversationReplies(
@@ -9855,6 +10102,7 @@ function finalizeProjectRun(
     now: string;
     latestRunId: string | null;
     approvalNote: string | null;
+    conversationMessage?: string | null;
   },
 ) {
   const runSummary = buildRunSummary(input.goal, input.approvalNote);
@@ -9956,7 +10204,12 @@ function finalizeProjectRun(
   syncProjectArtifactCount(state, input.projectId);
   if (teamConversationId) {
     appendTeamConversationMessages(teamConversationId, [
-      input.approvalNote
+      input.conversationMessage
+        ? {
+            role: "user" as const,
+            content: input.conversationMessage,
+          }
+        : input.approvalNote
         ? {
             role: "user" as const,
             content: input.approvalNote,
@@ -9967,7 +10220,9 @@ function finalizeProjectRun(
           },
       {
         actorLabel: findProjectActorLabel(state, input.projectId, "lead"),
-        content: "收到，我已经把这一轮结果整理为最终结论并完成收尾。后续如果有新目标或补充，我们可以继续在这个 Team Room 上启动下一轮。",
+        content:
+          "收到，我已经把这一轮结果整理为最终结论并完成收尾。\n" +
+          buildProjectCompletedConversationGuide(),
       },
     ]);
   }

@@ -2,6 +2,7 @@ import {
   clearConversationBindings,
   reconcileConversationBinding,
 } from "@/lib/channels/channel-store";
+import { syncBoundConversationHistory } from "@/lib/channels/bound-conversation-sync";
 import {
   createConversation,
   deleteConversation,
@@ -28,15 +29,21 @@ export function createConversationManagementService(
   const remove = dependencies.remove ?? deleteConversation;
 
   return {
-    create(input?: Parameters<ConversationCreator>[0]) {
+    async create(input?: Parameters<ConversationCreator>[0]) {
       const result = create(input);
       syncConversationFeishuBinding(findConversationFromResult(result, result.conversationId));
-      return result;
+      const syncResult = await syncBoundConversationHistory(result.conversationId);
+
+      return {
+        ...result,
+        snapshot: syncResult.snapshot,
+      };
     },
-    update(conversationId: string, patch: Parameters<ConversationUpdater>[1]) {
+    async update(conversationId: string, patch: Parameters<ConversationUpdater>[1]) {
       const snapshot = update(conversationId, patch);
       syncConversationFeishuBinding(findConversationFromResult({ snapshot }, conversationId));
-      return snapshot;
+      const syncResult = await syncBoundConversationHistory(conversationId);
+      return syncResult.snapshot;
     },
     remove(conversationId: string) {
       clearConversationBindings(conversationId);

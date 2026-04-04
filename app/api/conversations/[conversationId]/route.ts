@@ -26,7 +26,7 @@ export async function PATCH(
     lastAssistantModel?: string | null;
     feishuChatSessionId?: string | null;
   }>(request, {});
-  const snapshot = conversationManagementService.update(conversationId, body);
+  const snapshot = await conversationManagementService.update(conversationId, body);
 
   return json({ snapshot });
 }

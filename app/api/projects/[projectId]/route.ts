@@ -61,7 +61,7 @@ export async function PATCH(
       feishuChatSessionId?: string | null;
     }>(request);
 
-    const detail =
+    const detail = await (
       typeof body.workspaceDir === "string"
         ? projectManagementService.updateWorkspaceDir(projectId, body.workspaceDir)
         : body.sandboxMode
@@ -73,7 +73,8 @@ export async function PATCH(
               action: body.action,
               note: body.note,
             })
-          : null;
+          : null
+    );
 
     if (
       !body.action &&

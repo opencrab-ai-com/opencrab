@@ -9,6 +9,7 @@ import {
   WRITER_AGENT_NAME,
 } from "@/tests/helpers/team-agents";
 import {
+  loadLocalStore,
   loadProjectStore,
   queueConversationReplies,
   setupProjectStoreTestHome,
@@ -90,6 +91,200 @@ describe("project store runtime operations", () => {
     expect(detail.heartbeats.some((heartbeat) => heartbeat.agentName === managerName)).toBe(true);
     expect(detail.heartbeats.some((heartbeat) => heartbeat.agentName === STRATEGY_AGENT_NAME)).toBe(true);
     expect(detail.stuckSignals).toHaveLength(0);
+  });
+
+  it("publishes checkpoint guidance into the team chat and lets the user confirm directly there", async () => {
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-runtime-");
+    seedTestTeamAgents(tempHome);
+
+    queueConversationReplies(runConversationTurnMock, [
+      JSON.stringify({
+        decision: "delegate",
+        group_reply: `先由 @${STRATEGY_AGENT_NAME} 输出这一轮结构化判断，我拿到结果后再收束成 checkpoint。`,
+        checkpoint_summary: "",
+        delegations: [
+          {
+            agentName: STRATEGY_AGENT_NAME,
+            task: "围绕当前目标给出一版结构化判断，明确范围、风险和下一步建议。",
+            artifactTitles: ["团队目标"],
+          },
+        ],
+      }),
+      "我已经给出一版结构化判断，包含范围、风险和下一步建议。",
+      JSON.stringify({
+        decision: "waiting_approval",
+        group_reply: "这一轮已经拿到足够稳定的阶段结果了，你可以确认结束，或者继续补充方向。",
+        checkpoint_summary: "团队已经完成这一轮结构化判断，当前有可交付的阶段结果，等待用户确认或补充。",
+        delegations: [],
+      }),
+    ], {
+      threadPrefix: "runtime-thread",
+      thinkingPrefix: "runtime-step",
+    });
+
+    const projectStore = await loadProjectStore();
+    const localStore = await loadLocalStore();
+    const created = projectStore.createProject({
+      goal: "验证群聊内直接确认",
+      workspaceDir,
+      agentProfileIds: ["project-manager", STRATEGY_AGENT_ID],
+    });
+    const projectId = created?.project?.id ?? null;
+
+    expect(projectId).toBeTruthy();
+
+    if (!projectId) {
+      throw new Error("projectId should exist after createProject");
+    }
+
+    await projectStore.runProject(projectId, {
+      triggerLabel: "启动群聊确认用例",
+      triggerPrompt: "推进这一轮，并在群聊里给我确认入口。",
+    });
+    await waitForProjectRuntime(projectId);
+
+    const waitingDetail = projectStore.getProjectDetail(projectId);
+    const teamConversationId = waitingDetail?.project?.teamConversationId ?? null;
+
+    if (!teamConversationId) {
+      throw new Error("teamConversationId should exist after runtime");
+    }
+
+    const waitingMessages = localStore.getSnapshot().conversationMessages[teamConversationId] ?? [];
+
+    expect(waitingDetail?.project?.runStatus).toBe("waiting_approval");
+    expect(
+      waitingMessages.some(
+        (message) =>
+          message.role === "assistant" &&
+          message.content.includes("这轮已经可以收口了"),
+      ),
+    ).toBe(true);
+    expect(
+      waitingMessages.some(
+        (message) => message.role === "assistant" && message.content.includes("确认完成"),
+      ),
+    ).toBe(true);
+
+    await projectStore.replyToProjectConversation({
+      projectId,
+      conversationId: teamConversationId,
+      content: "确认完成",
+    });
+
+    const detail = projectStore.getProjectDetail(projectId);
+    const finalMessages = localStore.getSnapshot().conversationMessages[teamConversationId] ?? [];
+
+    expect(detail?.project?.runStatus).toBe("completed");
+    expect(finalMessages.some((message) => message.role === "user" && message.content === "确认完成")).toBe(true);
+    expect(
+      finalMessages.some(
+        (message) => message.role === "assistant" && message.content.includes("完成收尾"),
+      ),
+    ).toBe(true);
+    expect(
+      finalMessages.some(
+        (message) =>
+          message.role === "assistant" &&
+          message.content.includes("直接发新的要求、目标或补充"),
+      ),
+    ).toBe(true);
+  });
+
+  it("treats group chat feedback as request changes and resumes from waiting_user without leaving the thread", async () => {
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-runtime-");
+    seedTestTeamAgents(tempHome);
+
+    queueConversationReplies(runConversationTurnMock, [
+      JSON.stringify({
+        decision: "delegate",
+        group_reply: `先由 @${STRATEGY_AGENT_NAME} 输出这一轮结构化判断，我拿到结果后再收束成 checkpoint。`,
+        checkpoint_summary: "",
+        delegations: [
+          {
+            agentName: STRATEGY_AGENT_NAME,
+            task: "围绕当前目标给出一版结构化判断，明确范围、风险和下一步建议。",
+            artifactTitles: ["团队目标"],
+          },
+        ],
+      }),
+      "我已经给出一版结构化判断，包含范围、风险和下一步建议。",
+      JSON.stringify({
+        decision: "waiting_approval",
+        group_reply: "这一轮已经拿到足够稳定的阶段结果了，你可以确认结束，或者继续补充方向。",
+        checkpoint_summary: "团队已经完成这一轮结构化判断，当前有可交付的阶段结果，等待用户确认或补充。",
+        delegations: [],
+      }),
+      JSON.stringify({
+        decision: "waiting_approval",
+        group_reply: "我已经按新的补充方向把风险和验收标准补齐了，你可以再确认一次。",
+        checkpoint_summary: "团队已经补齐风险和验收标准，当前可以再次确认。",
+        delegations: [],
+      }),
+    ], {
+      threadPrefix: "runtime-thread",
+      thinkingPrefix: "runtime-step",
+    });
+
+    const projectStore = await loadProjectStore();
+    const localStore = await loadLocalStore();
+    const created = projectStore.createProject({
+      goal: "验证群聊内直接改方向后继续",
+      workspaceDir,
+      agentProfileIds: ["project-manager", STRATEGY_AGENT_ID],
+    });
+    const projectId = created?.project?.id ?? null;
+
+    expect(projectId).toBeTruthy();
+
+    if (!projectId) {
+      throw new Error("projectId should exist after createProject");
+    }
+
+    await projectStore.runProject(projectId, {
+      triggerLabel: "启动群聊改方向用例",
+      triggerPrompt: "先推进到 checkpoint，再在群聊里直接改方向并继续。",
+    });
+    await waitForProjectRuntime(projectId);
+
+    const waitingDetail = projectStore.getProjectDetail(projectId);
+    const teamConversationId = waitingDetail?.project?.teamConversationId ?? null;
+
+    if (!teamConversationId) {
+      throw new Error("teamConversationId should exist after runtime");
+    }
+
+    await projectStore.replyToProjectConversation({
+      projectId,
+      conversationId: teamConversationId,
+      content: "把风险和验收标准再补详细一点",
+    });
+
+    const waitingUserDetail = projectStore.getProjectDetail(projectId);
+    const waitingUserMessages = localStore.getSnapshot().conversationMessages[teamConversationId] ?? [];
+
+    expect(waitingUserDetail?.project?.runStatus).toBe("waiting_user");
+    expect(waitingUserDetail?.project?.latestUserRequest).toBe("把风险和验收标准再补详细一点");
+    expect(
+      waitingUserMessages.some(
+        (message) =>
+          message.role === "assistant" &&
+          message.content.includes("这轮我先停在这里"),
+      ),
+    ).toBe(true);
+
+    await projectStore.replyToProjectConversation({
+      projectId,
+      conversationId: teamConversationId,
+      content: "继续推进",
+    });
+    await waitForProjectRuntime(projectId);
+
+    const resumedDetail = projectStore.getProjectDetail(projectId);
+    const resumeManagerPrompt = runConversationTurnMock.mock.calls[3]?.[0]?.content ?? "";
+
+    expect(resumedDetail?.project?.runStatus).toBe("waiting_approval");
+    expect(resumeManagerPrompt).toContain("把风险和验收标准再补详细一点");
   });
 
   it("reassigns a stalled task to a peer and records stuck / recovery signals", async () => {
@@ -361,6 +556,81 @@ describe("project store runtime operations", () => {
     expect(detail.recoveryActions.some((action) => action.kind === "rollback_to_checkpoint")).toBe(true);
     expect(
       detail.events.some((event) => event.title === "已要求从最近 checkpoint 重跑"),
+    ).toBe(true);
+  });
+
+  it("lets the user stop a running team directly from the group chat", async () => {
+    const { tempHome, workspaceDir } = createTempHome("opencrab-project-runtime-");
+    seedTestTeamAgents(tempHome);
+
+    const projectStore = await loadProjectStore();
+    const localStore = await loadLocalStore();
+    const created = projectStore.createProject({
+      goal: "验证群聊内直接阻断运行",
+      workspaceDir,
+      agentProfileIds: ["project-manager", STRATEGY_AGENT_ID],
+    });
+    const projectId = created?.project?.id ?? null;
+
+    expect(projectId).toBeTruthy();
+
+    if (!projectId) {
+      throw new Error("projectId should exist after createProject");
+    }
+
+    const storePath = path.join(tempHome, "state", "projects.json");
+    const rawState = JSON.parse(readFileSync(storePath, "utf8")) as {
+      rooms: Array<Record<string, unknown>>;
+      runs: Array<Record<string, unknown>>;
+    };
+
+    rawState.rooms = rawState.rooms.map((room) =>
+      room.id === projectId
+        ? {
+            ...room,
+            status: "active",
+            runStatus: "running",
+            currentStageLabel: "开发实现",
+          }
+        : room,
+    );
+    rawState.runs = [
+      {
+        id: `${projectId}-run-live`,
+        projectId,
+        status: "running",
+        triggerLabel: "运行中",
+        summary: "当前团队正在推进。",
+        currentStepLabel: "等待成员交回结果",
+        startedAt: "2026-03-23T00:00:00.000Z",
+        finishedAt: null,
+      },
+      ...rawState.runs.filter((run) => run.projectId !== projectId),
+    ];
+
+    writeFileSync(storePath, JSON.stringify(rawState, null, 2));
+
+    await projectStore.replyToProjectConversation({
+      projectId,
+      conversationId: "conversation-runtime-block",
+      content: "先阻断当前运行",
+    });
+
+    const detail = projectStore.getProjectDetail(projectId);
+    const teamConversationId = detail?.project?.teamConversationId ?? null;
+
+    if (!teamConversationId) {
+      throw new Error("teamConversationId should exist after blocking the runtime");
+    }
+
+    const messages = localStore.getSnapshot().conversationMessages[teamConversationId] ?? [];
+
+    expect(detail?.project?.runStatus).toBe("paused");
+    expect(messages.some((message) => message.role === "user" && message.content === "先阻断当前运行")).toBe(true);
+    expect(
+      messages.some(
+        (message) => message.role === "assistant" && message.content.includes("暂停当前团队推进"),
+      ),
     ).toBe(true);
   });
 

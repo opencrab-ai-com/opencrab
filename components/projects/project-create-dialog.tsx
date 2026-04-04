@@ -489,8 +489,8 @@ export function ProjectCreateDialog({ isOpen, onClose }: ProjectCreateDialogProp
     onClose();
   }
 
-  function toggleOptionalAgent(agentId: string) {
-    if (!validTeamAgentIds.has(agentId) || requiredAgentIds.includes(agentId)) {
+  function toggleAgentSelection(agentId: string) {
+    if (!validTeamAgentIds.has(agentId)) {
       return;
     }
 
@@ -672,7 +672,7 @@ export function ProjectCreateDialog({ isOpen, onClose }: ProjectCreateDialogProp
                     <div>
                       <div className="text-[13px] font-medium text-text">Step 3 / 推荐 Agents</div>
                       <p className="mt-2 text-[14px] leading-7 text-muted-strong">
-                        先看系统推荐的最小阵容，再决定是否手动补充。候选 Agent 会按类别收起展示，不再完全平铺。
+                        先看系统推荐的最小阵容，再决定保留哪些、去掉哪些，或手动补充。候选 Agent 会按类别收起展示，不再完全平铺。
                       </p>
                     </div>
                     <MetaPill>{teamAgents.length} 个可选 Agent</MetaPill>
@@ -697,8 +697,7 @@ export function ProjectCreateDialog({ isOpen, onClose }: ProjectCreateDialogProp
                         recommendations={teamPlan.recommendedAgents.filter((item) => item.priority === "required")}
                         agentsById={agentsById}
                         selectedAgentIds={selectedAgentIds}
-                        onToggle={toggleOptionalAgent}
-                        locked
+                        onToggle={toggleAgentSelection}
                       />
 
                       <AgentCardGroup
@@ -706,7 +705,7 @@ export function ProjectCreateDialog({ isOpen, onClose }: ProjectCreateDialogProp
                         description="这些成员是能力缺口里提到的现有补位选择。"
                         agents={gapSuggestedAgents}
                         selectedAgentIds={selectedAgentIds}
-                        onToggle={toggleOptionalAgent}
+                        onToggle={toggleAgentSelection}
                       />
 
                       <AgentRecommendationSection
@@ -715,7 +714,7 @@ export function ProjectCreateDialog({ isOpen, onClose }: ProjectCreateDialogProp
                         recommendations={optionalRecommendations}
                         agentsById={agentsById}
                         selectedAgentIds={selectedAgentIds}
-                        onToggle={toggleOptionalAgent}
+                        onToggle={toggleAgentSelection}
                       />
                     </div>
                   ) : (
@@ -753,7 +752,7 @@ export function ProjectCreateDialog({ isOpen, onClose }: ProjectCreateDialogProp
                             key={collection.id}
                             collection={collection}
                             selectedAgentIds={selectedAgentIds}
-                            onToggle={toggleOptionalAgent}
+                            onToggle={toggleAgentSelection}
                             forceOpen={Boolean(deferredAgentQuery.trim())}
                           />
                         ))
