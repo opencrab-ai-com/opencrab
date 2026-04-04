@@ -8,7 +8,7 @@ This guide is for:
 
 If you only want to start using OpenCrab, the simpler path is the released Mac app:
 
-- [OpenCrab Desktop v0.1.0](https://github.com/KetteyMan/opencrab/releases/tag/v0.1.0)
+- [OpenCrab Desktop v0.1.1](https://github.com/opencrab-ai-com/opencrab/releases/tag/v0.1.1)
 
 ## 0. Prerequisites
 

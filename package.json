@@ -1,6 +1,6 @@
 {
   "name": "opencrab",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "OpenCrab is a local-first AI workspace that turns ChatGPT into an operator for projects, tasks, channels, and browser workflows.",
   "author": "OpenCrab",
