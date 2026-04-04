@@ -1,4 +1,5 @@
 import { getAgentProfile } from "@/lib/agents/agent-store";
+import { syncBoundConversationHistory } from "@/lib/channels/bound-conversation-sync";
 import { streamCodexReply } from "@/lib/codex/sdk";
 import {
   finalizeConversationTurn,
@@ -100,10 +101,11 @@ export async function buildConversationReplyStream(
             usage: event.usage,
             thinking: event.thinking,
           });
+          const syncResult = await syncBoundConversationHistory(input.conversationId);
 
           emit({
             type: "done",
-            snapshot: assistantMessageResult.snapshot,
+            snapshot: syncResult.snapshot,
             assistant: {
               text: event.text,
               model: event.model,

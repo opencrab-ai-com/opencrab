@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/KetteyMan/opencrab"><img alt="OpenCrab Repo" src="https://img.shields.io/badge/GitHub-opencrab-black?logo=github"></a>
-  <a href="https://github.com/KetteyMan/opencrab/releases/tag/v0.1.0"><img alt="OpenCrab Desktop v0.1.0" src="https://img.shields.io/badge/macOS%20App-v0.1.0-111111?logo=apple"></a>
+  <a href="https://github.com/opencrab-ai-com/opencrab/releases/tag/v0.1.1"><img alt="OpenCrab Desktop v0.1.1" src="https://img.shields.io/badge/macOS%20App-v0.1.1-111111?logo=apple"></a>
   <a href="./LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-green.svg"></a>
   <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs">
   <img alt="React 19" src="https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white">
@@ -16,7 +16,7 @@
 </p>
 
 OpenCrab is a Chinese-first, local-first, chat-native open-source AI workspace.  
-`OpenCrab for Mac` is already available as a desktop app: [`OpenCrab Desktop v0.1.0`](https://github.com/KetteyMan/opencrab/releases/tag/v0.1.0).
+`OpenCrab for Mac` is already available as a desktop app: [`OpenCrab Desktop v0.1.1`](https://github.com/opencrab-ai-com/opencrab/releases/tag/v0.1.1).
 
 - Website: [opencrab-ai.com](https://opencrab-ai.com)
 - Email: [sky@opencrab-ai.com](mailto:sky@opencrab-ai.com)
@@ -57,7 +57,7 @@ OpenCrab is a Chinese-first, local-first, chat-native open-source AI workspace.
 ### 1. Non-technical users
 
 - The recommended path is to install the macOS desktop app.
-- Current release: [`OpenCrab Desktop v0.1.0`](https://github.com/KetteyMan/opencrab/releases/tag/v0.1.0)
+- Current release: [`OpenCrab Desktop v0.1.1`](https://github.com/opencrab-ai-com/opencrab/releases/tag/v0.1.1)
 - After installation, follow the in-app flow to connect ChatGPT / Codex and start using it.
 
 ### 2. Beginner technical users

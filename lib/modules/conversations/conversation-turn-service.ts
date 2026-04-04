@@ -1,4 +1,5 @@
 import { runConversationTurn } from "@/lib/conversations/run-conversation-turn";
+import { syncBoundConversationHistory } from "@/lib/channels/bound-conversation-sync";
 
 export type ConversationTurnExecutor = typeof runConversationTurn;
 
@@ -12,7 +13,15 @@ export function createConversationTurnService(
   const executeTurn = dependencies.executeTurn ?? runConversationTurn;
 
   return {
-    reply: executeTurn,
+    async reply(input: Parameters<ConversationTurnExecutor>[0]) {
+      const result = await executeTurn(input);
+      const syncResult = await syncBoundConversationHistory(input.conversationId);
+
+      return {
+        ...result,
+        snapshot: syncResult.snapshot,
+      };
+    },
   };
 }
 

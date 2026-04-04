@@ -1,5 +1,6 @@
 import type { ChildProcessWithoutNullStreams } from "node:child_process";
 import { spawnCodexCommand } from "@/lib/codex/executable";
+import packageJson from "../../package.json";
 
 type AppServerResponseMessage = {
   id: string | number;
@@ -144,7 +145,7 @@ export async function createCodexAppServerClient(
     clientInfo: {
       name: "opencrab",
       title: "OpenCrab",
-      version: "0.1.0",
+      version: packageJson.version,
     },
     capabilities: null,
   });

@@ -1,5 +1,7 @@
+import { mkdtempSync, rmSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import { createProjectManagementService } from "@/lib/modules/projects/project-management-service";
 import { createProjectQueryService } from "@/lib/modules/projects/project-query-service";
 import { createProjectRuntimeService } from "@/lib/modules/projects/project-runtime-service";
 import type { ProjectDetail, ProjectRoomRecord } from "@/lib/projects/types";
@@ -69,13 +71,21 @@ describe("project module services", () => {
     expect(getDetail).toHaveBeenCalledWith("project-1");
   });
 
-  it("delegates create and delete through the management service", () => {
+  it("delegates create and delete through the management service", async () => {
+    const originalOpencrabHome = process.env.OPENCRAB_HOME;
+    const tempHome = mkdtempSync(path.join(os.tmpdir(), "opencrab-project-services-"));
+    process.env.OPENCRAB_HOME = tempHome;
+    vi.resetModules();
+
     const detail = createProjectDetail();
     const create = vi.fn(() => detail);
     const remove = vi.fn(() => true);
     const updateWorkspaceDir = vi.fn(() => detail);
     const updateSandboxMode = vi.fn(() => detail);
     const updateFeishuChatSessionId = vi.fn(() => detail);
+    const { createProjectManagementService } = await import(
+      "@/lib/modules/projects/project-management-service"
+    );
     const service = createProjectManagementService({
       create,
       remove,
@@ -84,32 +94,44 @@ describe("project module services", () => {
       updateFeishuChatSessionId,
     });
 
-    expect(
-      service.create({
+    try {
+      expect(
+        service.create({
+          goal: "Ship a feature",
+          workspaceDir: "/tmp/team-alpha",
+          agentProfileIds: ["project-manager"],
+          model: "gpt-5.4",
+          reasoningEffort: "high",
+          sandboxMode: "workspace-write",
+        }),
+      ).toEqual(detail);
+      expect(service.remove("project-1")).toBe(true);
+      expect(service.updateWorkspaceDir("project-1", "/tmp/team-beta")).toEqual(detail);
+      expect(service.updateSandboxMode("project-1", "read-only")).toEqual(detail);
+      await expect(
+        service.updateFeishuChatSessionId("project-1", "oc_team_room"),
+      ).resolves.toEqual(detail);
+      expect(create).toHaveBeenCalledWith({
         goal: "Ship a feature",
         workspaceDir: "/tmp/team-alpha",
         agentProfileIds: ["project-manager"],
         model: "gpt-5.4",
         reasoningEffort: "high",
         sandboxMode: "workspace-write",
-      }),
-    ).toEqual(detail);
-    expect(service.remove("project-1")).toBe(true);
-    expect(service.updateWorkspaceDir("project-1", "/tmp/team-beta")).toEqual(detail);
-    expect(service.updateSandboxMode("project-1", "read-only")).toEqual(detail);
-    expect(service.updateFeishuChatSessionId("project-1", "oc_team_room")).toEqual(detail);
-    expect(create).toHaveBeenCalledWith({
-      goal: "Ship a feature",
-      workspaceDir: "/tmp/team-alpha",
-      agentProfileIds: ["project-manager"],
-      model: "gpt-5.4",
-      reasoningEffort: "high",
-      sandboxMode: "workspace-write",
-    });
-    expect(remove).toHaveBeenCalledWith("project-1");
-    expect(updateWorkspaceDir).toHaveBeenCalledWith("project-1", "/tmp/team-beta");
-    expect(updateSandboxMode).toHaveBeenCalledWith("project-1", "read-only");
-    expect(updateFeishuChatSessionId).toHaveBeenCalledWith("project-1", "oc_team_room");
+      });
+      expect(remove).toHaveBeenCalledWith("project-1");
+      expect(updateWorkspaceDir).toHaveBeenCalledWith("project-1", "/tmp/team-beta");
+      expect(updateSandboxMode).toHaveBeenCalledWith("project-1", "read-only");
+      expect(updateFeishuChatSessionId).toHaveBeenCalledWith("project-1", "oc_team_room");
+    } finally {
+      if (originalOpencrabHome === undefined) {
+        delete process.env.OPENCRAB_HOME;
+      } else {
+        process.env.OPENCRAB_HOME = originalOpencrabHome;
+      }
+
+      rmSync(tempHome, { recursive: true, force: true });
+    }
   });
 
   it("delegates run and checkpoint actions through the runtime service", async () => {

@@ -2,6 +2,7 @@ import {
   ensureChannelStartupSync,
   ensureChannelWatchdog,
 } from "@/lib/channels/channel-startup";
+import { ensureBoundConversationHistorySync } from "@/lib/channels/bound-conversation-sync";
 import { ensureBoundConversationMetadataSync } from "@/lib/channels/conversation-sync";
 import { syncAllChannelConfigsFromSecrets } from "@/lib/channels/secret-store";
 import { ensureBrowserSessionWarmup } from "@/lib/codex/browser-session";
@@ -35,6 +36,11 @@ const BOOTSTRAP_TASKS: RuntimeStartupTask[] = [
     event: "bootstrap_conversation_metadata_sync_failed",
     message: "渠道会话元数据同步失败。",
     run: () => ensureBoundConversationMetadataSync(),
+  },
+  {
+    event: "bootstrap_conversation_history_sync_failed",
+    message: "绑定会话历史同步失败。",
+    run: () => ensureBoundConversationHistorySync(),
   },
 ];
 
@@ -75,6 +81,11 @@ export function ensureAppShellRuntimeReady() {
     event: "app_shell_browser_warmup_failed",
     message: "浏览器预热失败。",
     run: () => ensureBrowserSessionWarmup(),
+  });
+  runRuntimeStartupTask({
+    event: "app_shell_bound_conversation_history_sync_failed",
+    message: "绑定会话历史同步失败。",
+    run: () => ensureBoundConversationHistorySync(),
   });
 }
 

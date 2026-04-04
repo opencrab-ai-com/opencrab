@@ -1,15 +1,14 @@
 import { findEventByDedupeKey, markChannelError } from "@/lib/channels/channel-store";
+import { syncBoundConversationHistory } from "@/lib/channels/bound-conversation-sync";
 import {
   handleInboundChannelTextMessage,
   recordIgnoredInboundEvent,
-  recordOutboundDelivery,
   recordReceivedInboundEvent,
   summarizeChannelInbound,
 } from "@/lib/channels/dispatcher";
 import {
   acknowledgeFeishuInboundMessage,
   downloadFeishuAttachments,
-  sendFeishuReply,
   sendFeishuTextMessage,
   type FeishuInboundMessage,
 } from "@/lib/channels/feishu";
@@ -59,18 +58,8 @@ async function processFeishuInboundMessage(inbound: FeishuInboundMessage) {
       ...inbound,
       attachmentIds: attachments.map((attachment) => attachment.id),
     });
-    const delivery = await sendFeishuReply({
-      chatId: inbound.remoteChatId,
-      text: handled.replyText,
-      attachments: handled.replyAttachments,
-    });
-
-    recordOutboundDelivery({
-      channelId: "feishu",
-      binding: handled.binding,
-      remoteMessageId: delivery.remoteMessageId,
-      text: handled.replyText,
-      attachmentCount: handled.replyAttachments.length,
+    await syncBoundConversationHistory(handled.conversationId, {
+      throwOnError: true,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "飞书消息处理失败。";

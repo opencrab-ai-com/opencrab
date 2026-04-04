@@ -285,6 +285,49 @@ export function upsertMessage(
   };
 }
 
+export function updateMessageRemoteDelivery(
+  conversationId: string,
+  messageId: string,
+  patch: {
+    remoteMessageId?: string | null;
+    remoteChatId?: string | null;
+  },
+) {
+  const state = readState();
+  const currentMessages = state.conversationMessages[conversationId] ?? [];
+  let changed = false;
+
+  state.conversationMessages[conversationId] = currentMessages.map((message) => {
+    if (message.id !== messageId) {
+      return message;
+    }
+
+    const nextRemoteMessageId = normalizeOptionalText(patch.remoteMessageId);
+    const nextRemoteChatId = normalizeOptionalText(patch.remoteChatId);
+
+    if (
+      (message.remoteMessageId ?? null) === nextRemoteMessageId &&
+      (message.remoteChatId ?? null) === nextRemoteChatId
+    ) {
+      return message;
+    }
+
+    changed = true;
+
+    return {
+      ...message,
+      remoteMessageId: nextRemoteMessageId,
+      remoteChatId: nextRemoteChatId,
+    };
+  });
+
+  if (changed) {
+    writeState(state);
+  }
+
+  return cloneSnapshot(state);
+}
+
 export function updateSettings(settings: Partial<AppSettings>) {
   const state = readState();
   state.settings = {
@@ -487,6 +530,10 @@ function normalizeConversationSandboxMode(
 }
 
 function normalizeFeishuChatSessionId(value: string | null | undefined) {
+  return normalizeOptionalText(value);
+}
+
+function normalizeOptionalText(value: string | null | undefined) {
   if (typeof value !== "string") {
     return null;
   }
@@ -510,6 +557,7 @@ function normalizeMessages(messages: ConversationMessage[]) {
       actorLabel: message.actorLabel ?? undefined,
       source: message.source ?? "local",
       remoteMessageId: message.remoteMessageId ?? null,
+      remoteChatId: normalizeOptionalText(message.remoteChatId),
       timestamp: inferredTimestamp,
     };
   });
@@ -634,6 +682,7 @@ function buildConversationMessage(
     timestamp: message.timestamp ?? new Date().toISOString(),
     source: message.source ?? "local",
     remoteMessageId: message.remoteMessageId ?? null,
+    remoteChatId: normalizeOptionalText(message.remoteChatId),
     attachments: message.attachments ? structuredClone(message.attachments) : undefined,
     usedAttachmentNames: message.usedAttachmentNames
       ? structuredClone(message.usedAttachmentNames)

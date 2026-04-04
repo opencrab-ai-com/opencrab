@@ -1186,6 +1186,7 @@ function areConversationMessagesEqual(
         message.timestamp === target.timestamp &&
         message.source === target.source &&
         message.remoteMessageId === target.remoteMessageId &&
+        message.remoteChatId === target.remoteChatId &&
         message.meta === target.meta &&
         message.status === target.status &&
         areStringListsEqual(message.usedAttachmentNames, target.usedAttachmentNames) &&

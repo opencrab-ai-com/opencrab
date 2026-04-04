@@ -27,6 +27,7 @@ import {
 } from "@/lib/runtime/node-exec";
 import { resolveBrowserMcpInvocation } from "@/lib/codex/browser-mcp-executable";
 import runtimeNetworkConfig from "@/lib/runtime/runtime-network-config.shared.js";
+import packageJson from "../../package.json";
 
 const { resolveOpenCrabAppOrigin } = runtimeNetworkConfig;
 
@@ -234,7 +235,7 @@ export async function handleBrowserMcpRequest(request: Request) {
   const server = new Server(
     {
       name: "opencrab-browser-bridge",
-      version: "0.1.0",
+      version: packageJson.version,
     },
     {
       capabilities: {
@@ -324,7 +325,7 @@ async function createBrowserBridge(mode: BrowserConnectionMode): Promise<Browser
 
   const client = new Client({
     name: "opencrab-browser-bridge",
-    version: "0.1.0",
+    version: packageJson.version,
   });
 
   try {

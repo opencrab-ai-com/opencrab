@@ -40,6 +40,7 @@ type ConversationTurnInput = {
   assistantMessageId?: string;
   userMessageSource?: ConversationSource | null;
   remoteUserMessageId?: string | null;
+  remoteUserChatId?: string | null;
   onThreadReady?: (threadId: string | null) => void;
   onThinking?: (entries: string[]) => void;
   onAssistantText?: (text: string) => void;
@@ -82,6 +83,7 @@ export function prepareConversationTurn(input: ConversationTurnInput): PreparedC
     content: buildUserMessagePreview(content, attachments.map((attachment) => attachment.name)),
     source: input.userMessageSource ?? "local",
     remoteMessageId: input.remoteUserMessageId ?? null,
+    remoteChatId: input.remoteUserChatId ?? null,
     attachments: attachments.map((attachment) => ({
       id: attachment.id,
       name: attachment.name,

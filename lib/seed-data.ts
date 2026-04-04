@@ -75,6 +75,7 @@ export type ConversationMessage = {
   timestamp?: string;
   source?: ConversationSource | null;
   remoteMessageId?: string | null;
+  remoteChatId?: string | null;
   attachments?: AttachmentItem[];
   usedAttachmentNames?: string[];
   thinking?: string[];

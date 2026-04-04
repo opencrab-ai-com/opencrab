@@ -17,8 +17,8 @@ export const OPENCRAB_ABOUT_LINKS = [
   },
   {
     label: "GitHub",
-    value: "github.com/KetteyMan/opencrab",
-    href: "https://github.com/KetteyMan/opencrab",
+    value: "github.com/opencrab-ai-com/opencrab",
+    href: "https://github.com/opencrab-ai-com/opencrab",
     description: "查看源码、文档和公开迭代内容。",
   },
 ] as const;
