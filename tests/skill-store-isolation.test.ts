@@ -58,6 +58,15 @@ describe("skill store isolation", () => {
           skill.sourcePath === path.join(opencrabHome, "skills", "playwright", "SKILL.md"),
       ),
     ).toBe(true);
+    expect(
+      skills.some(
+        (skill) =>
+          skill.id === "brainstorming" &&
+          skill.sourcePath === path.join(opencrabHome, "skills", "brainstorming", "SKILL.md"),
+      ),
+    ).toBe(true);
+    expect(skills.some((skill) => skill.id === "writing-plans")).toBe(true);
+    expect(skills.some((skill) => skill.id === "systematic-debugging")).toBe(true);
   });
 
   function createTempDir(prefix: string) {

@@ -69,7 +69,7 @@ const FIELD_ORDER: Array<{
   {
     id: "tone",
     label: "风格气质",
-    prompt: "你希望它整体是什么气质？比如更锋利、克制、温和、直接、偏判断型、偏整理型。这个信息会进入 soul.md。",
+    prompt: "你希望它整体是什么气质？比如更锋利、克制、温和、直接、偏判断型、偏整理型。这个信息会进入 identity.md。",
     placeholder: "例如：稳、直接、敢做取舍，但不要端着",
   },
   {
@@ -81,13 +81,13 @@ const FIELD_ORDER: Array<{
   {
     id: "boundaries",
     label: "边界禁区",
-    prompt: "那它不该做什么，或者哪些场景下必须更谨慎？这部分会进入 responsibility.md 和 soul.md。",
+    prompt: "那它不该做什么，或者哪些场景下必须更谨慎？这部分会进入 contract.md 和 identity.md。",
     placeholder: "例如：不要冒充定论，不要代替用户做高风险决定",
   },
   {
     id: "tools",
     label: "工具偏好",
-    prompt: "你希望它怎么用工具？比如先读本地、再搜外部；或者要不要主动浏览、查资料、动文件。这个会进入 tools.md。",
+    prompt: "你希望它怎么用工具？比如先读本地、再搜外部；或者要不要主动浏览、查资料、动文件。这个会进入 execution.md。",
     placeholder: "例如：先读本地文档，只有需要最新事实时再搜索",
   },
   {
@@ -99,7 +99,7 @@ const FIELD_ORDER: Array<{
   {
     id: "knowledge",
     label: "长期知识",
-    prompt: "最后补长期知识。有没有什么背景、术语、上下文、产品事实，是它应该长期记住的？这个会进入 knowledge.md。",
+    prompt: "最后补长期知识。有没有什么背景、术语、上下文、产品事实，是它应该长期记住的？这个会进入 handoff.md 的长期协作与交接上下文。",
     placeholder: "例如：OpenCrab 是 chat-native 工作台，Team Mode 强调多人协作与运行收口，而不是 builder-first",
   },
 ];
@@ -475,19 +475,19 @@ function buildCreatePayload(answers: OnboardingAnswers) {
   });
 
   const files: Partial<AgentFiles> = {
-    soul: appendInterviewSection(
-      draft.files.soul,
+    identity: appendInterviewSection(
+      draft.files.identity,
       "Interview Signals",
       [`- 期望气质与表达：${answers.tone}`, `- 适用范围：${answers.availability}`].join("\n"),
     ),
-    responsibility: appendInterviewSection(
-      appendInterviewSection(draft.files.responsibility, "Explicit Priorities", answers.responsibilities),
+    contract: appendInterviewSection(
+      appendInterviewSection(draft.files.contract, "Explicit Priorities", answers.responsibilities),
       "Explicit Boundaries",
       answers.boundaries,
     ),
-    tools: appendInterviewSection(draft.files.tools, "Preferences From Interview", answers.tools),
-    user: appendInterviewSection(draft.files.user, "Collaboration Preferences From Interview", answers.userContext),
-    knowledge: appendInterviewSection(draft.files.knowledge, "Long-Term Context From Interview", answers.knowledge),
+    execution: appendInterviewSection(draft.files.execution, "Preferences From Interview", answers.tools),
+    quality: appendInterviewSection(draft.files.quality, "Collaboration Preferences From Interview", answers.userContext),
+    handoff: appendInterviewSection(draft.files.handoff, "Long-Term Context From Interview", answers.knowledge),
   };
 
   return {

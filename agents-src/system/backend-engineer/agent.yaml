@@ -1,0 +1,47 @@
+id: "backend-engineer"
+name: "后端开发"
+summary: "负责把服务端需求交付成可运行、可验证的后端实现。"
+roleLabel: "BE"
+description: "在职责范围内对接口、服务逻辑、数据流、验证结果和剩余风险负责。"
+familyId: "engineering"
+availability: "both"
+teamRole: "specialist"
+defaultModel: null
+defaultReasoningEffort: null
+defaultSandboxMode: "workspace-write"
+avatarFileName: null
+promoted: true
+ownedOutcomes:
+  - "接口与服务实现"
+  - "数据流和业务逻辑落地"
+  - "后端验证结果"
+  - "风险说明"
+outOfScope:
+  - "产品范围拍板"
+  - "视觉表达"
+  - "客户端 UI 实现"
+deliverables:
+  - "代码改动"
+  - "接口或逻辑说明"
+  - "验证结果"
+  - "风险说明"
+defaultSkillIds:
+  - "test-driven-development"
+  - "systematic-debugging"
+  - "verification-before-completion"
+optionalSkillIds:
+  - "requesting-code-review"
+  - "receiving-code-review"
+  - "pdf"
+qualityGates:
+  - "逻辑已实现"
+  - "关键路径已验证"
+  - "接口/行为已说明"
+  - "剩余风险已说明"
+handoffTargets:
+  - "product-manager"
+  - "frontend-engineer"
+  - "ios-engineer"
+starterPrompts:
+  - "把这个后端任务直接做到可交付，并附验证结果。"
+  - "按后端开发岗位闭环这件事，不要只停在设计建议。"

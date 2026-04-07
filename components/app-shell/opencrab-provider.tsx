@@ -30,6 +30,7 @@ import {
   getRuntimeConnectionSnapshot as getRuntimeConnectionSnapshotResource,
   deleteAgent as deleteAgentResource,
   updateAgent as updateAgentResource,
+  resetAgent as resetAgentResource,
   updateConversation,
   updateFolder as updateFolderResource,
   warmCodexBrowserSession as warmCodexBrowserSessionResource,
@@ -42,7 +43,7 @@ import {
   type SendMessageInput,
   useOpenCrabMessageController,
 } from "@/components/app-shell/use-opencrab-message-controller";
-import type { AgentProfileDetail, AgentProfileRecord } from "@/lib/agents/types";
+import type { AgentFiles, AgentProfileDetail, AgentProfileRecord } from "@/lib/agents/types";
 import type {
   AppSnapshot,
   BrowserConnectionMode,
@@ -154,13 +155,9 @@ type OpenCrabContextValue = {
     defaultReasoningEffort?: CodexReasoningEffort | null;
     defaultSandboxMode?: CodexSandboxMode | null;
     starterPrompts?: string[];
-    files?: Partial<{
-      soul: string;
-      responsibility: string;
-      tools: string;
-      user: string;
-      knowledge: string;
-    }>;
+    defaultSkillIds?: string[];
+    optionalSkillIds?: string[];
+    files?: Partial<AgentFiles>;
   }) => Promise<AgentProfileDetail | null>;
   updateAgent: (
     agentId: string,
@@ -176,15 +173,12 @@ type OpenCrabContextValue = {
       defaultReasoningEffort: CodexReasoningEffort | null;
       defaultSandboxMode: CodexSandboxMode | null;
       starterPrompts: string[];
-      files: Partial<{
-        soul: string;
-        responsibility: string;
-        tools: string;
-        user: string;
-        knowledge: string;
-      }>;
+      defaultSkillIds: string[];
+      optionalSkillIds: string[];
+      files: Partial<AgentFiles>;
     }>,
   ) => Promise<AgentProfileDetail | null>;
+  resetAgent: (agentId: string) => Promise<AgentProfileDetail | null>;
   deleteAgent: (agentId: string) => Promise<boolean>;
   refreshAgents: () => Promise<AgentProfileRecord[]>;
   uploadAttachments: (files: File[]) => Promise<UploadedAttachment[]>;
@@ -799,13 +793,9 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       defaultReasoningEffort?: CodexReasoningEffort | null;
       defaultSandboxMode?: CodexSandboxMode | null;
       starterPrompts?: string[];
-      files?: Partial<{
-        soul: string;
-        responsibility: string;
-        tools: string;
-        user: string;
-        knowledge: string;
-      }>;
+      defaultSkillIds?: string[];
+      optionalSkillIds?: string[];
+      files?: Partial<AgentFiles>;
     }) => {
       return runMutation(async () => {
         const response = await createAgentResource(input);
@@ -836,17 +826,29 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
         defaultReasoningEffort: CodexReasoningEffort | null;
         defaultSandboxMode: CodexSandboxMode | null;
         starterPrompts: string[];
-        files: Partial<{
-          soul: string;
-          responsibility: string;
-          tools: string;
-          user: string;
-          knowledge: string;
-        }>;
+        defaultSkillIds: string[];
+        optionalSkillIds: string[];
+        files: Partial<AgentFiles>;
       }>,
     ) => {
       return runMutation(async () => {
         const response = await updateAgentResource(agentId, patch);
+
+        if (!response.agent) {
+          return null;
+        }
+
+        await refreshAgents();
+        return response.agent;
+      });
+    },
+    [refreshAgents, runMutation],
+  );
+
+  const resetAgent = useCallback(
+    async (agentId: string) => {
+      return runMutation(async () => {
+        const response = await resetAgentResource(agentId);
 
         if (!response.agent) {
           return null;
@@ -1008,6 +1010,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       createConversation,
       createAgent,
       updateAgent,
+      resetAgent,
       deleteAgent,
       refreshAgents,
       uploadAttachments,
@@ -1077,6 +1080,7 @@ export function OpenCrabProvider({ children }: OpenCrabProviderProps) {
       createConversation,
       createAgent,
       updateAgent,
+      resetAgent,
       deleteAgent,
       refreshAgents,
       uploadAttachments,

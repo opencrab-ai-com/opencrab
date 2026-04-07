@@ -30,6 +30,8 @@ export async function POST(request: Request) {
       defaultReasoningEffort: body.defaultReasoningEffort,
       defaultSandboxMode: body.defaultSandboxMode,
       starterPrompts: body.starterPrompts,
+      defaultSkillIds: body.defaultSkillIds,
+      optionalSkillIds: body.optionalSkillIds,
       files: body.files,
     });
 

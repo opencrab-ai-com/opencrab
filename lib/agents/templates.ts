@@ -24,25 +24,25 @@ export function generateAgentDraft(input: AgentTemplateInput): {
 
   return {
     files: {
-      soul: buildSoulMarkdown(normalized, mode, roleFocus, voice),
-      responsibility: buildResponsibilityMarkdown(normalized, mode, roleFocus),
-      tools: buildToolsMarkdown(normalized, mode),
-      user: buildUserMarkdown(normalized, voice),
-      knowledge: buildKnowledgeMarkdown(normalized, roleFocus),
+      identity: buildIdentityMarkdown(normalized, mode, roleFocus, voice),
+      contract: buildContractMarkdown(normalized, mode, roleFocus),
+      execution: buildExecutionMarkdown(normalized, mode),
+      quality: buildQualityMarkdown(normalized, voice),
+      handoff: buildHandoffMarkdown(normalized, roleFocus),
     },
     starterPrompts: buildStarterPrompts(normalized, roleFocus),
   };
 }
 
-function buildSoulMarkdown(
+function buildIdentityMarkdown(
   input: NormalizedAgentTemplateInput,
   mode: string,
   roleFocus: RoleFocus,
   voice: VoiceStyle,
 ) {
   return [
-    buildFrontmatter("soul.md", input),
-    "# Soul",
+    buildFrontmatter("identity.md", input),
+    "# Identity",
     "",
     "## Identity",
     `你是 **${input.name}**，在 OpenCrab 里承担 **${input.roleLabel}** 角色。`,
@@ -87,14 +87,14 @@ function buildSoulMarkdown(
   ].join("\n");
 }
 
-function buildResponsibilityMarkdown(
+function buildContractMarkdown(
   input: NormalizedAgentTemplateInput,
   mode: string,
   roleFocus: RoleFocus,
 ) {
   return [
-    buildFrontmatter("responsibility.md", input),
-    "# Responsibility",
+    buildFrontmatter("contract.md", input),
+    "# Contract",
     "",
     "## Mission",
     `你的任务使命是：${input.summary}。`,
@@ -141,10 +141,10 @@ function buildResponsibilityMarkdown(
   ].join("\n");
 }
 
-function buildToolsMarkdown(input: NormalizedAgentTemplateInput, mode: string) {
+function buildExecutionMarkdown(input: NormalizedAgentTemplateInput, mode: string) {
   return [
-    buildFrontmatter("tools.md", input),
-    "# Tools",
+    buildFrontmatter("execution.md", input),
+    "# Execution",
     "",
     "## Tooling Philosophy",
     `工具是为了提升判断质量和交付效率，不是为了展示动作很多。`,
@@ -179,10 +179,10 @@ function buildToolsMarkdown(input: NormalizedAgentTemplateInput, mode: string) {
   ].join("\n");
 }
 
-function buildUserMarkdown(input: NormalizedAgentTemplateInput, voice: VoiceStyle) {
+function buildQualityMarkdown(input: NormalizedAgentTemplateInput, voice: VoiceStyle) {
   return [
-    buildFrontmatter("user.md", input),
-    "# User",
+    buildFrontmatter("quality.md", input),
+    "# Quality",
     "",
     "## Default Assumptions",
     "- 用户希望你像一个稳定、可靠、能持续协作的 teammate。",
@@ -213,10 +213,10 @@ function buildUserMarkdown(input: NormalizedAgentTemplateInput, voice: VoiceStyl
   ].join("\n");
 }
 
-function buildKnowledgeMarkdown(input: NormalizedAgentTemplateInput, roleFocus: RoleFocus) {
+function buildHandoffMarkdown(input: NormalizedAgentTemplateInput, roleFocus: RoleFocus) {
   return [
-    buildFrontmatter("knowledge.md", input),
-    "# Knowledge",
+    buildFrontmatter("handoff.md", input),
+    "# Handoff",
     "",
     "## Domain Brief",
     `当前智能体的长期主题是：${input.summary}。`,

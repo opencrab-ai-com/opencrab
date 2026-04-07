@@ -1,123 +1,34 @@
 {
-  "collections": [
+  "families": [
     {
-      "id": "opencrab-core",
-      "label": "OpenCrab 核心",
-      "description": "OpenCrab 自己定义的核心系统角色，用来承担默认的产品、协作和团队推进职责。",
+      "id": "strategy-delivery",
+      "label": "策略与交付",
+      "description": "负责目标收束、方案判断、推进节奏和阶段性交付的核心岗位。",
       "order": 10
-    },
-    {
-      "id": "agency-agents",
-      "label": "Agency Agents 扩展角色库",
-      "description": "基于 agency-agents 再加工迁移而来的系统角色库，作为 OpenCrab 的扩展专业能力层。",
-      "order": 20
-    }
-  ],
-  "groups": [
-    {
-      "id": "opencrab-core",
-      "collectionId": "opencrab-core",
-      "label": "OpenCrab 核心",
-      "description": "默认内置的 6 个核心角色，负责 Team Mode 的基础协作骨架。",
-      "order": 10
-    },
-    {
-      "id": "product",
-      "collectionId": "agency-agents",
-      "label": "产品",
-      "description": "产品判断、产品策略、需求定义与体验取舍相关角色。",
-      "order": 20
-    },
-    {
-      "id": "project-management",
-      "collectionId": "agency-agents",
-      "label": "项目管理",
-      "description": "项目推进、协作组织、排期与交付统筹相关角色。",
-      "order": 30
     },
     {
       "id": "design",
-      "collectionId": "agency-agents",
       "label": "设计",
-      "description": "品牌、交互、视觉、叙事与设计研究相关角色。",
-      "order": 40
+      "description": "负责界面结构、视觉层级、组件表达和设计交付说明的岗位。",
+      "order": 20
     },
     {
       "id": "engineering",
-      "collectionId": "agency-agents",
       "label": "工程",
-      "description": "前后端、架构、数据、基础设施与开发实现相关角色。",
+      "description": "负责把需求落实为可运行、可验证的软件交付的工程岗位。",
+      "order": 30
+    },
+    {
+      "id": "growth-operations",
+      "label": "增长与运营",
+      "description": "负责内容生产、增长动作和运营落地的岗位。",
+      "order": 40
+    },
+    {
+      "id": "people-support",
+      "label": "人事与支持",
+      "description": "负责组织、招聘、员工沟通、用户支持和服务响应的岗位。",
       "order": 50
-    },
-    {
-      "id": "testing",
-      "collectionId": "agency-agents",
-      "label": "测试",
-      "description": "质量保证、测试策略、回归验证与缺陷分析相关角色。",
-      "order": 60
-    },
-    {
-      "id": "support",
-      "collectionId": "agency-agents",
-      "label": "支持",
-      "description": "客服、运维支持、故障处理与用户成功相关角色。",
-      "order": 70
-    },
-    {
-      "id": "integrations",
-      "collectionId": "agency-agents",
-      "label": "集成",
-      "description": "围绕 MCP、外部平台接入与工具链集成增强的角色。",
-      "order": 75
-    },
-    {
-      "id": "marketing",
-      "collectionId": "agency-agents",
-      "label": "营销",
-      "description": "内容增长、品牌传播、市场策略与渠道运营相关角色。",
-      "order": 80
-    },
-    {
-      "id": "paid-media",
-      "collectionId": "agency-agents",
-      "label": "付费投放",
-      "description": "广告投放、买量、归因、素材与效果优化相关角色。",
-      "order": 90
-    },
-    {
-      "id": "sales",
-      "collectionId": "agency-agents",
-      "label": "销售",
-      "description": "销售推进、方案沟通、成交策略与客户拓展相关角色。",
-      "order": 100
-    },
-    {
-      "id": "academic",
-      "collectionId": "agency-agents",
-      "label": "学术",
-      "description": "学术研究、论文写作、科学计算与研究方法相关角色。",
-      "order": 110
-    },
-    {
-      "id": "specialized",
-      "collectionId": "agency-agents",
-      "label": "专项",
-      "description": "跨领域但不适合归入单一部门的专项专家角色。",
-      "order": 120
-    },
-    {
-      "id": "game-development",
-      "collectionId": "agency-agents",
-      "label": "游戏开发",
-      "description": "游戏策划、引擎实现、关卡与内容生产相关角色。",
-      "order": 130
-    },
-    {
-      "id": "spatial-computing",
-      "collectionId": "agency-agents",
-      "label": "空间计算",
-      "description": "XR、visionOS、沉浸式交互与空间计算相关角色。",
-      "order": 140
     }
   ]
 }

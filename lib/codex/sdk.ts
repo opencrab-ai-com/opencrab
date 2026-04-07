@@ -389,6 +389,16 @@ function buildPrompt(
   const disabledSkills = skills.filter(
     (skill) => skill.status === "disabled" && Boolean(skill.sourcePath),
   );
+  const mountedAgentSkills = input.agentProfile
+    ? enabledSkills.filter((skill) => {
+        const allowedSkillIds = new Set([
+          ...(input.agentProfile?.defaultSkillIds || []),
+          ...(input.agentProfile?.optionalSkillIds || []),
+        ]);
+
+        return allowedSkillIds.has(skill.id);
+      })
+    : [];
 
   return [
     "你是 OpenCrab 自己的智能助手。",
@@ -402,12 +412,38 @@ function buildPrompt(
           input.agentProfile.description
             ? `定位补充：${input.agentProfile.description}`
             : null,
-          buildAgentPromptSection("SOUL", input.agentProfile.files.soul),
-          buildAgentPromptSection("RESPONSIBILITY", input.agentProfile.files.responsibility),
-          buildAgentPromptSection("TOOLS", input.agentProfile.files.tools),
-          buildAgentPromptSection("USER", input.agentProfile.files.user),
-          buildAgentPromptSection("KNOWLEDGE", input.agentProfile.files.knowledge),
-          "你必须优先遵守这份智能体配置；如果它和通用表达习惯冲突，以智能体配置为准，但仍要遵守安全边界。",
+          input.agentProfile.ownedOutcomes?.length
+            ? ["该岗位负责的结果：", ...input.agentProfile.ownedOutcomes.map((item) => `- ${item}`)].join("\n")
+            : null,
+          input.agentProfile.outOfScope?.length
+            ? ["该岗位明确不负责：", ...input.agentProfile.outOfScope.map((item) => `- ${item}`)].join("\n")
+            : null,
+          input.agentProfile.deliverables?.length
+            ? [
+                "默认交付物：",
+                ...input.agentProfile.deliverables.map((item) =>
+                  `- ${item.label}${item.required === false ? "（可选）" : "（必需）"}`,
+                ),
+              ].join("\n")
+            : null,
+          input.agentProfile.qualityGates?.length
+            ? ["完成前必须通过的质量门：", ...input.agentProfile.qualityGates.map((item) => `- ${item}`)].join(
+                "\n",
+              )
+            : null,
+          input.agentProfile.handoffTargets?.length
+            ? ["超出职责范围时优先交接给：", ...input.agentProfile.handoffTargets.map((item) => `- ${item}`)].join(
+                "\n",
+              )
+            : null,
+          buildAgentPromptSection("IDENTITY", input.agentProfile.files.identity),
+          buildAgentPromptSection("CONTRACT", input.agentProfile.files.contract),
+          buildAgentPromptSection("EXECUTION", input.agentProfile.files.execution),
+          buildAgentPromptSection("QUALITY", input.agentProfile.files.quality),
+          buildAgentPromptSection("HANDOFF", input.agentProfile.files.handoff),
+          "你必须优先遵守这份智能体配置；默认目标是在该岗位职责范围内直接形成可交付结果，而不是只给建议。",
+          "如果当前请求部分超出岗位边界，先完成职责范围内的交付，再明确指出应交接给哪个核心岗位以及原因。",
+          "如果你声称完成，必须确保默认交付物和质量门已经满足；不要把分析、方案或口头建议伪装成交付。",
         ]
           .filter(Boolean)
           .join("\n")
@@ -415,7 +451,14 @@ function buildPrompt(
     "涉及浏览器、网页、页面交互、表单填写、点击、抓取页面可见内容时，优先使用 chrome-devtools MCP。",
     "只有在 chrome-devtools MCP 当前不可用、明确做不到，或者连续失败时，才降级到其他方式，例如命令行、Playwright 或直接请求网页。",
     "如果浏览器操作发生了降级，最终回复里用一句短话说明你改用了其他办法。",
-    enabledSkills.length > 0
+    input.agentProfile && mountedAgentSkills.length > 0
+      ? [
+          "当前岗位默认挂载的可用 skills：",
+          ...mountedAgentSkills.map((skill) => `- ${skill.id}: ${skill.summary}`),
+        ].join("\n")
+      : input.agentProfile
+        ? "当前岗位没有已挂载的可用 skills，请优先依赖岗位合同、上下文和工具能力闭环。"
+        : enabledSkills.length > 0
       ? [
           "OpenCrab 当前已启用的 skills（只有这些算可用）：",
           ...enabledSkills.map((skill) => `- ${skill.id}: ${skill.summary}`),
@@ -437,6 +480,15 @@ function buildPrompt(
   ]
     .filter(Boolean)
     .join("\n");
+}
+
+export function buildCodexPromptForTesting(
+  input: Pick<
+    GenerateCodexReplyInput,
+    "conversationTitle" | "content" | "textAttachments" | "agentProfile"
+  >,
+) {
+  return buildPrompt(input);
 }
 
 function buildAgentPromptSection(title: string, content: string) {

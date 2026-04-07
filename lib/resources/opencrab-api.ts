@@ -22,6 +22,7 @@ import type {
   UploadedAttachment,
 } from "@/lib/resources/opencrab-api-types";
 import type {
+  AgentFiles,
   AgentProfileDetailResponse,
   AgentProfileListResponse,
 } from "@/lib/agents/types";
@@ -155,13 +156,9 @@ export async function createAgent(input: {
   defaultReasoningEffort?: CodexReasoningEffort | null;
   defaultSandboxMode?: CodexSandboxMode | null;
   starterPrompts?: string[];
-  files?: Partial<{
-    soul: string;
-    responsibility: string;
-    tools: string;
-    user: string;
-    knowledge: string;
-  }>;
+  defaultSkillIds?: string[];
+  optionalSkillIds?: string[];
+  files?: Partial<AgentFiles>;
 }) {
   return request<AgentProfileDetailResponse>("/api/agents", {
     method: "POST",
@@ -183,18 +180,20 @@ export async function updateAgent(
     defaultReasoningEffort: CodexReasoningEffort | null;
     defaultSandboxMode: CodexSandboxMode | null;
     starterPrompts: string[];
-    files: Partial<{
-      soul: string;
-      responsibility: string;
-      tools: string;
-      user: string;
-      knowledge: string;
-    }>;
+    defaultSkillIds: string[];
+    optionalSkillIds: string[];
+    files: Partial<AgentFiles>;
   }>,
 ) {
   return request<AgentProfileDetailResponse>(`/api/agents/${agentId}`, {
     method: "PATCH",
     body: JSON.stringify(patch),
+  });
+}
+
+export async function resetAgent(agentId: string) {
+  return request<AgentProfileDetailResponse>(`/api/agents/${agentId}/reset`, {
+    method: "POST",
   });
 }
 

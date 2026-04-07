@@ -6,11 +6,11 @@ export const OPENCRAB_SYSTEM_AGENT_GROUPS_FILE = path.join(process.cwd(), "agent
 export const OPENCRAB_SYSTEM_AGENT_IMPORT_DIR = path.join(process.cwd(), "agents-src", "imports", "agency");
 export const OPENCRAB_SYSTEM_AGENT_METADATA_FILE_NAME = "agent.yaml";
 export const OPENCRAB_AGENT_SECTION_ORDER = [
-  { key: "soul", title: "Soul", fileName: "soul.md" },
-  { key: "responsibility", title: "Responsibility", fileName: "responsibility.md" },
-  { key: "tools", title: "Tools", fileName: "tools.md" },
-  { key: "user", title: "User", fileName: "user.md" },
-  { key: "knowledge", title: "Knowledge", fileName: "knowledge.md" },
+  { key: "identity", title: "Identity", fileName: "identity.md" },
+  { key: "contract", title: "Contract", fileName: "contract.md" },
+  { key: "execution", title: "Execution", fileName: "execution.md" },
+  { key: "quality", title: "Quality", fileName: "quality.md" },
+  { key: "handoff", title: "Handoff", fileName: "handoff.md" },
 ];
 
 const VALID_AVAILABILITY = new Set(["solo", "team", "both"]);
@@ -23,7 +23,7 @@ const METADATA_FIELD_ORDER = [
   "summary",
   "roleLabel",
   "description",
-  "groupId",
+  "familyId",
   "availability",
   "teamRole",
   "defaultModel",
@@ -31,19 +31,23 @@ const METADATA_FIELD_ORDER = [
   "defaultSandboxMode",
   "avatarFileName",
   "promoted",
+  "ownedOutcomes",
+  "outOfScope",
+  "deliverables",
+  "defaultSkillIds",
+  "optionalSkillIds",
+  "qualityGates",
+  "handoffTargets",
   "starterPrompts",
-  "upstreamAgentName",
-  "upstreamSourceUrl",
-  "upstreamLicense",
 ];
 
 export function compileSystemAgentSources(options = {}) {
   const sourceDir = path.resolve(process.cwd(), options.sourceDir || OPENCRAB_SYSTEM_AGENT_SOURCE_DIR);
-  const groupRegistryPath = path.resolve(
+  const familyRegistryPath = path.resolve(
     process.cwd(),
     options.groupRegistryPath || OPENCRAB_SYSTEM_AGENT_GROUPS_FILE,
   );
-  const groupRegistry = readSystemAgentGroupRegistry(groupRegistryPath);
+  const familyRegistry = readSystemAgentFamilyRegistry(familyRegistryPath);
   const sourceEntries = listAgentSourceEntries(sourceDir);
   const compiled = [];
   const errors = [];
@@ -52,7 +56,7 @@ export function compileSystemAgentSources(options = {}) {
   sourceEntries.forEach((entryName) => {
     const agentDir = path.join(sourceDir, entryName);
     const sourceAgent = readOpenCrabAuthoringAgent(agentDir);
-    const runtimeConfig = compileOpenCrabAuthoringAgent(sourceAgent, { groupRegistry });
+    const runtimeConfig = compileOpenCrabAuthoringAgent(sourceAgent, { familyRegistry });
 
     if (seenIds.has(runtimeConfig.id)) {
       throw new Error(`系统智能体源码存在重复 id：${runtimeConfig.id}`);
@@ -112,7 +116,8 @@ export function parseOpenCrabMetadataYaml(yamlText, filePath) {
 
 export function compileOpenCrabAuthoringAgent(sourceAgent, options = {}) {
   const metadata = sourceAgent.metadata;
-  const groupMetadata = resolveSystemAgentGroupMetadata(metadata.groupId, options.groupRegistry);
+  const familyRegistry = options.familyRegistry || options.groupRegistry || null;
+  const familyMetadata = resolveSystemAgentFamilyMetadata(metadata.familyId, familyRegistry);
 
   return {
     id: metadata.id,
@@ -126,19 +131,19 @@ export function compileOpenCrabAuthoringAgent(sourceAgent, options = {}) {
     defaultReasoningEffort: metadata.defaultReasoningEffort,
     defaultSandboxMode: metadata.defaultSandboxMode,
     starterPrompts: metadata.starterPrompts,
-    groupId: groupMetadata.id,
-    groupLabel: groupMetadata.label,
-    groupDescription: groupMetadata.description,
-    groupOrder: groupMetadata.order,
-    collectionId: groupMetadata.collection.id,
-    collectionLabel: groupMetadata.collection.label,
-    collectionDescription: groupMetadata.collection.description,
-    collectionOrder: groupMetadata.collection.order,
+    familyId: familyMetadata.id,
+    familyLabel: familyMetadata.label,
+    familyDescription: familyMetadata.description,
+    familyOrder: familyMetadata.order,
     avatarFileName: metadata.avatarFileName,
     promoted: metadata.promoted,
-    upstreamAgentName: metadata.upstreamAgentName,
-    upstreamSourceUrl: metadata.upstreamSourceUrl,
-    upstreamLicense: metadata.upstreamLicense,
+    ownedOutcomes: metadata.ownedOutcomes,
+    outOfScope: metadata.outOfScope,
+    deliverables: metadata.deliverables,
+    defaultSkillIds: metadata.defaultSkillIds,
+    optionalSkillIds: metadata.optionalSkillIds,
+    qualityGates: metadata.qualityGates,
+    handoffTargets: metadata.handoffTargets,
     files: Object.fromEntries(
       OPENCRAB_AGENT_SECTION_ORDER.map((section) => [
         section.key,
@@ -227,15 +232,15 @@ export function convertAgencyMarkdownToOpenCrabSource(markdown, options = {}) {
   const summary = compactText(agency.vibe || agency.description || `${title} specialist`);
   const description = compactText([agency.description, agency.vibe].filter(Boolean).join(" "));
   const sectionBuckets = {
-    soul: [],
-    responsibility: [],
-    tools: [],
-    user: [],
-    knowledge: [],
+    identity: [],
+    contract: [],
+    execution: [],
+    quality: [],
+    handoff: [],
   };
 
   if (parsedSections.intro) {
-    sectionBuckets.soul.push(renderNestedSection("Persona Overview", parsedSections.intro));
+    sectionBuckets.identity.push(renderNestedSection("Persona Overview", parsedSections.intro));
   }
 
   parsedSections.sections.forEach((section) => {
@@ -258,7 +263,7 @@ export function convertAgencyMarkdownToOpenCrabSource(markdown, options = {}) {
       return `- ${parts.join(" | ")}`;
     });
 
-    sectionBuckets.tools.push(["### External Services", "", ...serviceLines].join("\n").trim());
+    sectionBuckets.execution.push(["### External Services", "", ...serviceLines].join("\n").trim());
   }
 
   const sections = {};
@@ -275,7 +280,7 @@ export function convertAgencyMarkdownToOpenCrabSource(markdown, options = {}) {
       summary,
       roleLabel: inferRoleLabel(title),
       description: description || summary,
-      groupId: category || "specialized",
+      familyId: category || "specialized",
       availability: "both",
       teamRole: inferTeamRole(title, category),
       defaultModel: null,
@@ -284,9 +289,6 @@ export function convertAgencyMarkdownToOpenCrabSource(markdown, options = {}) {
       avatarFileName: null,
       promoted: false,
       starterPrompts: buildImportedStarterPrompts(title, summary),
-      upstreamAgentName: agency.name || null,
-      upstreamSourceUrl: options.sourceUrl || null,
-      upstreamLicense: "MIT",
     }),
     sections,
   };
@@ -305,6 +307,11 @@ function renderMetadataYaml(metadata) {
     if (Array.isArray(value)) {
       lines.push(`${key}:`);
       value.forEach((item) => {
+        if (item && typeof item === "object") {
+          lines.push(`  - ${JSON.stringify(item)}`);
+          return;
+        }
+
         lines.push(`  - ${quoteYamlString(item)}`);
       });
       return;
@@ -358,7 +365,7 @@ function normalizeOpenCrabMetadata(rawValue, filePath) {
   const summary = requireTrimmedString(raw.summary, "summary", filePath);
   const roleLabel = normalizeOptionalString(raw.roleLabel) || "Specialist";
   const description = normalizeOptionalString(raw.description) || summary;
-  const groupId = normalizeOptionalString(raw.groupId) || "opencrab-core";
+  const familyId = normalizeOptionalString(raw.familyId) || "core";
   const availability = normalizeAvailability(raw.availability);
   const teamRole = normalizeTeamRole(raw.teamRole);
   const defaultModel = normalizeOptionalString(raw.defaultModel);
@@ -367,9 +374,13 @@ function normalizeOpenCrabMetadata(rawValue, filePath) {
   const avatarFileName = normalizeOptionalString(raw.avatarFileName);
   const promoted = Boolean(raw.promoted);
   const starterPrompts = normalizeStringArray(raw.starterPrompts);
-  const upstreamAgentName = normalizeOptionalString(raw.upstreamAgentName);
-  const upstreamSourceUrl = normalizeOptionalString(raw.upstreamSourceUrl);
-  const upstreamLicense = normalizeOptionalString(raw.upstreamLicense);
+  const ownedOutcomes = normalizeStringArray(raw.ownedOutcomes);
+  const outOfScope = normalizeStringArray(raw.outOfScope);
+  const deliverables = normalizeDeliverables(raw.deliverables);
+  const defaultSkillIds = normalizeStringArray(raw.defaultSkillIds);
+  const optionalSkillIds = normalizeStringArray(raw.optionalSkillIds);
+  const qualityGates = normalizeStringArray(raw.qualityGates);
+  const handoffTargets = normalizeStringArray(raw.handoffTargets);
 
   return {
     id,
@@ -377,7 +388,7 @@ function normalizeOpenCrabMetadata(rawValue, filePath) {
     summary,
     roleLabel,
     description,
-    groupId,
+    familyId,
     availability,
     teamRole,
     defaultModel,
@@ -386,9 +397,13 @@ function normalizeOpenCrabMetadata(rawValue, filePath) {
     avatarFileName,
     promoted,
     starterPrompts,
-    upstreamAgentName,
-    upstreamSourceUrl,
-    upstreamLicense,
+    ownedOutcomes,
+    outOfScope,
+    deliverables,
+    defaultSkillIds,
+    optionalSkillIds,
+    qualityGates,
+    handoffTargets,
   };
 }
 
@@ -401,78 +416,52 @@ function parseAgencyFrontmatter(frontmatter) {
   };
 }
 
-function readSystemAgentGroupRegistry(filePath) {
+function readSystemAgentFamilyRegistry(filePath) {
   if (!existsSync(filePath)) {
-    throw new Error(`缺少系统智能体分组配置：${filePath}`);
+    throw new Error(`缺少核心岗位家族配置：${filePath}`);
   }
 
   const parsed = JSON.parse(readFileSync(filePath, "utf8"));
-  const collections = new Map();
-  const groups = new Map();
+  if (!Array.isArray(parsed.families)) {
+    throw new Error(`核心岗位家族配置缺少 families：${filePath}`);
+  }
 
-  (parsed.collections || []).forEach((collection) => {
-    const id = requireTrimmedString(collection?.id, "collection.id", filePath);
+  const families = new Map();
 
-    if (collections.has(id)) {
-      throw new Error(`系统智能体分组配置存在重复 collection id：${id}`);
+  parsed.families.forEach((family) => {
+    const id = requireTrimmedString(family?.id, "family.id", filePath);
+
+    if (families.has(id)) {
+      throw new Error(`核心岗位家族配置存在重复 family id：${id}`);
     }
 
-    collections.set(id, {
+    families.set(id, {
       id,
-      label: requireTrimmedString(collection?.label, "collection.label", filePath),
-      description: requireTrimmedString(collection?.description, "collection.description", filePath),
-      order: normalizeOrderNumber(collection?.order, 999),
-    });
-  });
-
-  (parsed.groups || []).forEach((group) => {
-    const id = requireTrimmedString(group?.id, "group.id", filePath);
-    const collectionId = requireTrimmedString(group?.collectionId, "group.collectionId", filePath);
-    const collection = collections.get(collectionId);
-
-    if (!collection) {
-      throw new Error(`系统智能体分组配置引用了不存在的 collection：${collectionId}`);
-    }
-
-    if (groups.has(id)) {
-      throw new Error(`系统智能体分组配置存在重复 group id：${id}`);
-    }
-
-    groups.set(id, {
-      id,
-      label: requireTrimmedString(group?.label, "group.label", filePath),
-      description: requireTrimmedString(group?.description, "group.description", filePath),
-      order: normalizeOrderNumber(group?.order, 999),
-      collection,
+      label: requireTrimmedString(family?.label, "family.label", filePath),
+      description: requireTrimmedString(family?.description, "family.description", filePath),
+      order: normalizeOrderNumber(family?.order, 999),
     });
   });
 
   return {
-    collections,
-    groups,
+    families,
   };
 }
 
-function resolveSystemAgentGroupMetadata(groupId, groupRegistry) {
-  if (!groupRegistry) {
+function resolveSystemAgentFamilyMetadata(familyId, familyRegistry) {
+  if (!familyRegistry) {
     return {
-      id: groupId,
-      label: humanizeSlug(groupId),
-      description: "暂未填写分组说明。",
+      id: familyId,
+      label: humanizeSlug(familyId),
+      description: "暂未填写岗位家族说明。",
       order: 999,
-      collection: {
-        id: "system",
-        label: "System",
-        description: "暂未填写来源说明。",
-        order: 999,
-      },
     };
   }
 
-  const resolved = groupRegistry.groups.get(groupId);
+  const resolved = familyRegistry.families.get(familyId);
 
   if (!resolved) {
-    throw new Error(`系统智能体源码引用了不存在的 groupId：${groupId}`);
+    throw new Error(`核心岗位源码引用了不存在的 familyId：${familyId}`);
   }
 
   return resolved;
@@ -762,6 +751,46 @@ function normalizeStringArray(value) {
   return value.map((item) => normalizeOptionalString(item)).filter(Boolean);
 }
 
+function normalizeDeliverables(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      if (typeof item === "string") {
+        const label = normalizeOptionalString(item);
+
+        if (!label) {
+          return null;
+        }
+
+        return {
+          id: slugify(label),
+          label,
+          required: true,
+        };
+      }
+
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const label = normalizeOptionalString(item.label || item.name || item.id);
+
+      if (!label) {
+        return null;
+      }
+
+      return {
+        id: normalizeOptionalString(item.id) || slugify(label),
+        label,
+        required: item.required !== false,
+      };
+    })
+    .filter(Boolean);
+}
+
 function normalizeOrderNumber(value, fallback) {
   const normalized = Number(value);
   return Number.isFinite(normalized) ? normalized : fallback;
@@ -853,22 +882,22 @@ function mapAgencySectionToOpenCrabKey(title) {
     normalized.includes("critical rules") ||
     normalized.includes("personality")
   ) {
-    return "soul";
+    return "identity";
   }
 
   if (normalized.includes("core mission") || normalized.includes("success metrics")) {
-    return "responsibility";
+    return "contract";
   }
 
   if (normalized.includes("workflow") || normalized.includes("service")) {
-    return "tools";
+    return "execution";
   }
 
   if (normalized.includes("communication style")) {
-    return "user";
+    return "quality";
   }
 
-  return "knowledge";
+  return "handoff";
 }
 
 function normalizeAgencySectionTitle(title) {
@@ -1012,6 +1041,14 @@ function parseScalar(rawValue) {
       return JSON.parse(raw);
     } catch {
       return raw.slice(1, -1);
+    }
+  }
+
+  if ((raw.startsWith("{") && raw.endsWith("}")) || (raw.startsWith("[") && raw.endsWith("]"))) {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return raw;
     }
   }
 
