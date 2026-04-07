@@ -21,11 +21,11 @@ const SYSTEM_AGENT_AVATAR_DIR = resolveOpenCrabResourcePath(
   "system",
 );
 const AGENT_SECTION_DEFS: Array<{ key: AgentFileKey; title: string; fileName: string }> = [
-  { key: "soul", title: "Soul", fileName: "soul.md" },
-  { key: "responsibility", title: "Responsibility", fileName: "responsibility.md" },
-  { key: "tools", title: "Tools", fileName: "tools.md" },
-  { key: "user", title: "User", fileName: "user.md" },
-  { key: "knowledge", title: "Knowledge", fileName: "knowledge.md" },
+  { key: "identity", title: "Identity", fileName: "identity.md" },
+  { key: "contract", title: "Contract", fileName: "contract.md" },
+  { key: "execution", title: "Execution", fileName: "execution.md" },
+  { key: "quality", title: "Quality", fileName: "quality.md" },
+  { key: "handoff", title: "Handoff", fileName: "handoff.md" },
 ];
 const VALID_AVAILABILITY = new Set<AgentAvailability>(["solo", "team", "both"]);
 const VALID_TEAM_ROLES = new Set<AgentTeamRole>(["lead", "research", "writer", "specialist"]);
@@ -56,7 +56,7 @@ type StoredSourceAgentConfig = {
   summary?: string;
   roleLabel?: string;
   description?: string;
-  groupId?: string;
+  familyId?: string;
   availability?: AgentAvailability;
   teamRole?: AgentTeamRole;
   defaultModel?: string | null;
@@ -65,28 +65,24 @@ type StoredSourceAgentConfig = {
   starterPrompts?: string[];
   avatarFileName?: string | null;
   promoted?: boolean;
-  upstreamAgentName?: string | null;
-  upstreamSourceUrl?: string | null;
-  upstreamLicense?: string | null;
+  ownedOutcomes?: string[];
+  outOfScope?: string[];
+  deliverables?: Array<{ id?: string; label?: string; required?: boolean } | string>;
+  defaultSkillIds?: string[];
+  optionalSkillIds?: string[];
+  qualityGates?: string[];
+  handoffTargets?: string[];
 };
 
-type GroupRegistryCollection = {
+type FamilyRegistryEntry = {
   id: string;
   label: string;
   description: string;
   order: number;
 };
 
-type GroupRegistryGroup = {
-  id: string;
-  label: string;
-  description: string;
-  order: number;
-  collection: GroupRegistryCollection;
-};
-
-type GroupRegistry = {
-  groups: Map<string, GroupRegistryGroup>;
+type FamilyRegistry = {
+  families: Map<string, FamilyRegistryEntry>;
 };
 
 export type BuiltInSystemAgentDefinition = {
@@ -96,14 +92,10 @@ export type BuiltInSystemAgentDefinition = {
   summary: string;
   roleLabel: string;
   description: string;
-  groupId: string;
-  groupLabel: string;
-  groupDescription: string;
-  groupOrder: number;
-  collectionId: string;
-  collectionLabel: string;
-  collectionDescription: string;
-  collectionOrder: number;
+  familyId: string;
+  familyLabel: string;
+  familyDescription: string;
+  familyOrder: number;
   source: "system";
   availability: AgentAvailability;
   teamRole: AgentTeamRole;
@@ -112,9 +104,17 @@ export type BuiltInSystemAgentDefinition = {
   defaultSandboxMode: CodexSandboxMode | null;
   starterPrompts: string[];
   promoted: boolean;
-  upstreamAgentName: string | null;
-  upstreamSourceUrl: string | null;
-  upstreamLicense: string | null;
+  ownedOutcomes: string[];
+  outOfScope: string[];
+  deliverables: Array<{
+    id: string;
+    label: string;
+    required: boolean;
+  }>;
+  defaultSkillIds: string[];
+  optionalSkillIds: string[];
+  qualityGates: string[];
+  handoffTargets: string[];
   files: AgentFiles;
 };
 
@@ -140,11 +140,11 @@ function loadBuiltInSystemAgents() {
     return [];
   }
 
-  const groupRegistry = readSystemAgentGroupRegistry(SYSTEM_AGENT_GROUPS_FILE);
+  const familyRegistry = readSystemAgentFamilyRegistry(SYSTEM_AGENT_GROUPS_FILE);
   const agents = readdirSync(SYSTEM_AGENT_SOURCE_DIR, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .sort((left, right) => left.name.localeCompare(right.name, "en"))
-    .map((entry) => readBuiltInSystemAgentSource(path.join(SYSTEM_AGENT_SOURCE_DIR, entry.name), groupRegistry));
+    .map((entry) => readBuiltInSystemAgentSource(path.join(SYSTEM_AGENT_SOURCE_DIR, entry.name), familyRegistry));
 
   const seenIds = new Set<string>();
 
@@ -161,7 +161,7 @@ function loadBuiltInSystemAgents() {
 
 function readBuiltInSystemAgentSource(
   agentDir: string,
-  groupRegistry: GroupRegistry,
+  familyRegistry: FamilyRegistry,
 ): BuiltInSystemAgentDefinition {
   const metadataPath = path.join(agentDir, SYSTEM_AGENT_METADATA_FILE_NAME);
 
@@ -170,7 +170,7 @@ function readBuiltInSystemAgentSource(
   }
 
   const metadata = normalizeSourceMetadata(parseSimpleYaml(readFileSync(metadataPath, "utf8")), metadataPath);
-  const groupMetadata = resolveSystemAgentGroupMetadata(metadata.groupId, groupRegistry);
+  const familyMetadata = resolveSystemAgentFamilyMetadata(metadata.familyId, familyRegistry);
   const files = {} as AgentFiles;
 
   AGENT_SECTION_DEFS.forEach((section) => {
@@ -200,14 +200,10 @@ function readBuiltInSystemAgentSource(
     summary: metadata.summary,
     roleLabel: metadata.roleLabel,
     description: metadata.description,
-    groupId: groupMetadata.id,
-    groupLabel: groupMetadata.label,
-    groupDescription: groupMetadata.description,
-    groupOrder: groupMetadata.order,
-    collectionId: groupMetadata.collection.id,
-    collectionLabel: groupMetadata.collection.label,
-    collectionDescription: groupMetadata.collection.description,
-    collectionOrder: groupMetadata.collection.order,
+    familyId: familyMetadata.id,
+    familyLabel: familyMetadata.label,
+    familyDescription: familyMetadata.description,
+    familyOrder: familyMetadata.order,
     source: "system",
     availability: metadata.availability,
     teamRole: metadata.teamRole,
@@ -216,9 +212,13 @@ function readBuiltInSystemAgentSource(
     defaultSandboxMode: metadata.defaultSandboxMode,
     starterPrompts: metadata.starterPrompts,
     promoted: metadata.promoted,
-    upstreamAgentName: metadata.upstreamAgentName,
-    upstreamSourceUrl: metadata.upstreamSourceUrl,
-    upstreamLicense: metadata.upstreamLicense,
+    ownedOutcomes: metadata.ownedOutcomes,
+    outOfScope: metadata.outOfScope,
+    deliverables: metadata.deliverables,
+    defaultSkillIds: metadata.defaultSkillIds,
+    optionalSkillIds: metadata.optionalSkillIds,
+    qualityGates: metadata.qualityGates,
+    handoffTargets: metadata.handoffTargets,
     files,
   };
 }
@@ -235,7 +235,7 @@ function normalizeSourceMetadata(rawValue: StoredSourceAgentConfig, filePath: st
     summary,
     roleLabel: normalizeOptionalString(raw.roleLabel) || "Specialist",
     description: normalizeOptionalString(raw.description) || summary,
-    groupId: normalizeOptionalString(raw.groupId) || "opencrab-core",
+    familyId: normalizeOptionalString(raw.familyId) || "core",
     availability: normalizeAvailability(raw.availability),
     teamRole: normalizeTeamRole(raw.teamRole),
     defaultModel: normalizeOptionalString(raw.defaultModel),
@@ -244,82 +244,60 @@ function normalizeSourceMetadata(rawValue: StoredSourceAgentConfig, filePath: st
     starterPrompts: normalizeStarterPrompts(raw.starterPrompts),
     avatarFileName: normalizeOptionalString(raw.avatarFileName),
     promoted: Boolean(raw.promoted),
-    upstreamAgentName: normalizeOptionalString(raw.upstreamAgentName),
-    upstreamSourceUrl: normalizeOptionalString(raw.upstreamSourceUrl),
-    upstreamLicense: normalizeOptionalString(raw.upstreamLicense),
+    ownedOutcomes: normalizeStringArray(raw.ownedOutcomes),
+    outOfScope: normalizeStringArray(raw.outOfScope),
+    deliverables: normalizeDeliverables(raw.deliverables),
+    defaultSkillIds: normalizeStringArray(raw.defaultSkillIds),
+    optionalSkillIds: normalizeStringArray(raw.optionalSkillIds),
+    qualityGates: normalizeStringArray(raw.qualityGates),
+    handoffTargets: normalizeStringArray(raw.handoffTargets),
   };
 }
 
-function readSystemAgentGroupRegistry(filePath: string): GroupRegistry {
+function readSystemAgentFamilyRegistry(filePath: string): FamilyRegistry {
   if (!existsSync(filePath)) {
-    throw new Error(`缺少系统智能体分组配置：${filePath}`);
+    throw new Error(`缺少核心岗位家族配置：${filePath}`);
   }
 
   const parsed = JSON.parse(readFileSync(filePath, "utf8")) as {
-    collections?: Array<{
+    families?: Array<{
       id?: string;
-      label?: string;
-      description?: string;
-      order?: number;
-    }>;
-    groups?: Array<{
-      id?: string;
-      collectionId?: string;
       label?: string;
       description?: string;
       order?: number;
     }>;
   };
-  const collections = new Map<string, GroupRegistryCollection>();
-  const groups = new Map<string, GroupRegistryGroup>();
+  if (!Array.isArray(parsed.families)) {
+    throw new Error(`核心岗位家族配置缺少 families：${filePath}`);
+  }
 
-  (parsed.collections || []).forEach((collection) => {
-    const id = requireTrimmedString(collection.id, "collection.id", filePath);
+  const families = new Map<string, FamilyRegistryEntry>();
 
-    if (collections.has(id)) {
-      throw new Error(`系统智能体分组配置存在重复 collection id：${id}`);
+  parsed.families.forEach((family) => {
+    const id = requireTrimmedString(family.id, "family.id", filePath);
+
+    if (families.has(id)) {
+      throw new Error(`核心岗位家族配置存在重复 family id：${id}`);
     }
 
-    collections.set(id, {
+    families.set(id, {
       id,
-      label: requireTrimmedString(collection.label, "collection.label", filePath),
-      description: requireTrimmedString(collection.description, "collection.description", filePath),
-      order: normalizeOrder(collection.order, 999),
-    });
-  });
-
-  (parsed.groups || []).forEach((group) => {
-    const id = requireTrimmedString(group.id, "group.id", filePath);
-    const collectionId = requireTrimmedString(group.collectionId, "group.collectionId", filePath);
-    const collection = collections.get(collectionId);
-
-    if (!collection) {
-      throw new Error(`系统智能体分组配置引用了不存在的 collection：${collectionId}`);
-    }
-
-    if (groups.has(id)) {
-      throw new Error(`系统智能体分组配置存在重复 group id：${id}`);
-    }
-
-    groups.set(id, {
-      id,
-      label: requireTrimmedString(group.label, "group.label", filePath),
-      description: requireTrimmedString(group.description, "group.description", filePath),
-      order: normalizeOrder(group.order, 999),
-      collection,
+      label: requireTrimmedString(family.label, "family.label", filePath),
+      description: requireTrimmedString(family.description, "family.description", filePath),
+      order: normalizeOrder(family.order, 999),
     });
   });
 
   return {
-    groups,
+    families,
   };
 }
 
-function resolveSystemAgentGroupMetadata(groupId: string, groupRegistry: GroupRegistry) {
-  const resolved = groupRegistry.groups.get(groupId);
+function resolveSystemAgentFamilyMetadata(familyId: string, familyRegistry: FamilyRegistry) {
+  const resolved = familyRegistry.families.get(familyId);
 
   if (!resolved) {
-    throw new Error(`系统智能体源码引用了不存在的 groupId：${groupId}`);
+    throw new Error(`核心岗位源码引用了不存在的 familyId：${familyId}`);
   }
 
   return resolved;
@@ -452,6 +430,14 @@ function parseScalar(rawValue: string) {
     }
   }
 
+  if ((raw.startsWith("{") && raw.endsWith("}")) || (raw.startsWith("[") && raw.endsWith("]"))) {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return raw;
+    }
+  }
+
   return raw;
 }
 
@@ -522,6 +508,50 @@ function normalizeStarterPrompts(value: string[] | undefined) {
   return (value || []).map((item) => item.trim()).filter(Boolean);
 }
 
+function normalizeStringArray(value: string[] | undefined) {
+  return (value || []).map((item) => item.trim()).filter(Boolean);
+}
+
+function normalizeDeliverables(value: StoredSourceAgentConfig["deliverables"]) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      if (typeof item === "string") {
+        const label = normalizeOptionalString(item);
+
+        if (!label) {
+          return null;
+        }
+
+        return {
+          id: slugify(label),
+          label,
+          required: true,
+        };
+      }
+
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const label = normalizeOptionalString(item.label || item.id);
+
+      if (!label) {
+        return null;
+      }
+
+      return {
+        id: normalizeOptionalString(item.id) || slugify(label),
+        label,
+        required: item.required !== false,
+      };
+    })
+    .filter((item): item is { id: string; label: string; required: boolean } => Boolean(item));
+}
+
 function normalizeOrder(value: number | undefined, fallback: number) {
   return Number.isFinite(value) ? (value as number) : fallback;
 }
@@ -568,4 +598,11 @@ function readSystemAgentAvatarDataUrl(fileName: string | null) {
             : "application/octet-stream";
 
   return `data:${mimeType};base64,${readFileSync(filePath).toString("base64")}`;
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "deliverable";
 }

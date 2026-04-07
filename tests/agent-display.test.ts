@@ -21,18 +21,11 @@ function createAgent(overrides: Partial<AgentProfileRecord> = {}): AgentProfileR
     defaultReasoningEffort: null,
     defaultSandboxMode: null,
     starterPrompts: [],
-    groupId: "custom",
-    groupLabel: "我的智能体",
-    groupDescription: "自定义智能体分组。",
-    groupOrder: 1_000,
-    collectionId: "custom",
-    collectionLabel: "自定义",
-    collectionDescription: "自定义智能体集合。",
-    collectionOrder: 1_000,
+    familyId: "custom",
+    familyLabel: "我的智能体",
+    familyDescription: "你自己创建和维护的长期角色。",
+    familyOrder: 1_000,
     promoted: false,
-    upstreamAgentName: null,
-    upstreamSourceUrl: null,
-    upstreamLicense: null,
     fileCount: 5,
     createdAt: "2026-03-24T00:00:00.000Z",
     updatedAt: "2026-03-24T00:00:00.000Z",
@@ -57,7 +50,7 @@ describe("agent display rules", () => {
     expect(
       isSelectableTeamAgent(
         createAgent({
-          id: "user-researcher",
+          id: "product-manager",
           source: "system",
           availability: "both",
         }),
@@ -78,7 +71,7 @@ describe("agent display rules", () => {
     expect(
       isSystemAgentForDisplay(
         createAgent({
-          id: "user-researcher",
+          id: "product-manager",
           source: "system",
         }),
       ),

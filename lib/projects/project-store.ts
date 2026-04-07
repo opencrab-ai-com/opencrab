@@ -5525,7 +5525,7 @@ function buildTeamAgents(input: {
       name: detail?.name || profile.name,
       role: formatProjectRoleLabel(teamRole, isLead),
       responsibility:
-        detail?.files.responsibility.trim() ||
+        detail?.files.contract.trim() ||
         detail?.summary ||
         profile.summary,
       status: isLead ? "planning" : "idle",
@@ -7962,8 +7962,8 @@ function synchronizeProjectLearningLoop(
           ]),
           targetLabel: topRoleMemory.agentName,
           actionItems: [
-            "补充 responsibility.md，让默认接棒场景更清楚",
-            "补充 knowledge.md 或 user.md，写明偏好输入和常见问题",
+            "补充 contract.md，让默认接棒场景更清楚",
+            "补充 handoff.md 或 quality.md，写明偏好输入和常见问题",
           ],
           writebackSummary: agentProfileWriteback?.summary ?? null,
           writebackTargets: agentProfileWriteback?.targets ?? [],

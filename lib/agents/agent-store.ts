@@ -35,11 +35,28 @@ import type {
 
 const PROFILE_FILE_NAME = "profile.json";
 const AGENT_FILE_NAMES: Record<AgentFileKey, string> = {
+  identity: "identity.md",
+  contract: "contract.md",
+  execution: "execution.md",
+  quality: "quality.md",
+  handoff: "handoff.md",
+};
+type LegacyAgentFileKey = "soul" | "responsibility" | "tools" | "user" | "knowledge";
+
+const LEGACY_AGENT_FILE_NAMES: Record<LegacyAgentFileKey, string> = {
   soul: "soul.md",
   responsibility: "responsibility.md",
   tools: "tools.md",
   user: "user.md",
   knowledge: "knowledge.md",
+};
+
+const LEGACY_AGENT_FILE_KEY_BY_V2_KEY: Record<AgentFileKey, LegacyAgentFileKey> = {
+  identity: "soul",
+  contract: "responsibility",
+  execution: "tools",
+  quality: "user",
+  handoff: "knowledge",
 };
 
 const DEPRECATED_SYSTEM_AGENT_IDS = new Set([
@@ -74,16 +91,23 @@ type CreateAgentInput = {
   defaultReasoningEffort?: CodexReasoningEffort | null;
   defaultSandboxMode?: CodexSandboxMode | null;
   starterPrompts?: string[];
+  defaultSkillIds?: string[];
+  optionalSkillIds?: string[];
   files?: Partial<AgentFiles>;
 };
 
 type UpdateAgentInput = Partial<CreateAgentInput>;
+type StoredAgentFiles = Partial<AgentFiles> & Partial<Record<LegacyAgentFileKey, string>>;
+type NormalizeAgentDetailOptions = {
+  systemSeedOverride?: ReturnType<typeof listBuiltInSystemAgents>[number] | null;
+  allowSystemProfileOverrides?: boolean;
+};
 
 export function listAgentProfiles() {
   ensureAgentsReady();
 
   const builtInSystemAgents = listBuiltInSystemAgents();
-  const systemAgents = builtInSystemAgents.map((agent) => buildBuiltInSystemAgentDetail(agent));
+  const systemAgents = builtInSystemAgents.map((agent) => readAgentProfile(agent.id));
   const customAgents = readCustomAgentDirectoryIds().map((agentId) => readStoredCustomAgentProfile(agentId));
 
   return [...systemAgents, ...customAgents]
@@ -94,12 +118,11 @@ export function listAgentProfiles() {
         return left.source === "system" ? -1 : 1;
       }
 
-      if (left.collectionOrder !== right.collectionOrder) {
-        return left.collectionOrder - right.collectionOrder;
-      }
+      const leftFamilyOrder = left.familyOrder ?? 1_000;
+      const rightFamilyOrder = right.familyOrder ?? 1_000;
 
-      if (left.groupOrder !== right.groupOrder) {
-        return left.groupOrder - right.groupOrder;
+      if (leftFamilyOrder !== rightFamilyOrder) {
+        return leftFamilyOrder - rightFamilyOrder;
       }
 
       if (left.promoted !== right.promoted) {
@@ -141,6 +164,8 @@ export function createAgentProfile(input: CreateAgentInput) {
     defaultReasoningEffort: input.defaultReasoningEffort ?? null,
     defaultSandboxMode: input.defaultSandboxMode ?? null,
     starterPrompts: normalizeStarterPrompts(input.starterPrompts, generatedDraft.starterPrompts),
+    defaultSkillIds: input.defaultSkillIds ?? [],
+    optionalSkillIds: input.optionalSkillIds ?? [],
     createdAt: now,
     updatedAt: now,
     files: buildAgentFiles(input.files, generatedDraft.files),
@@ -159,7 +184,59 @@ export function updateAgentProfile(agentId: string, input: UpdateAgentInput) {
   }
 
   if (existing.source === "system") {
-    throw new Error("系统内置智能体请直接修改 agents-src/system 下的源码目录。");
+    const systemSeed = listBuiltInSystemAgents().find((agent) => agent.id === agentId);
+
+    if (!systemSeed) {
+      throw new Error("没有找到这个核心岗位。");
+    }
+
+    const detail = normalizeAgentDetail(
+      {
+        ...existing,
+        name: input.name ?? existing.name,
+        avatarDataUrl:
+          input.avatarDataUrl === undefined
+            ? existing.avatarDataUrl
+            : normalizeAgentAvatarDataUrl(input.avatarDataUrl),
+        summary: input.summary ?? existing.summary,
+        roleLabel: input.roleLabel ?? existing.roleLabel,
+        description: input.description ?? existing.description,
+        availability: input.availability ?? existing.availability,
+        teamRole: input.teamRole ?? existing.teamRole,
+        defaultModel:
+          input.defaultModel === undefined
+            ? existing.defaultModel
+            : normalizeNullableString(input.defaultModel),
+        defaultReasoningEffort:
+          input.defaultReasoningEffort === undefined
+            ? existing.defaultReasoningEffort
+            : input.defaultReasoningEffort,
+        defaultSandboxMode:
+          input.defaultSandboxMode === undefined
+            ? existing.defaultSandboxMode
+            : input.defaultSandboxMode,
+        starterPrompts:
+          input.starterPrompts === undefined
+            ? existing.starterPrompts
+            : normalizeStarterPrompts(input.starterPrompts),
+        defaultSkillIds: input.defaultSkillIds ?? existing.defaultSkillIds,
+        optionalSkillIds: input.optionalSkillIds ?? existing.optionalSkillIds,
+        updatedAt: new Date().toISOString(),
+        files: input.files
+          ? {
+              ...existing.files,
+              ...buildAgentFiles(input.files, existing.files),
+            }
+          : existing.files,
+      },
+      {
+        systemSeedOverride: systemSeed,
+        allowSystemProfileOverrides: true,
+      },
+    );
+
+    persistSystemAgentShadowProfile(detail);
+    return detail;
   }
 
   const detail = normalizeAgentDetail({
@@ -186,6 +263,8 @@ export function updateAgentProfile(agentId: string, input: UpdateAgentInput) {
       input.starterPrompts === undefined
         ? existing.starterPrompts
         : normalizeStarterPrompts(input.starterPrompts),
+    defaultSkillIds: input.defaultSkillIds ?? existing.defaultSkillIds,
+    optionalSkillIds: input.optionalSkillIds ?? existing.optionalSkillIds,
     updatedAt: new Date().toISOString(),
     files: input.files
       ? {
@@ -199,6 +278,18 @@ export function updateAgentProfile(agentId: string, input: UpdateAgentInput) {
   return detail;
 }
 
+export function resetSystemAgentProfile(agentId: string) {
+  ensureAgentsReady();
+
+  if (!isBuiltInSystemAgentId(agentId)) {
+    throw new Error("只有核心岗位支持恢复默认。");
+  }
+
+  rmSync(getSystemAgentShadowDir(agentId), { recursive: true, force: true });
+  const builtIn = listBuiltInSystemAgents().find((agent) => agent.id === agentId);
+  return builtIn ? buildBuiltInSystemAgentDetail(builtIn) : null;
+}
+
 export function deleteAgentProfile(agentId: string) {
   ensureAgentsReady();
   const detail = readAgentProfile(agentId);
@@ -208,10 +299,10 @@ export function deleteAgentProfile(agentId: string) {
   }
 
   if (detail.source === "system") {
-    throw new Error("系统内置智能体暂时不能删除。");
+    throw new Error("核心岗位暂时不能删除。");
   }
 
-  rmSync(getAgentDir(agentId), { recursive: true, force: true });
+  rmSync(getCustomAgentDir(agentId), { recursive: true, force: true });
   return true;
 }
 
@@ -221,10 +312,10 @@ export function getSuggestedTeamAgents(leadAgentId?: string | null) {
   const manager = agentsById.get("project-manager") || null;
   const lead =
     (leadAgentId && leadAgentId !== "project-manager" ? agentsById.get(leadAgentId) : null) || null;
-  const research = agentsById.get("user-researcher") || null;
-  const designer = agentsById.get("aesthetic-designer") || null;
+  const designer = agentsById.get("ui-designer") || null;
+  const product = agentsById.get("product-manager") || null;
 
-  return [manager, lead, research, designer].filter((agent, index, array): agent is AgentProfileRecord => {
+  return [manager, lead || product, designer].filter((agent, index, array): agent is AgentProfileRecord => {
     if (!agent) {
       return false;
     }
@@ -249,26 +340,47 @@ function ensureAgentsReady() {
 }
 
 function cleanupDeprecatedSystemAgents() {
+  const activeSystemAgentIds = new Set(listBuiltInSystemAgents().map((agent) => agent.id));
   const mirroredSystemAgentIds = new Set([
     ...DEPRECATED_SYSTEM_AGENT_IDS,
-    ...listBuiltInSystemAgents().map((agent) => agent.id),
+    ...activeSystemAgentIds,
   ]);
 
   mirroredSystemAgentIds.forEach((agentId) => {
-    const agentDir = getAgentDir(agentId);
+    const agentDir = getCustomAgentDir(agentId);
 
     if (existsSync(agentDir)) {
       rmSync(agentDir, { recursive: true, force: true });
     }
   });
+
+  readAgentDirectoryIds().forEach((agentId) => {
+    if (activeSystemAgentIds.has(agentId)) {
+      return;
+    }
+
+    const stored = readStoredAgentProfile(agentId);
+
+    if (stored?.source === "system") {
+      rmSync(getCustomAgentDir(agentId), { recursive: true, force: true });
+    }
+  });
 }
 
-function getAgentDir(agentId: string) {
+function getCustomAgentDir(agentId: string) {
   return path.join(OPENCRAB_AGENTS_DIR, agentId);
 }
 
-function getAgentProfilePath(agentId: string) {
-  return path.join(getAgentDir(agentId), PROFILE_FILE_NAME);
+function getCustomAgentProfilePath(agentId: string) {
+  return path.join(getCustomAgentDir(agentId), PROFILE_FILE_NAME);
+}
+
+function getSystemAgentShadowDir(agentId: string) {
+  return path.join(OPENCRAB_AGENTS_DIR, "system", agentId);
+}
+
+function getSystemAgentShadowProfilePath(agentId: string) {
+  return path.join(getSystemAgentShadowDir(agentId), PROFILE_FILE_NAME);
 }
 
 function readAgentDirectoryIds() {
@@ -279,13 +391,18 @@ function readAgentDirectoryIds() {
 
 function readCustomAgentDirectoryIds() {
   const builtInSystemAgentIds = new Set(listBuiltInSystemAgents().map((agent) => agent.id));
-  return readAgentDirectoryIds().filter((agentId) => !builtInSystemAgentIds.has(agentId));
+  return readAgentDirectoryIds().filter((agentId) => agentId !== "system" && !builtInSystemAgentIds.has(agentId));
 }
 
 function readAgentProfile(agentId: string): AgentProfileDetail | null {
   if (isBuiltInSystemAgentId(agentId)) {
     const systemSeed = listBuiltInSystemAgents().find((agent) => agent.id === agentId);
-    return systemSeed ? buildBuiltInSystemAgentDetail(systemSeed) : null;
+
+    if (!systemSeed) {
+      return null;
+    }
+
+    return readStoredSystemAgentShadowProfile(agentId, systemSeed) ?? buildBuiltInSystemAgentDetail(systemSeed);
   }
 
   return readStoredCustomAgentProfile(agentId);
@@ -299,23 +416,29 @@ function buildBuiltInSystemAgentDetail(
     avatarDataUrl: systemSeed.avatarDataUrl ?? null,
     createdAt: SYSTEM_AGENT_TIMESTAMP,
     updatedAt: SYSTEM_AGENT_TIMESTAMP,
-  }, systemSeed);
+  }, { systemSeedOverride: systemSeed });
 }
 
 function readStoredCustomAgentProfile(agentId: string): AgentProfileDetail | null {
-  const profilePath = getAgentProfilePath(agentId);
+  const profilePath = getCustomAgentProfilePath(agentId);
 
   if (!existsSync(profilePath)) {
     return null;
   }
 
-  const parsed = readStoredAgentProfile(agentId);
+  const parsed = readStoredAgentProfileAtPath(profilePath);
 
   if (!parsed) {
     return null;
   }
 
-  const files = readAgentFiles(agentId, parsed.files);
+  const legacyCatalog = parsed as Partial<{
+    groupId: string;
+    groupLabel: string;
+    groupDescription: string;
+    groupOrder: number;
+  }>;
+  const files = readAgentFilesFromDir(getCustomAgentDir(agentId), parsed.files as StoredAgentFiles | undefined);
 
   return normalizeAgentDetail({
     id: parsed.id || agentId,
@@ -331,18 +454,19 @@ function readStoredCustomAgentProfile(agentId: string): AgentProfileDetail | nul
     defaultReasoningEffort: normalizeReasoningEffort(parsed.defaultReasoningEffort),
     defaultSandboxMode: normalizeSandboxMode(parsed.defaultSandboxMode),
     starterPrompts: normalizeStarterPrompts(parsed.starterPrompts),
-    groupId: parsed.groupId || null,
-    groupLabel: parsed.groupLabel || null,
-    groupDescription: parsed.groupDescription || null,
-    groupOrder: parsed.groupOrder,
-    collectionId: parsed.collectionId || null,
-    collectionLabel: parsed.collectionLabel || null,
-    collectionDescription: parsed.collectionDescription || null,
-    collectionOrder: parsed.collectionOrder,
+    familyId: parsed.familyId || legacyCatalog.groupId || "custom",
+    familyLabel: parsed.familyLabel || legacyCatalog.groupLabel || "我的智能体",
+    familyDescription:
+      parsed.familyDescription || legacyCatalog.groupDescription || "你自己创建和维护的长期角色。",
+    familyOrder: parsed.familyOrder ?? legacyCatalog.groupOrder ?? 1_000,
     promoted: parsed.promoted,
-    upstreamAgentName: parsed.upstreamAgentName || null,
-    upstreamSourceUrl: parsed.upstreamSourceUrl || null,
-    upstreamLicense: parsed.upstreamLicense || null,
+    ownedOutcomes: parsed.ownedOutcomes || [],
+    outOfScope: parsed.outOfScope || [],
+    deliverables: parsed.deliverables || [],
+    defaultSkillIds: parsed.defaultSkillIds || [],
+    optionalSkillIds: parsed.optionalSkillIds || [],
+    qualityGates: parsed.qualityGates || [],
+    handoffTargets: parsed.handoffTargets || [],
     createdAt: parsed.createdAt || new Date().toISOString(),
     updatedAt: parsed.updatedAt || parsed.createdAt || new Date().toISOString(),
     files,
@@ -350,8 +474,16 @@ function readStoredCustomAgentProfile(agentId: string): AgentProfileDetail | nul
 }
 
 function readStoredAgentProfile(agentId: string): Partial<StoredAgentProfile> | null {
-  const profilePath = getAgentProfilePath(agentId);
+  const profilePath = getCustomAgentProfilePath(agentId);
 
+  if (!existsSync(profilePath)) {
+    return null;
+  }
+
+  return readStoredAgentProfileAtPath(profilePath);
+}
+
+function readStoredAgentProfileAtPath(profilePath: string): Partial<StoredAgentProfile> | null {
   if (!existsSync(profilePath)) {
     return null;
   }
@@ -359,31 +491,95 @@ function readStoredAgentProfile(agentId: string): Partial<StoredAgentProfile> | 
   return JSON.parse(readFileSync(profilePath, "utf8")) as Partial<StoredAgentProfile>;
 }
 
-function readAgentFiles(agentId: string, fallback?: Partial<AgentFiles>) {
+function readStoredSystemAgentShadowProfile(
+  agentId: string,
+  systemSeed: ReturnType<typeof listBuiltInSystemAgents>[number],
+): AgentProfileDetail | null {
+  const profilePath = getSystemAgentShadowProfilePath(agentId);
+
+  if (!existsSync(profilePath)) {
+    return null;
+  }
+
+  try {
+    const parsed = readStoredAgentProfileAtPath(profilePath);
+
+    if (!parsed) {
+      return null;
+    }
+
+    const files = readAgentFilesFromDir(
+      getSystemAgentShadowDir(agentId),
+      parsed.files as StoredAgentFiles | undefined,
+    );
+
+    return normalizeAgentDetail(
+      {
+        ...systemSeed,
+        ...parsed,
+        id: systemSeed.id,
+        source: "system",
+        createdAt: parsed.createdAt || SYSTEM_AGENT_TIMESTAMP,
+        updatedAt: parsed.updatedAt || parsed.createdAt || SYSTEM_AGENT_TIMESTAMP,
+        files,
+      },
+      {
+        systemSeedOverride: systemSeed,
+        allowSystemProfileOverrides: true,
+      },
+    );
+  } catch {
+    return null;
+  }
+}
+
+function readAgentFilesFromDir(agentDir: string, fallback?: StoredAgentFiles) {
   const nextFiles = {} as AgentFiles;
 
   (Object.keys(AGENT_FILE_NAMES) as AgentFileKey[]).forEach((key) => {
-    const filePath = path.join(getAgentDir(agentId), AGENT_FILE_NAMES[key]);
+    const filePath = path.join(agentDir, AGENT_FILE_NAMES[key]);
+    const legacyFilePath = path.join(agentDir, LEGACY_AGENT_FILE_NAMES[LEGACY_AGENT_FILE_KEY_BY_V2_KEY[key]]);
     nextFiles[key] = existsSync(filePath)
       ? readFileSync(filePath, "utf8")
-      : (fallback?.[key] || "").trim();
+      : existsSync(legacyFilePath)
+        ? readFileSync(legacyFilePath, "utf8")
+        : resolveStoredAgentFileValue(fallback, key);
   });
 
   return nextFiles;
 }
 
 function persistAgentProfile(detail: AgentProfileDetail) {
-  const agentDir = getAgentDir(detail.id);
+  persistAgentProfileToDir(detail, getCustomAgentDir(detail.id), getCustomAgentProfilePath(detail.id));
+}
+
+function persistSystemAgentShadowProfile(detail: AgentProfileDetail) {
+  persistAgentProfileToDir(
+    detail,
+    getSystemAgentShadowDir(detail.id),
+    getSystemAgentShadowProfilePath(detail.id),
+  );
+}
+
+function persistAgentProfileToDir(
+  detail: AgentProfileDetail,
+  agentDir: string,
+  profilePath: string,
+) {
   mkdirSync(agentDir, { recursive: true });
 
   const stored: StoredAgentProfile = {
     ...detail,
   };
 
-  writeFileSync(getAgentProfilePath(detail.id), JSON.stringify(stored, null, 2), "utf8");
+  writeFileSync(profilePath, JSON.stringify(stored, null, 2), "utf8");
 
   (Object.keys(AGENT_FILE_NAMES) as AgentFileKey[]).forEach((key) => {
     writeFileSync(path.join(agentDir, AGENT_FILE_NAMES[key]), `${detail.files[key].trim()}\n`, "utf8");
+    rmSync(
+      path.join(agentDir, LEGACY_AGENT_FILE_NAMES[LEGACY_AGENT_FILE_KEY_BY_V2_KEY[key]]),
+      { force: true },
+    );
   });
 }
 
@@ -402,18 +598,18 @@ function toAgentRecord(detail: AgentProfileDetail): AgentProfileRecord {
     defaultReasoningEffort: detail.defaultReasoningEffort,
     defaultSandboxMode: detail.defaultSandboxMode,
     starterPrompts: detail.starterPrompts,
-    groupId: detail.groupId,
-    groupLabel: detail.groupLabel,
-    groupDescription: detail.groupDescription,
-    groupOrder: detail.groupOrder,
-    collectionId: detail.collectionId,
-    collectionLabel: detail.collectionLabel,
-    collectionDescription: detail.collectionDescription,
-    collectionOrder: detail.collectionOrder,
+    familyId: detail.familyId,
+    familyLabel: detail.familyLabel,
+    familyDescription: detail.familyDescription,
+    familyOrder: detail.familyOrder,
     promoted: detail.promoted,
-    upstreamAgentName: detail.upstreamAgentName,
-    upstreamSourceUrl: detail.upstreamSourceUrl,
-    upstreamLicense: detail.upstreamLicense,
+    ownedOutcomes: detail.ownedOutcomes,
+    outOfScope: detail.outOfScope,
+    deliverables: detail.deliverables,
+    defaultSkillIds: detail.defaultSkillIds,
+    optionalSkillIds: detail.optionalSkillIds,
+    qualityGates: detail.qualityGates,
+    handoffTargets: detail.handoffTargets,
     fileCount: countAgentFiles(detail.files),
     createdAt: detail.createdAt,
     updatedAt: detail.updatedAt,
@@ -422,8 +618,10 @@ function toAgentRecord(detail: AgentProfileDetail): AgentProfileRecord {
 
 function normalizeAgentDetail(
   input: NormalizeAgentDetailInput,
-  systemSeedOverride: ReturnType<typeof listBuiltInSystemAgents>[number] | null = null,
+  options: NormalizeAgentDetailOptions = {},
 ): AgentProfileDetail {
+  const systemSeedOverride = options.systemSeedOverride ?? null;
+  const allowSystemProfileOverrides = options.allowSystemProfileOverrides ?? false;
   const files = buildAgentFiles(input.files);
   const normalizedName = input.name.trim() || "未命名智能体";
   const source =
@@ -433,7 +631,7 @@ function normalizeAgentDetail(
       ? systemSeedOverride ?? listBuiltInSystemAgents().find((seed) => seed.id === input.id) ?? null
       : null;
   const teamRole =
-    source === "system"
+    source === "system" && !allowSystemProfileOverrides
       ? systemSeed?.teamRole ?? normalizeSystemTeamRole(input.id, input.teamRole)
       : normalizeTeamRole(input.teamRole);
   const rawAvatarDataUrl = normalizeAgentAvatarDataUrl(input.avatarDataUrl);
@@ -444,7 +642,7 @@ function normalizeAgentDetail(
           name: normalizedName,
           seed: input.id,
         });
-  const catalogMetadata = resolveCatalogMetadata(input, source, systemSeed);
+  const catalogMetadata = resolveCatalogMetadata(input, source, systemSeed, allowSystemProfileOverrides);
 
   return {
     id: input.id,
@@ -456,26 +654,35 @@ function normalizeAgentDetail(
     source,
     availability: normalizeAvailability(input.availability),
     teamRole,
-    defaultModel: source === "system" ? null : normalizeNullableString(input.defaultModel),
+    defaultModel:
+      source === "system" && !allowSystemProfileOverrides
+        ? null
+        : normalizeNullableString(input.defaultModel),
     defaultReasoningEffort:
-      source === "system" ? null : normalizeReasoningEffort(input.defaultReasoningEffort),
+      source === "system" && !allowSystemProfileOverrides
+        ? null
+        : normalizeReasoningEffort(input.defaultReasoningEffort),
     defaultSandboxMode:
       source === "system"
-        ? systemSeed?.defaultSandboxMode ?? normalizeSystemSandboxMode(input.id, input.defaultSandboxMode)
+        ? allowSystemProfileOverrides
+          ? normalizeSandboxMode(input.defaultSandboxMode)
+            ?? systemSeed?.defaultSandboxMode
+            ?? normalizeSystemSandboxMode(input.id, input.defaultSandboxMode)
+          : systemSeed?.defaultSandboxMode ?? normalizeSystemSandboxMode(input.id, input.defaultSandboxMode)
         : normalizeSandboxMode(input.defaultSandboxMode),
     starterPrompts: normalizeStarterPrompts(input.starterPrompts),
-    groupId: catalogMetadata.groupId,
-    groupLabel: catalogMetadata.groupLabel,
-    groupDescription: catalogMetadata.groupDescription,
-    groupOrder: catalogMetadata.groupOrder,
-    collectionId: catalogMetadata.collectionId,
-    collectionLabel: catalogMetadata.collectionLabel,
-    collectionDescription: catalogMetadata.collectionDescription,
-    collectionOrder: catalogMetadata.collectionOrder,
+    familyId: catalogMetadata.familyId,
+    familyLabel: catalogMetadata.familyLabel,
+    familyDescription: catalogMetadata.familyDescription,
+    familyOrder: catalogMetadata.familyOrder,
     promoted: catalogMetadata.promoted,
-    upstreamAgentName: catalogMetadata.upstreamAgentName,
-    upstreamSourceUrl: catalogMetadata.upstreamSourceUrl,
-    upstreamLicense: catalogMetadata.upstreamLicense,
+    ownedOutcomes: catalogMetadata.ownedOutcomes,
+    outOfScope: catalogMetadata.outOfScope,
+    deliverables: catalogMetadata.deliverables,
+    defaultSkillIds: catalogMetadata.defaultSkillIds,
+    optionalSkillIds: catalogMetadata.optionalSkillIds,
+    qualityGates: catalogMetadata.qualityGates,
+    handoffTargets: catalogMetadata.handoffTargets,
     fileCount: countAgentFiles(files),
     createdAt: input.createdAt,
     updatedAt: input.updatedAt,
@@ -564,39 +771,60 @@ function resolveCatalogMetadata(
   input: Partial<NormalizeAgentDetailInput>,
   source: "system" | "custom",
   systemSeed: ReturnType<typeof listBuiltInSystemAgents>[number] | null,
+  allowSystemProfileOverrides = false,
 ) {
+  if (source === "system" && systemSeed && !allowSystemProfileOverrides) {
+    return {
+      familyId: systemSeed.familyId,
+      familyLabel: systemSeed.familyLabel,
+      familyDescription: systemSeed.familyDescription,
+      familyOrder: systemSeed.familyOrder,
+      promoted: systemSeed.promoted,
+      ownedOutcomes: systemSeed.ownedOutcomes,
+      outOfScope: systemSeed.outOfScope,
+      deliverables: systemSeed.deliverables,
+      defaultSkillIds: systemSeed.defaultSkillIds,
+      optionalSkillIds: systemSeed.optionalSkillIds,
+      qualityGates: systemSeed.qualityGates,
+      handoffTargets: systemSeed.handoffTargets,
+    };
+  }
+
   if (source === "system" && systemSeed) {
     return {
-      groupId: systemSeed.groupId,
-      groupLabel: systemSeed.groupLabel,
-      groupDescription: systemSeed.groupDescription,
-      groupOrder: systemSeed.groupOrder,
-      collectionId: systemSeed.collectionId,
-      collectionLabel: systemSeed.collectionLabel,
-      collectionDescription: systemSeed.collectionDescription,
-      collectionOrder: systemSeed.collectionOrder,
-      promoted: systemSeed.promoted,
-      upstreamAgentName: systemSeed.upstreamAgentName,
-      upstreamSourceUrl: systemSeed.upstreamSourceUrl,
-      upstreamLicense: systemSeed.upstreamLicense,
+      familyId: normalizeNullableString(input.familyId) || systemSeed.familyId,
+      familyLabel: normalizeNullableString(input.familyLabel) || systemSeed.familyLabel,
+      familyDescription:
+        normalizeNullableString(input.familyDescription) || systemSeed.familyDescription,
+      familyOrder: normalizeOrder(input.familyOrder, systemSeed.familyOrder),
+      promoted: input.promoted ?? systemSeed.promoted,
+      ownedOutcomes: Array.isArray(input.ownedOutcomes) ? input.ownedOutcomes : systemSeed.ownedOutcomes,
+      outOfScope: Array.isArray(input.outOfScope) ? input.outOfScope : systemSeed.outOfScope,
+      deliverables: Array.isArray(input.deliverables) ? input.deliverables : systemSeed.deliverables,
+      defaultSkillIds:
+        Array.isArray(input.defaultSkillIds) ? input.defaultSkillIds : systemSeed.defaultSkillIds,
+      optionalSkillIds:
+        Array.isArray(input.optionalSkillIds) ? input.optionalSkillIds : systemSeed.optionalSkillIds,
+      qualityGates: Array.isArray(input.qualityGates) ? input.qualityGates : systemSeed.qualityGates,
+      handoffTargets:
+        Array.isArray(input.handoffTargets) ? input.handoffTargets : systemSeed.handoffTargets,
     };
   }
 
   return {
-    groupId: normalizeNullableString(input.groupId) || "custom",
-    groupLabel: normalizeNullableString(input.groupLabel) || "我的智能体",
-    groupDescription:
-      normalizeNullableString(input.groupDescription) || "你自己创建和维护的长期角色。",
-    groupOrder: normalizeOrder(input.groupOrder, 1_000),
-    collectionId: normalizeNullableString(input.collectionId) || "custom",
-    collectionLabel: normalizeNullableString(input.collectionLabel) || "自定义",
-    collectionDescription:
-      normalizeNullableString(input.collectionDescription) || "你自己创建的智能体集合。",
-    collectionOrder: normalizeOrder(input.collectionOrder, 1_000),
+    familyId: normalizeNullableString(input.familyId) || "custom",
+    familyLabel: normalizeNullableString(input.familyLabel) || "我的智能体",
+    familyDescription:
+      normalizeNullableString(input.familyDescription) || "你自己创建和维护的长期角色。",
+    familyOrder: normalizeOrder(input.familyOrder, 1_000),
     promoted: Boolean(input.promoted),
-    upstreamAgentName: normalizeNullableString(input.upstreamAgentName),
-    upstreamSourceUrl: normalizeNullableString(input.upstreamSourceUrl),
-    upstreamLicense: normalizeNullableString(input.upstreamLicense),
+    ownedOutcomes: Array.isArray(input.ownedOutcomes) ? input.ownedOutcomes : [],
+    outOfScope: Array.isArray(input.outOfScope) ? input.outOfScope : [],
+    deliverables: Array.isArray(input.deliverables) ? input.deliverables : [],
+    defaultSkillIds: Array.isArray(input.defaultSkillIds) ? input.defaultSkillIds : [],
+    optionalSkillIds: Array.isArray(input.optionalSkillIds) ? input.optionalSkillIds : [],
+    qualityGates: Array.isArray(input.qualityGates) ? input.qualityGates : [],
+    handoffTargets: Array.isArray(input.handoffTargets) ? input.handoffTargets : [],
   };
 }
 
@@ -607,4 +835,9 @@ function normalizeNullableString(value: string | null | undefined) {
 
 function normalizeOrder(value: number | null | undefined, fallback: number) {
   return Number.isFinite(value) ? (value as number) : fallback;
+}
+
+function resolveStoredAgentFileValue(input: StoredAgentFiles | undefined, key: AgentFileKey) {
+  const legacyKey = LEGACY_AGENT_FILE_KEY_BY_V2_KEY[key];
+  return (input?.[key] ?? input?.[legacyKey] ?? "").trim();
 }

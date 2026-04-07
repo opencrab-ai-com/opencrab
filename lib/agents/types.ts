@@ -6,23 +6,29 @@ import type {
 export type AgentSource = "system" | "custom";
 export type AgentAvailability = "solo" | "team" | "both";
 export type AgentTeamRole = "lead" | "research" | "writer" | "specialist";
-export type AgentFileKey = "soul" | "responsibility" | "tools" | "user" | "knowledge";
+export type AgentFileKey = "identity" | "contract" | "execution" | "quality" | "handoff";
 
 export type AgentFiles = Record<AgentFileKey, string>;
 
+export type AgentDeliverableDefinition = {
+  id: string;
+  label: string;
+  required: boolean;
+};
+
 export type AgentCatalogMetadata = {
-  groupId: string;
-  groupLabel: string;
-  groupDescription: string;
-  groupOrder: number;
-  collectionId: string;
-  collectionLabel: string;
-  collectionDescription: string;
-  collectionOrder: number;
+  familyId: string;
+  familyLabel: string;
+  familyDescription: string;
+  familyOrder: number;
   promoted: boolean;
-  upstreamAgentName: string | null;
-  upstreamSourceUrl: string | null;
-  upstreamLicense: string | null;
+  ownedOutcomes?: string[];
+  outOfScope?: string[];
+  deliverables?: AgentDeliverableDefinition[];
+  defaultSkillIds?: string[];
+  optionalSkillIds?: string[];
+  qualityGates?: string[];
+  handoffTargets?: string[];
 };
 
 export type AgentProfileRecord = AgentCatalogMetadata & {

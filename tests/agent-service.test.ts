@@ -21,18 +21,11 @@ function createAgentRecord(overrides: Partial<AgentProfileRecord> = {}): AgentPr
     defaultReasoningEffort: "medium",
     defaultSandboxMode: "read-only",
     starterPrompts: [],
-    groupId: "custom",
-    groupLabel: "我的智能体",
-    groupDescription: "自定义智能体分组。",
-    groupOrder: 1_000,
-    collectionId: "custom",
-    collectionLabel: "自定义",
-    collectionDescription: "自定义智能体集合。",
-    collectionOrder: 1_000,
+    familyId: "custom",
+    familyLabel: "我的智能体",
+    familyDescription: "你自己创建和维护的长期角色。",
+    familyOrder: 1_000,
     promoted: false,
-    upstreamAgentName: null,
-    upstreamSourceUrl: null,
-    upstreamLicense: null,
     fileCount: 5,
     createdAt: "2026-03-23T00:00:00.000Z",
     updatedAt: "2026-03-23T00:00:00.000Z",
@@ -44,11 +37,11 @@ function createAgentDetail(overrides: Partial<AgentProfileDetail> = {}): AgentPr
   return {
     ...createAgentRecord(),
     files: {
-      soul: "",
-      responsibility: "",
-      tools: "",
-      user: "",
-      knowledge: "",
+      identity: "",
+      contract: "",
+      execution: "",
+      quality: "",
+      handoff: "",
     },
     ...overrides,
   };
@@ -64,6 +57,8 @@ describe("agentService", () => {
     };
     const patch: AgentMutationInput = {
       summary: "Finds better facts",
+      defaultSkillIds: ["brainstorming"],
+      optionalSkillIds: ["pdf"],
     };
     const repository = {
       listAgentProfiles: vi.fn(() => [record]),
@@ -71,6 +66,7 @@ describe("agentService", () => {
       createAgentProfile: vi.fn(() => detail),
       updateAgentProfile: vi.fn(() => detail),
       deleteAgentProfile: vi.fn(() => true),
+      resetSystemAgentProfile: vi.fn(() => detail),
     };
     const service = createAgentService({ repository });
 
@@ -79,5 +75,8 @@ describe("agentService", () => {
     expect(service.create(createInput)).toEqual(detail);
     expect(service.update("agent-1", patch)).toEqual(detail);
     expect(service.remove("agent-1")).toBe(true);
+    expect(service.reset("agent-1")).toEqual(detail);
+    expect(repository.updateAgentProfile).toHaveBeenCalledWith("agent-1", patch);
+    expect(repository.resetSystemAgentProfile).toHaveBeenCalledWith("agent-1");
   });
 });

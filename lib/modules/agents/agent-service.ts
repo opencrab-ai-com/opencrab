@@ -3,9 +3,10 @@ import {
   deleteAgentProfile,
   getAgentProfile,
   listAgentProfiles,
+  resetSystemAgentProfile,
   updateAgentProfile,
 } from "@/lib/agents/agent-store";
-import type { AgentProfileDetail, AgentProfileRecord } from "@/lib/agents/types";
+import type { AgentFiles, AgentProfileDetail, AgentProfileRecord } from "@/lib/agents/types";
 import type {
   CodexReasoningEffort,
   CodexSandboxMode,
@@ -23,13 +24,9 @@ export type AgentMutationInput = Partial<{
   defaultReasoningEffort: CodexReasoningEffort | null;
   defaultSandboxMode: CodexSandboxMode | null;
   starterPrompts: string[];
-  files: Partial<{
-    soul: string;
-    responsibility: string;
-    tools: string;
-    user: string;
-    knowledge: string;
-  }>;
+  defaultSkillIds: string[];
+  optionalSkillIds: string[];
+  files: Partial<AgentFiles>;
 }>;
 
 export type AgentCreateInput = AgentMutationInput & {
@@ -46,6 +43,7 @@ export type AgentRepository = {
     input: AgentMutationInput,
   ) => AgentProfileDetail;
   deleteAgentProfile: (agentId: string) => boolean;
+  resetSystemAgentProfile: (agentId: string) => AgentProfileDetail | null;
 };
 
 type AgentServiceDependencies = {
@@ -73,6 +71,9 @@ export function createAgentService(
     remove(agentId: string) {
       return repository.deleteAgentProfile(agentId);
     },
+    reset(agentId: string) {
+      return repository.resetSystemAgentProfile(agentId);
+    },
   };
 }
 
@@ -82,6 +83,7 @@ const localAgentRepository: AgentRepository = {
   createAgentProfile,
   updateAgentProfile,
   deleteAgentProfile,
+  resetSystemAgentProfile,
 };
 
 export const agentService = createAgentService();

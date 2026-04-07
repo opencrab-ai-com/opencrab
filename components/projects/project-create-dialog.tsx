@@ -729,17 +729,17 @@ export function ProjectCreateDialog({ isOpen, onClose }: ProjectCreateDialogProp
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <h3 className="text-[18px] font-semibold tracking-[-0.03em] text-text">
-                          更多候选 Agent
+                          更多候选岗位
                         </h3>
                         <p className="mt-2 text-[14px] leading-7 text-muted-strong">
-                          只有在你确定需要时，再从分类目录里补充成员，避免团队一开始就过重。
+                          只有在你确定需要时，再从岗位家族或自定义分组里补充成员，避免团队一开始就过重。
                         </p>
                       </div>
                       <div className="w-full max-w-[280px]">
                         <input
                           value={agentQuery}
                           onChange={(event) => setAgentQuery(event.target.value)}
-                          placeholder="按名字、角色、分类搜索"
+                          placeholder="按名字、岗位、家族搜索"
                           className="w-full rounded-[16px] border border-line bg-surface px-4 py-2.5 text-[13px] text-text outline-none transition focus:border-text"
                         />
                       </div>
@@ -758,7 +758,7 @@ export function ProjectCreateDialog({ isOpen, onClose }: ProjectCreateDialogProp
                         ))
                       ) : (
                         <div className="rounded-[18px] border border-dashed border-line bg-surface-muted px-4 py-4 text-[13px] leading-6 text-muted-strong">
-                          没有找到匹配的候选 Agent，可以换个关键词再试。
+                          没有找到匹配的候选岗位，可以换个关键词再试。
                         </div>
                       )}
                     </div>
@@ -1390,12 +1390,12 @@ function SelectableAgentCard({
         <div className="flex flex-wrap items-center gap-2">
           <div className="text-[15px] font-semibold text-text">{agent.name}</div>
           <MetaPill>{agent.roleLabel}</MetaPill>
-          <MetaPill>{agent.groupLabel}</MetaPill>
+          <MetaPill>{agent.familyLabel}</MetaPill>
         </div>
         <p className="mt-2 text-[13px] leading-6 text-muted-strong">{agent.summary}</p>
         {!compact ? (
           <p className="mt-2 text-[12px] leading-6 text-muted-strong">
-            {formatTeamRole(agent.teamRole)} · {agent.collectionLabel}
+            {formatTeamRole(agent.teamRole)} · {formatAgentRosterMeta(agent)}
           </p>
         ) : null}
         {reason ? <p className="mt-2 text-[12px] leading-6 text-text">推荐原因：{reason}</p> : null}
@@ -1519,8 +1519,8 @@ function buildAgentLibraryCollections(
             agent.name,
             agent.summary,
             agent.roleLabel,
-            agent.groupLabel,
-            agent.collectionLabel,
+            agent.familyLabel,
+            agent.familyDescription,
           ].join(" "),
         ).includes(normalizedQuery),
       )
@@ -1547,31 +1547,33 @@ function buildAgentLibraryCollections(
   >();
 
   filteredAgents.forEach((agent) => {
-    const existingCollection = collections.get(agent.collectionId);
+    const collectionId = agent.source === "system" ? "system" : "custom";
+    const existingCollection = collections.get(collectionId);
     const nextCollection =
       existingCollection ??
       {
-        id: agent.collectionId,
-        label: agent.collectionLabel,
-        description: agent.collectionDescription,
-        order: agent.collectionOrder,
+        id: collectionId,
+        label: formatAgentCollectionLabel(agent),
+        description: formatAgentCollectionDescription(agent),
+        order: agent.source === "system" ? 0 : 1_000,
         groups: new Map(),
       };
-    const existingGroup = nextCollection.groups.get(agent.groupId);
+    const groupId = agent.familyId;
+    const existingGroup = nextCollection.groups.get(groupId);
 
     if (existingGroup) {
       existingGroup.agents.push(agent);
     } else {
-      nextCollection.groups.set(agent.groupId, {
-        id: agent.groupId,
-        label: agent.groupLabel,
-        description: agent.groupDescription,
-        order: agent.groupOrder,
+      nextCollection.groups.set(groupId, {
+        id: groupId,
+        label: agent.familyLabel,
+        description: agent.familyDescription,
+        order: agent.familyOrder,
         agents: [agent],
       });
     }
 
-    collections.set(agent.collectionId, nextCollection);
+    collections.set(collectionId, nextCollection);
   });
 
   return Array.from(collections.values())
@@ -1591,6 +1593,26 @@ function buildAgentLibraryCollections(
           ),
         })),
     })) satisfies AgentLibraryCollection[];
+}
+
+function formatAgentCollectionLabel(agent: AgentProfileRecord) {
+  if (agent.source === "system") {
+    return "核心岗位";
+  }
+
+  return "自定义智能体";
+}
+
+function formatAgentCollectionDescription(agent: AgentProfileRecord) {
+  if (agent.source === "system") {
+    return "按岗位家族组织的核心岗位候选。";
+  }
+
+  return "你自己创建和维护的长期角色。";
+}
+
+function formatAgentRosterMeta(agent: AgentProfileRecord) {
+  return agent.familyLabel;
 }
 
 function collectAnswersFromQuestions(

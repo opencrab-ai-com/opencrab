@@ -136,7 +136,7 @@ export function FirstRunReadinessOverlay() {
 
   if (showCompletionState && !isBlocking) {
     return (
-      <div className="fixed inset-0 z-[80] bg-[#f5efe4]/88 backdrop-blur-sm">
+      <div className="fixed inset-0 z-[80] overflow-y-auto bg-[#f5efe4]/88 backdrop-blur-sm">
         <div className="flex min-h-screen items-center justify-center px-6 py-10">
           <div
             ref={overlayCardRef}
@@ -173,7 +173,7 @@ export function FirstRunReadinessOverlay() {
   }
 
   return (
-    <div className="fixed inset-0 z-[80] bg-[#f5efe4]/92 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[80] overflow-y-auto bg-[#f5efe4]/92 backdrop-blur-sm">
       <div className="flex min-h-screen items-center justify-center px-6 py-10">
         <div
           ref={overlayCardRef}

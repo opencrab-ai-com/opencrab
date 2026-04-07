@@ -33,7 +33,7 @@ describe("project store team coordination", () => {
     const created = projectStore.createProject({
       goal: "验证系统智能体跟随当前对话设置",
       workspaceDir,
-      agentProfileIds: ["project-manager", "user-researcher", "aesthetic-designer"],
+      agentProfileIds: ["project-manager", "product-manager", "ui-designer"],
       model: "gpt-5.4",
       reasoningEffort: "xhigh",
       sandboxMode: "danger-full-access",
@@ -56,7 +56,7 @@ describe("project store team coordination", () => {
       normalizedAgents,
     ).toEqual([
       {
-        agentProfileId: "aesthetic-designer",
+        agentProfileId: "product-manager",
         model: "gpt-5.4",
         reasoningEffort: "xhigh",
         sandboxMode: "danger-full-access",
@@ -68,7 +68,7 @@ describe("project store team coordination", () => {
         sandboxMode: "danger-full-access",
       },
       {
-        agentProfileId: "user-researcher",
+        agentProfileId: "ui-designer",
         model: "gpt-5.4",
         reasoningEffort: "xhigh",
         sandboxMode: "danger-full-access",

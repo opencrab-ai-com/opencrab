@@ -22,8 +22,7 @@ export function AgentsScreen() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
-  const [selectedSystemCollectionId, setSelectedSystemCollectionId] = useState("all");
-  const [selectedSystemGroupId, setSelectedSystemGroupId] = useState("all");
+  const [selectedSystemFamilyId, setSelectedSystemFamilyId] = useState("all");
   const deferredQuery = useDeferredValue(query);
   const activeQuery = deferredQuery.trim();
 
@@ -44,76 +43,36 @@ export function AgentsScreen() {
   const customAgents = filteredAgents.filter(isCustomAgentForDisplay);
   const systemAgentCount = agents.filter(isSystemAgentForDisplay).length;
   const customAgentCount = agents.filter(isCustomAgentForDisplay).length;
-  const coreSystemAgentCount = agents.filter(
-    (agent) => isSystemAgentForDisplay(agent) && agent.collectionId === "opencrab-core",
+  const systemFamilyOptions = useMemo(() => buildSystemFamilyOptions(allSystemAgents), [allSystemAgents]);
+  const promotedSystemAgentCount = agents.filter(
+    (agent) => isSystemAgentForDisplay(agent) && agent.promoted,
   ).length;
-  const agencySystemAgentCount = agents.filter(
-    (agent) => isSystemAgentForDisplay(agent) && agent.collectionId === "agency-agents",
-  ).length;
-  const systemCollectionOptions = useMemo(() => buildSystemCollectionOptions(allSystemAgents), [allSystemAgents]);
-  const systemGroupOptions = useMemo(() => buildSystemGroupOptions(allSystemAgents), [allSystemAgents]);
   const isSearching = activeQuery.length > 0;
-  const effectiveSelectedSystemCollectionId = isSearching ? "all" : selectedSystemCollectionId;
-  const visibleSystemGroupOptions = useMemo(
-    () =>
-      effectiveSelectedSystemCollectionId === "all"
-        ? systemGroupOptions
-        : systemGroupOptions.filter((group) => group.collectionId === effectiveSelectedSystemCollectionId),
-    [effectiveSelectedSystemCollectionId, systemGroupOptions],
-  );
-  const hasSelectedSystemGroup = visibleSystemGroupOptions.some((group) => group.id === selectedSystemGroupId);
-  const effectiveSelectedSystemGroupId = isSearching
+  const hasSelectedSystemFamily = systemFamilyOptions.some((family) => family.id === selectedSystemFamilyId);
+  const effectiveSelectedSystemFamilyId = isSearching
     ? "all"
-    : hasSelectedSystemGroup
-      ? selectedSystemGroupId
+    : hasSelectedSystemFamily
+      ? selectedSystemFamilyId
       : "all";
   const visibleSystemAgents = useMemo(() => {
-    const scopedByCollection =
-      effectiveSelectedSystemCollectionId === "all"
-        ? systemAgents
-        : systemAgents.filter((agent) => agent.collectionId === effectiveSelectedSystemCollectionId);
-
-    return effectiveSelectedSystemGroupId === "all"
-      ? scopedByCollection
-      : scopedByCollection.filter((agent) => agent.groupId === effectiveSelectedSystemGroupId);
-  }, [effectiveSelectedSystemCollectionId, effectiveSelectedSystemGroupId, systemAgents]);
-  const groupedSystemAgents = useMemo(() => groupAgentsByGroup(visibleSystemAgents), [visibleSystemAgents]);
-  const activeSystemCollectionOption =
-    effectiveSelectedSystemCollectionId === "all"
+    return effectiveSelectedSystemFamilyId === "all"
+      ? systemAgents
+      : systemAgents.filter((agent) => getSystemFamilyId(agent) === effectiveSelectedSystemFamilyId);
+  }, [effectiveSelectedSystemFamilyId, systemAgents]);
+  const groupedSystemAgents = useMemo(() => groupAgentsByFamily(visibleSystemAgents), [visibleSystemAgents]);
+  const activeSystemFamilyOption =
+    effectiveSelectedSystemFamilyId === "all"
       ? null
-      : systemCollectionOptions.find((collection) => collection.id === effectiveSelectedSystemCollectionId) ?? null;
-  const activeSystemGroupOption =
-    effectiveSelectedSystemGroupId === "all"
-      ? null
-      : visibleSystemGroupOptions.find((group) => group.id === effectiveSelectedSystemGroupId) ?? null;
+      : systemFamilyOptions.find((family) => family.id === effectiveSelectedSystemFamilyId) ?? null;
   const shouldShowSystemDirectory =
-    !isSearching && effectiveSelectedSystemGroupId === "all" && visibleSystemGroupOptions.length > 1;
+    !isSearching && effectiveSelectedSystemFamilyId === "all" && systemFamilyOptions.length > 1;
 
-  function handleSelectSystemCollection(collectionId: string) {
-    setSelectedSystemCollectionId(collectionId);
-
-    if (collectionId === "all") {
-      setSelectedSystemGroupId("all");
+  function handleSelectSystemFamily(familyId: string) {
+    if (familyId === "all") {
+      setSelectedSystemFamilyId("all");
       return;
     }
-
-    const currentGroup = systemGroupOptions.find((group) => group.id === selectedSystemGroupId);
-    if (currentGroup && currentGroup.collectionId !== collectionId) {
-      setSelectedSystemGroupId("all");
-    }
-  }
-
-  function handleSelectSystemGroup(groupId: string) {
-    if (groupId === "all") {
-      setSelectedSystemGroupId("all");
-      return;
-    }
-
-    const nextGroup = systemGroupOptions.find((group) => group.id === groupId);
-    if (nextGroup) {
-      setSelectedSystemCollectionId(nextGroup.collectionId);
-    }
-    setSelectedSystemGroupId(groupId);
+    setSelectedSystemFamilyId(familyId);
   }
 
   async function handleStartConversation(agentId: string, agentName: string) {
@@ -168,9 +127,9 @@ export function AgentsScreen() {
 
         <OverviewStrip
           items={[
-            { label: "系统总量", value: `${systemAgentCount}` },
-            { label: "OpenCrab 核心", value: `${coreSystemAgentCount}` },
-            { label: "扩展角色库", value: `${agencySystemAgentCount}` },
+            { label: "核心岗位", value: `${systemAgentCount}` },
+            { label: "岗位家族", value: `${systemFamilyOptions.length}` },
+            { label: "默认推荐", value: `${promotedSystemAgentCount}` },
             { label: "自定义", value: `${customAgentCount}` },
           ]}
         />
@@ -184,33 +143,33 @@ export function AgentsScreen() {
         <section className="rounded-[28px] border border-line bg-surface p-6 shadow-soft">
           <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <h2 className="text-[24px] font-semibold tracking-[-0.04em] text-text">系统智能体库</h2>
+              <h2 className="text-[24px] font-semibold tracking-[-0.04em] text-text">核心岗位目录</h2>
               <p className="mt-2 text-[14px] leading-7 text-muted-strong">
-                默认先看目录，再进入角色列表；搜索会直接跨全部系统命中结果。
+                这些岗位默认对各自职责范围内的结果负责；先选岗位，再把工作交给它闭环。
               </p>
             </div>
             <div className="flex flex-wrap gap-2 text-[12px] text-muted-strong">
-              <MetaPill>{systemGroupOptions.length} 个职能组</MetaPill>
-              <MetaPill>{systemAgentCount} 个系统智能体</MetaPill>
+              <MetaPill>{systemFamilyOptions.length} 个岗位家族</MetaPill>
+              <MetaPill>{systemAgentCount} 个核心岗位</MetaPill>
             </div>
           </div>
 
           {!isSearching ? (
             <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-line/70 pt-5">
-              <span className="text-[12px] font-medium text-muted-strong">系统集合</span>
+              <span className="text-[12px] font-medium text-muted-strong">岗位家族</span>
               <CollectionSegmentButton
-                label="全部系统"
+                label="全部岗位"
                 count={systemAgentCount}
-                isActive={effectiveSelectedSystemCollectionId === "all"}
-                onClick={() => handleSelectSystemCollection("all")}
+                isActive={effectiveSelectedSystemFamilyId === "all"}
+                onClick={() => handleSelectSystemFamily("all")}
               />
-              {systemCollectionOptions.map((collection) => (
+              {systemFamilyOptions.map((family) => (
                 <CollectionSegmentButton
-                  key={collection.id}
-                  label={collection.displayLabel}
-                  count={collection.count}
-                  isActive={effectiveSelectedSystemCollectionId === collection.id}
-                  onClick={() => handleSelectSystemCollection(collection.id)}
+                  key={family.id}
+                  label={family.label}
+                  count={family.count}
+                  isActive={effectiveSelectedSystemFamilyId === family.id}
+                  onClick={() => handleSelectSystemFamily(family.id)}
                 />
               ))}
             </div>
@@ -219,31 +178,29 @@ export function AgentsScreen() {
           <div className="mt-6 space-y-5">
             {groupedSystemAgents.length === 0 ? (
               <div className="rounded-[22px] border border-dashed border-line bg-surface-muted px-5 py-7 text-[14px] text-muted-strong">
-                {query ? "没有匹配的系统智能体" : "当前没有系统智能体"}
+                {query ? "没有匹配的核心岗位" : "当前没有核心岗位"}
               </div>
             ) : shouldShowSystemDirectory ? (
               <SystemAgentDirectory
-                activeCollection={activeSystemCollectionOption}
-                groups={visibleSystemGroupOptions}
-                onSelectGroup={handleSelectSystemGroup}
+                families={systemFamilyOptions}
+                onSelectFamily={handleSelectSystemFamily}
               />
             ) : (
               <div className="space-y-5">
                 <SystemAgentFilterSummary
                   query={activeQuery}
                   visibleAgentCount={visibleSystemAgents.length}
-                  activeCollection={activeSystemCollectionOption}
-                  activeGroup={activeSystemGroupOption}
-                  visibleGroupCount={visibleSystemGroupOptions.length}
-                  canReturnToDirectory={!isSearching && visibleSystemGroupOptions.length > 1 && Boolean(activeSystemGroupOption)}
-                  onReturnToDirectory={() => handleSelectSystemGroup("all")}
+                  activeFamily={activeSystemFamilyOption}
+                  totalFamilyCount={systemFamilyOptions.length}
+                  canReturnToDirectory={!isSearching && systemFamilyOptions.length > 1 && Boolean(activeSystemFamilyOption)}
+                  onReturnToDirectory={() => handleSelectSystemFamily("all")}
                 />
 
                 <div className="space-y-6">
-                  {groupedSystemAgents.map((group) => (
-                    <SystemAgentGroupSection
-                      key={group.id}
-                      group={group}
+                  {groupedSystemAgents.map((family) => (
+                    <SystemAgentFamilySection
+                      key={family.id}
+                      family={family}
                       pendingKey={pendingKey}
                       onStartConversation={handleStartConversation}
                     />
@@ -256,7 +213,7 @@ export function AgentsScreen() {
 
         <AgentSection
           title="我的智能体"
-          description="你自定义的长期角色，会保留 soul、职责、用户画像和工具偏好。"
+          description="你自定义的长期角色，会保留 identity、contract、execution、quality 和 handoff 五个岗位合同文件。"
           agents={customAgents}
           pendingKey={pendingKey}
           onStartConversation={handleStartConversation}
@@ -341,28 +298,24 @@ function OverviewStrip({
 function SystemAgentFilterSummary({
   query,
   visibleAgentCount,
-  activeCollection,
-  activeGroup,
-  visibleGroupCount,
+  activeFamily,
+  totalFamilyCount,
   canReturnToDirectory,
   onReturnToDirectory,
 }: {
   query: string;
   visibleAgentCount: number;
-  activeCollection: ReturnType<typeof buildSystemCollectionOptions>[number] | null;
-  activeGroup: ReturnType<typeof buildSystemGroupOptions>[number] | null;
-  visibleGroupCount: number;
+  activeFamily: ReturnType<typeof buildSystemFamilyOptions>[number] | null;
+  totalFamilyCount: number;
   canReturnToDirectory: boolean;
   onReturnToDirectory: () => void;
 }) {
   const heading = query.trim()
     ? "搜索结果"
-    : activeGroup?.label ?? activeCollection?.displayLabel ?? "全部系统智能体";
+    : activeFamily?.label ?? "全部核心岗位";
   const description = query.trim()
-    ? `关键词“${query.trim()}”会跨全部集合和职能匹配系统智能体，方便直接搜到角色。`
-    : activeGroup?.description ??
-      activeCollection?.description ??
-      "跨全部系统集合浏览当前可用的系统智能体。";
+    ? `关键词“${query.trim()}”会跨全部岗位和家族匹配结果，方便直接找到合适的岗位。`
+    : activeFamily?.description ?? "跨全部岗位家族浏览当前可用的核心岗位。";
 
   return (
     <section className="rounded-[24px] border border-line bg-[#f8f6f2] p-5">
@@ -373,11 +326,7 @@ function SystemAgentFilterSummary({
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <h3 className="text-[22px] font-semibold tracking-[-0.04em] text-text">{heading}</h3>
-            {activeCollection ? (
-              <Badge tone={activeCollection.id === "opencrab-core" ? "warm" : "neutral"}>
-                {activeCollection.displayLabel}
-              </Badge>
-            ) : null}
+            {activeFamily ? <Badge tone="warm">岗位家族</Badge> : null}
           </div>
           <p className="mt-2 max-w-[720px] text-[13px] leading-6 text-muted-strong">{description}</p>
         </div>
@@ -388,12 +337,11 @@ function SystemAgentFilterSummary({
               onClick={onReturnToDirectory}
               className={buttonClassName({ variant: "secondary" })}
             >
-              返回职能目录
+              返回岗位家族
             </button>
           ) : null}
-          <MetaPill>{visibleAgentCount} 个智能体</MetaPill>
-          <MetaPill>{activeGroup ? activeGroup.label : `${visibleGroupCount} 个职能组`}</MetaPill>
-          <MetaPill>{activeCollection?.displayLabel ?? "全部集合"}</MetaPill>
+          <MetaPill>{visibleAgentCount} 个岗位</MetaPill>
+          <MetaPill>{activeFamily ? activeFamily.label : `${totalFamilyCount} 个家族`}</MetaPill>
         </div>
       </div>
     </section>
@@ -429,18 +377,14 @@ function CollectionSegmentButton({
 }
 
 function SystemAgentDirectory({
-  activeCollection,
-  groups,
-  onSelectGroup,
+  families,
+  onSelectFamily,
 }: {
-  activeCollection: ReturnType<typeof buildSystemCollectionOptions>[number] | null;
-  groups: ReturnType<typeof buildSystemGroupOptions>;
-  onSelectGroup: (groupId: string) => void;
+  families: ReturnType<typeof buildSystemFamilyOptions>;
+  onSelectFamily: (familyId: string) => void;
 }) {
-  const heading = activeCollection ? `${activeCollection.displayLabel} 的职能目录` : "职能目录";
-  const description = activeCollection
-    ? "先选具体职能，再进入角色列表，会比直接翻长清单更快。"
-    : "先按职能进入，再决定看哪一组角色。";
+  const heading = "岗位家族目录";
+  const description = "先按岗位家族进入，再决定把工作交给哪个结果 owner，会比直接翻长清单更快。";
 
   return (
     <section className="rounded-[24px] border border-line bg-background p-5">
@@ -450,34 +394,29 @@ function SystemAgentDirectory({
           <h3 className="mt-2 text-[22px] font-semibold tracking-[-0.04em] text-text">{heading}</h3>
           <p className="mt-2 text-[13px] leading-6 text-muted-strong">{description}</p>
         </div>
-        <MetaPill>{groups.length} 组</MetaPill>
+        <MetaPill>{families.length} 组</MetaPill>
       </div>
 
       <div className="mt-5 grid gap-3 xl:grid-cols-2">
-        {groups.map((group) => (
+        {families.map((family) => (
           <button
-            key={group.id}
+            key={family.id}
             type="button"
-            onClick={() => onSelectGroup(group.id)}
+            onClick={() => onSelectFamily(family.id)}
             className="w-full rounded-[22px] border border-line bg-[#fcfbf8] px-5 py-4 text-left transition hover:border-text/15 hover:bg-white"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h4 className="text-[19px] font-semibold tracking-[-0.03em] text-text">{group.label}</h4>
-                  {activeCollection || group.collectionDisplayLabel === group.label ? null : (
-                    <Badge tone={group.collectionId === "opencrab-core" ? "warm" : "neutral"}>
-                      {group.collectionDisplayLabel}
-                    </Badge>
-                  )}
+                  <h4 className="text-[19px] font-semibold tracking-[-0.03em] text-text">{family.label}</h4>
                 </div>
-                <p className="mt-2 line-clamp-2 text-[13px] leading-6 text-muted-strong">{group.description}</p>
+                <p className="mt-2 line-clamp-2 text-[13px] leading-6 text-muted-strong">{family.description}</p>
               </div>
-              <MetaPill>{group.count}</MetaPill>
+              <MetaPill>{family.count}</MetaPill>
             </div>
             <div className="mt-4 flex items-center justify-between text-[12px] text-muted-strong">
-              <span>{group.count} 个角色</span>
-              <span className="font-medium text-text">进入此组</span>
+              <span>{family.count} 个岗位</span>
+              <span className="font-medium text-text">进入此家族</span>
             </div>
           </button>
         ))}
@@ -486,40 +425,33 @@ function SystemAgentDirectory({
   );
 }
 
-function SystemAgentGroupSection({
-  group,
+function SystemAgentFamilySection({
+  family,
   pendingKey,
   onStartConversation,
 }: {
-  group: ReturnType<typeof groupAgentsByGroup>[number];
+  family: ReturnType<typeof groupAgentsByFamily>[number];
   pendingKey: string | null;
   onStartConversation: (agentId: string, agentName: string) => Promise<void>;
 }) {
-  const collectionDisplayLabel = formatCollectionDisplayLabel(group.collectionId, group.collectionLabel);
-  const showCollectionBadge = collectionDisplayLabel !== group.label;
-
   return (
     <section className="rounded-[24px] border border-line bg-background p-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-[20px] font-semibold tracking-[-0.03em] text-text">{group.label}</h3>
-            {showCollectionBadge ? (
-              <Badge tone={group.collectionId === "opencrab-core" ? "warm" : "neutral"}>
-                {collectionDisplayLabel}
-              </Badge>
-            ) : null}
+            <h3 className="text-[20px] font-semibold tracking-[-0.03em] text-text">{family.label}</h3>
+            <Badge tone="warm">岗位家族</Badge>
           </div>
-          <p className="mt-2 text-[13px] leading-6 text-muted-strong">{group.description}</p>
+          <p className="mt-2 text-[13px] leading-6 text-muted-strong">{family.description}</p>
         </div>
         <span className="rounded-full border border-line bg-surface-muted px-3 py-1.5 text-[12px] text-muted-strong">
-          {group.agents.length} 个
+          {family.agents.length} 个
         </span>
       </div>
 
       <div className="mt-5">
         <AgentCardGrid
-          agents={group.agents}
+          agents={family.agents}
           pendingKey={pendingKey}
           onStartConversation={onStartConversation}
           isSystemSection
@@ -588,11 +520,22 @@ function AgentCard({
 
       <p className="mt-4 text-[14px] leading-7 text-muted-strong">{agent.summary}</p>
 
+      {isSystemSection ? (
+        <div className="mt-4 space-y-3 rounded-[18px] border border-line/80 bg-surface px-4 py-4">
+          <InfoList label="负责结果" items={agent.ownedOutcomes?.slice(0, 3) ?? []} />
+          <InfoList
+            label="默认交付"
+            items={(agent.deliverables ?? []).slice(0, 3).map((item) => item.label)}
+          />
+          <InfoList label="不适合" items={agent.outOfScope?.slice(0, 3) ?? []} />
+        </div>
+      ) : null}
+
       <div className="mt-4 flex flex-wrap gap-2 text-[12px] text-muted-strong">
         {agent.defaultReasoningEffort ? <MetaPill>{agent.defaultReasoningEffort}</MetaPill> : null}
         {agent.defaultSandboxMode ? <MetaPill>{agent.defaultSandboxMode}</MetaPill> : null}
         <MetaPill>{formatTeamRole(agent.teamRole)}</MetaPill>
-        {isSystemSection ? <MetaPill>{agent.groupLabel}</MetaPill> : null}
+        {isSystemSection ? <MetaPill>{agent.familyLabel}</MetaPill> : null}
         {agent.promoted ? <Badge tone="warm">推荐</Badge> : null}
       </div>
 
@@ -603,7 +546,11 @@ function AgentCard({
           className={buttonClassName({ variant: "primary" })}
           disabled={pendingKey === `chat:${agent.id}`}
         >
-          {pendingKey === `chat:${agent.id}` ? "创建中..." : "开始对话"}
+          {pendingKey === `chat:${agent.id}`
+            ? "创建中..."
+            : isSystemSection
+              ? "交给这个岗位"
+              : "开始对话"}
         </button>
         <Link href={`/agents/${agent.id}`} className={buttonClassName({ variant: "secondary" })}>
           查看详情
@@ -645,105 +592,46 @@ function formatTeamRole(value: "lead" | "research" | "writer" | "specialist") {
   }
 }
 
-function buildSystemGroupOptions(agents: AgentProfileRecord[]) {
-  return groupAgentsByGroup(agents).map((group) => ({
-    id: group.id,
-    label: group.label,
-    description: group.description,
-    collectionId: group.collectionId,
-    collectionLabel: group.collectionLabel,
-    collectionDisplayLabel: formatCollectionDisplayLabel(group.collectionId, group.collectionLabel),
-    count: group.agents.length,
+function buildSystemFamilyOptions(agents: AgentProfileRecord[]) {
+  return groupAgentsByFamily(agents).map((family) => ({
+    id: family.id,
+    label: family.label,
+    description: family.description,
+    count: family.agents.length,
   }));
 }
 
-function buildSystemCollectionOptions(agents: AgentProfileRecord[]) {
-  const collections = new Map<
-    string,
-    {
-      id: string;
-      label: string;
-      displayLabel: string;
-      description: string;
-      order: number;
-      count: number;
-      groupIds: Set<string>;
-    }
-  >();
-
-  agents.forEach((agent) => {
-    const existing = collections.get(agent.collectionId);
-
-    if (existing) {
-      existing.count += 1;
-      existing.groupIds.add(agent.groupId);
-      return;
-    }
-
-    collections.set(agent.collectionId, {
-      id: agent.collectionId,
-      label: agent.collectionLabel,
-      displayLabel: formatCollectionDisplayLabel(agent.collectionId, agent.collectionLabel),
-      description: agent.collectionDescription,
-      order: agent.collectionOrder,
-      count: 1,
-      groupIds: new Set([agent.groupId]),
-    });
-  });
-
-  return Array.from(collections.values())
-    .sort((left, right) => left.order - right.order)
-    .map((collection) => ({
-      id: collection.id,
-      label: collection.label,
-      displayLabel: collection.displayLabel,
-      description: collection.description,
-      order: collection.order,
-      count: collection.count,
-      groupCount: collection.groupIds.size,
-    }));
-}
-
-function groupAgentsByGroup(agents: AgentProfileRecord[]) {
-  const groups = new Map<
+function groupAgentsByFamily(agents: AgentProfileRecord[]) {
+  const families = new Map<
     string,
     {
       id: string;
       label: string;
       description: string;
       order: number;
-      collectionId: string;
-      collectionLabel: string;
-      collectionOrder: number;
       agents: AgentProfileRecord[];
     }
   >();
 
   agents.forEach((agent) => {
-    const existing = groups.get(agent.groupId);
+    const familyId = getSystemFamilyId(agent);
+    const existing = families.get(familyId);
 
     if (existing) {
       existing.agents.push(agent);
       return;
     }
 
-    groups.set(agent.groupId, {
-      id: agent.groupId,
-      label: agent.groupLabel,
-      description: agent.groupDescription,
-      order: agent.groupOrder,
-      collectionId: agent.collectionId,
-      collectionLabel: agent.collectionLabel,
-      collectionOrder: agent.collectionOrder,
+    families.set(familyId, {
+      id: familyId,
+      label: agent.familyLabel,
+      description: agent.familyDescription,
+      order: agent.familyOrder,
       agents: [agent],
     });
   });
 
-  return Array.from(groups.values()).sort((left, right) => {
-    if (left.collectionOrder !== right.collectionOrder) {
-      return left.collectionOrder - right.collectionOrder;
-    }
-
+  return Array.from(families.values()).sort((left, right) => {
     if (left.order !== right.order) {
       return left.order - right.order;
     }
@@ -752,15 +640,25 @@ function groupAgentsByGroup(agents: AgentProfileRecord[]) {
   });
 }
 
-function formatCollectionDisplayLabel(collectionId: string, collectionLabel: string) {
-  switch (collectionId) {
-    case "opencrab-core":
-      return "OpenCrab 核心";
-    case "agency-agents":
-      return "扩展角色库";
-    default:
-      return collectionLabel;
+function getSystemFamilyId(agent: AgentProfileRecord) {
+  return agent.familyId;
+}
+
+function InfoList({ label, items }: { label: string; items: string[] }) {
+  if (items.length === 0) {
+    return null;
   }
+
+  return (
+    <div className="space-y-2">
+      <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted">{label}</div>
+      <div className="flex flex-wrap gap-2">
+        {items.map((item) => (
+          <MetaPill key={`${label}:${item}`}>{item}</MetaPill>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function SearchIcon() {

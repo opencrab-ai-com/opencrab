@@ -9,43 +9,46 @@ import { useOpenCrabApp } from "@/components/app-shell/opencrab-provider";
 import { AppPage } from "@/components/ui/app-page";
 import { Button, buttonClassName } from "@/components/ui/button";
 import { buildAgentAvatarOptions } from "@/lib/agents/avatar-library";
-import { getAgentDetail } from "@/lib/resources/opencrab-api";
+import type { SkillRecord } from "@/lib/resources/opencrab-api-types";
+import { getAgentDetail, getSkillsCatalog } from "@/lib/resources/opencrab-api";
 import type { AgentProfileDetail } from "@/lib/agents/types";
 
 const FILE_FIELD_META = [
   {
-    key: "soul",
-    label: "soul.md",
+    key: "identity",
+    label: "identity.md",
     description: "人格、风格、价值观、边界和做判断时的气质。",
   },
   {
-    key: "responsibility",
-    label: "responsibility.md",
+    key: "contract",
+    label: "contract.md",
     description: "职责、输入输出标准、done definition 和不要越界的部分。",
   },
   {
-    key: "tools",
-    label: "tools.md",
+    key: "execution",
+    label: "execution.md",
     description: "工具偏好、查资料方式、执行边界和禁区。",
   },
   {
-    key: "user",
-    label: "user.md",
+    key: "quality",
+    label: "quality.md",
     description: "关于用户本人、团队或长期偏好的上下文。",
   },
   {
-    key: "knowledge",
-    label: "knowledge.md",
+    key: "handoff",
+    label: "handoff.md",
     description: "该智能体需要长期记住的领域背景、术语和产品事实。",
   },
 ] as const;
 
 export function AgentDetailScreen({ agentId }: { agentId: string }) {
   const router = useRouter();
-  const { codexModels, createConversation, updateAgent, deleteAgent } = useOpenCrabApp();
+  const { codexModels, createConversation, updateAgent, resetAgent, deleteAgent } = useOpenCrabApp();
   const [agent, setAgent] = useState<AgentProfileDetail | null>(null);
+  const [skills, setSkills] = useState<SkillRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const [isStartingConversation, setIsStartingConversation] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -71,6 +74,26 @@ export function AgentDetailScreen({ agentId }: { agentId: string }) {
     void loadAgent();
   }, [loadAgent]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    void getSkillsCatalog()
+      .then((response) => {
+        if (!cancelled) {
+          setSkills(response.skills.filter((skill) => skill.status !== "disabled"));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSkills([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const modelOptions = useMemo(
     () => [
       { id: "", label: "跟随当前对话设置" },
@@ -87,6 +110,21 @@ export function AgentDetailScreen({ agentId }: { agentId: string }) {
           })
         : [],
     [agent, avatarSeed],
+  );
+  const ownedOutcomes = agent?.ownedOutcomes ?? [];
+  const outOfScope = agent?.outOfScope ?? [];
+  const deliverables = agent?.deliverables ?? [];
+  const defaultSkillIds = agent?.defaultSkillIds ?? [];
+  const optionalSkillIds = agent?.optionalSkillIds ?? [];
+  const qualityGates = agent?.qualityGates ?? [];
+  const handoffTargets = agent?.handoffTargets ?? [];
+  const skillNameById = useMemo(
+    () => new Map(skills.map((skill) => [skill.id, skill.name] as const)),
+    [skills],
+  );
+  const allSkillOptions = useMemo(
+    () => skills.map((skill) => ({ id: skill.id, label: skill.name, summary: skill.summary })),
+    [skills],
   );
 
   async function handleSave() {
@@ -111,6 +149,8 @@ export function AgentDetailScreen({ agentId }: { agentId: string }) {
         defaultReasoningEffort: agent.defaultReasoningEffort,
         defaultSandboxMode: agent.defaultSandboxMode,
         starterPrompts: agent.starterPrompts,
+        defaultSkillIds: agent.defaultSkillIds,
+        optionalSkillIds: agent.optionalSkillIds,
         files: agent.files,
       });
 
@@ -124,6 +164,31 @@ export function AgentDetailScreen({ agentId }: { agentId: string }) {
       setErrorMessage(error instanceof Error ? error.message : "保存智能体失败。");
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleResetAgent() {
+    if (!agent || agent.source !== "system") {
+      return;
+    }
+
+    setIsResetting(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    try {
+      const next = await resetAgent(agent.id);
+
+      if (!next) {
+        throw new Error("恢复默认配置失败。");
+      }
+
+      setAgent(next);
+      setSuccessMessage("已恢复内置默认配置。");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "恢复默认配置失败。");
+    } finally {
+      setIsResetting(false);
     }
   }
 
@@ -220,46 +285,42 @@ export function AgentDetailScreen({ agentId }: { agentId: string }) {
                   <div className="flex flex-wrap items-center gap-3">
                     <h1 className="text-[32px] font-semibold tracking-[-0.05em] text-text">{agent.name}</h1>
                     <Pill>{agent.roleLabel}</Pill>
-                    <Pill>{agent.source === "system" ? "系统内置" : "自定义"}</Pill>
+                    <Pill>{agent.source === "system" ? "核心岗位" : "自定义"}</Pill>
                   </div>
                 </div>
                 <p className="mt-3 text-[15px] leading-7 text-muted-strong">{agent.summary}</p>
                 <div className="mt-4 flex flex-wrap gap-2 text-[12px] text-muted-strong">
                   <Pill>{formatAvailability(agent.availability)}</Pill>
                   <Pill>{formatTeamRole(agent.teamRole)}</Pill>
-                  <Pill>{agent.groupLabel}</Pill>
-                  <Pill>{agent.collectionLabel}</Pill>
+                  <Pill>{agent.familyLabel}</Pill>
                   <Pill>{agent.fileCount} 个上下文文件</Pill>
-                  <Pill>固定模板结构</Pill>
+                  {agent.source === "system" ? <Pill>岗位合同结构</Pill> : <Pill>固定模板结构</Pill>}
                 </div>
 
                 {agent.source === "system" ? (
                   <div className="mt-5 rounded-[18px] border border-[#d7e4ff] bg-[#eef4ff] px-4 py-4 text-[13px] leading-6 text-[#2d56a3]">
-                    <div className="font-medium text-[#20458a]">系统分组</div>
-                    <div className="mt-2">{agent.groupDescription}</div>
-                    {agent.upstreamSourceUrl ? (
-                      <div className="mt-3 break-all">
-                        来源：{agent.collectionLabel}
-                        {agent.upstreamAgentName ? ` · ${agent.upstreamAgentName}` : ""}
-                        {agent.upstreamLicense ? ` · ${agent.upstreamLicense}` : ""}
-                        {" · "}
-                        <a
-                          href={agent.upstreamSourceUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="underline decoration-[#9ab6ef] underline-offset-4"
-                        >
-                          查看上游来源
-                        </a>
-                      </div>
-                    ) : null}
+                    <div className="font-medium text-[#20458a]">岗位家族</div>
+                    <div className="mt-2">{agent.familyDescription}</div>
                   </div>
                 ) : null}
               </div>
 
               <div className="flex flex-wrap gap-3">
+                <Button type="button" variant="secondary" onClick={() => void handleSave()} disabled={isSaving}>
+                  {isSaving ? "保存中..." : "保存配置"}
+                </Button>
+                {agent.source === "system" ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => void handleResetAgent()}
+                    disabled={isResetting || isSaving}
+                  >
+                    {isResetting ? "恢复中..." : "恢复内置默认"}
+                  </Button>
+                ) : null}
                 <Button type="button" onClick={() => void handleStartConversation()} disabled={isStartingConversation}>
-                  {isStartingConversation ? "创建中..." : "开始对话"}
+                  {isStartingConversation ? "创建中..." : agent.source === "system" ? "交给这个岗位" : "开始对话"}
                 </Button>
                 {agent.source === "custom" ? (
                   <Button type="button" variant="secondary" onClick={() => void handleDelete()} disabled={isDeleting}>
@@ -281,22 +342,127 @@ export function AgentDetailScreen({ agentId }: { agentId: string }) {
             ) : null}
           </section>
 
+          {agent.source === "system" ? (
+            <section className="rounded-[28px] border border-line bg-surface p-6 shadow-soft">
+              <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <h2 className="text-[24px] font-semibold tracking-[-0.04em] text-text">岗位合同</h2>
+                  <p className="mt-2 text-[14px] leading-7 text-muted-strong">
+                    系统岗位不靠空泛人设工作，而是按职责边界、默认交付和质量门闭环。
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2 text-[12px] text-muted-strong">
+                  <Pill>{deliverables.length} 项默认交付</Pill>
+                  <Pill>{qualityGates.length} 条质量门</Pill>
+                  <Pill>{handoffTargets.length} 个交接对象</Pill>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-5 xl:grid-cols-2">
+                <ContractPanel
+                  title="负责结果"
+                  description="这个岗位职责范围内必须自己闭环的结果。"
+                  items={ownedOutcomes}
+                />
+                <ContractPanel
+                  title="不负责"
+                  description="超出这些边界时，应该明确说明并转交。"
+                  items={outOfScope}
+                  tone="neutral"
+                />
+                <ContractPanel
+                  title="默认交付"
+                  description="完成时应直接给到用户的成品，而不是泛泛建议。"
+                  items={deliverables.map((item) => item.required ? `${item.label}（必交）` : item.label)}
+                />
+                <ContractPanel
+                  title="质量门"
+                  description="返回结果前必须先自查通过的标准。"
+                  items={qualityGates}
+                />
+                <ContractPanel
+                  title="默认能力"
+                  description="这个岗位在运行时优先挂载的 skills。"
+                  items={formatSkillList(defaultSkillIds, optionalSkillIds, skillNameById)}
+                  tone="neutral"
+                />
+                <ContractPanel
+                  title="交接对象"
+                  description="超出职责范围时优先转交给这些核心岗位。"
+                  items={handoffTargets.map(formatAgentReference)}
+                  tone="neutral"
+                />
+              </div>
+            </section>
+          ) : null}
+
+          <section className="rounded-[28px] border border-line bg-surface p-6 shadow-soft">
+            <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <h2 className="text-[24px] font-semibold tracking-[-0.04em] text-text">技能绑定</h2>
+                <p className="mt-2 text-[14px] leading-7 text-muted-strong">
+                  默认能力会直接进入该岗位的运行时上下文；可选能力会在需要时一起提供。
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-[18px] border border-[#d7e4ff] bg-[#eef4ff] px-4 py-4 text-[13px] leading-6 text-[#2d56a3]">
+              {agent.source === "system" ? (
+                <>
+                  核心岗位的本地化绑定会写入{" "}
+                  <code className="rounded bg-white/70 px-1.5 py-0.5 text-[12px] text-[#20458a]">
+                    ~/.opencrab/agents/system/{agent.id}/
+                  </code>
+                  ，不会修改内置资源。
+                </>
+              ) : (
+                <>
+                  自定义智能体的技能绑定会随同它的 profile 一起保存在{" "}
+                  <code className="rounded bg-white/70 px-1.5 py-0.5 text-[12px] text-[#20458a]">
+                    ~/.opencrab/agents/{agent.id}/
+                  </code>
+                  。
+                </>
+              )}
+            </div>
+
+            <div className="mt-5 grid gap-5 xl:grid-cols-2">
+              <SkillBindingEditor
+                title="默认能力"
+                description="优先挂载到该岗位上下文中的技能。"
+                selectedIds={defaultSkillIds}
+                allSkills={allSkillOptions}
+                excludedIds={new Set(optionalSkillIds)}
+                skillNameById={skillNameById}
+                onChange={(nextIds) =>
+                  setAgent((current) =>
+                    current ? { ...current, defaultSkillIds: dedupeSkillIds(nextIds) } : current,
+                  )
+                }
+              />
+              <SkillBindingEditor
+                title="可选能力"
+                description="默认不强行加载，但允许该岗位按任务调用的技能。"
+                selectedIds={optionalSkillIds}
+                allSkills={allSkillOptions}
+                excludedIds={new Set(defaultSkillIds)}
+                skillNameById={skillNameById}
+                onChange={(nextIds) =>
+                  setAgent((current) =>
+                    current ? { ...current, optionalSkillIds: dedupeSkillIds(nextIds) } : current,
+                  )
+                }
+              />
+            </div>
+          </section>
+
           <section className="rounded-[28px] border border-line bg-surface p-6 shadow-soft">
             <div className="mb-5 rounded-[18px] border border-[#d7e4ff] bg-[#eef4ff] px-4 py-4 text-[13px] leading-6 text-[#2d56a3]">
-              智能体统一采用 `agent.yaml` + `soul.md`、`responsibility.md`、`tools.md`、`user.md`、
-              `knowledge.md` 的固定结构。自定义智能体可以在这里编辑；系统内置智能体则直接以源码目录为准。
+              现在所有智能体都统一使用 V2 岗位合同结构。自定义智能体会直接保存到你的 OpenCrab 运行时目录；核心岗位则会保留内置版本，并在你修改后生成一份本地 shadow profile。
             </div>
             {agent.source === "system" ? (
               <div className="mb-5 rounded-[18px] border border-[#f2dfb4] bg-[#fff8e8] px-4 py-4 text-[13px] leading-6 text-[#8a6116]">
-                系统内置智能体现在直接来自{" "}
-                <code className="rounded bg-white/60 px-1.5 py-0.5 text-[12px] text-[#7c5713]">
-                  agents-src/system/&lt;slug&gt;/
-                </code>{" "}
-                源码目录。这里会展示当前内容，但不再通过页面写回；如需修改，请直接编辑对应的{" "}
-                <code className="rounded bg-white/60 px-1.5 py-0.5 text-[12px] text-[#7c5713]">
-                  agent.yaml
-                </code>{" "}
-                和 5 个 section 文件。
+                核心岗位的当前产品配置以内置版本为底稿，并在你保存后写入本地运行时目录，不会修改应用打包的源码资源。当前页面先支持 skills 绑定的本地化调整。
               </div>
             ) : null}
             <fieldset disabled={agent.source === "system"} className="contents">
@@ -536,11 +702,6 @@ export function AgentDetailScreen({ agentId }: { agentId: string }) {
                   这些文件会在每轮对话前作为智能体预设注入，决定它怎么看问题、怎么表达，以及该承担什么职责。
                 </p>
               </div>
-              {agent.source === "custom" ? (
-                <Button type="button" onClick={() => void handleSave()} disabled={isSaving}>
-                  {isSaving ? "保存中..." : "保存配置"}
-                </Button>
-              ) : null}
             </div>
 
             <fieldset disabled={agent.source === "system"} className="contents">
@@ -598,6 +759,146 @@ function Field({
 
 function Pill({ children }: { children: React.ReactNode }) {
   return <span className="rounded-full border border-line bg-surface-muted px-3 py-1.5 text-[12px] text-muted-strong">{children}</span>;
+}
+
+function ContractPanel({
+  title,
+  description,
+  items,
+  tone = "highlight",
+}: {
+  title: string;
+  description: string;
+  items: string[];
+  tone?: "highlight" | "neutral";
+}) {
+  return (
+    <section
+      className={[
+        "rounded-[22px] border px-5 py-5",
+        tone === "highlight"
+          ? "border-line bg-[#fcfbf8]"
+          : "border-line bg-background",
+      ].join(" ")}
+    >
+      <div className="text-[13px] font-medium text-text">{title}</div>
+      <p className="mt-2 text-[12px] leading-6 text-muted-strong">{description}</p>
+      <ul className="mt-4 space-y-2 text-[14px] leading-7 text-text">
+        {items.length > 0 ? items.map((item) => <li key={`${title}:${item}`}>• {item}</li>) : <li>暂无</li>}
+      </ul>
+    </section>
+  );
+}
+
+function formatSkillList(
+  defaultSkillIds: string[],
+  optionalSkillIds: string[],
+  skillNameById: Map<string, string>,
+) {
+  const items = defaultSkillIds.map((skillId) => `${skillNameById.get(skillId) || skillId}（默认）`);
+  const optionalItems = optionalSkillIds.map((skillId) => `${skillNameById.get(skillId) || skillId}（可选）`);
+  return [...items, ...optionalItems];
+}
+
+function SkillBindingEditor({
+  title,
+  description,
+  selectedIds,
+  allSkills,
+  excludedIds,
+  skillNameById,
+  onChange,
+}: {
+  title: string;
+  description: string;
+  selectedIds: string[];
+  allSkills: Array<{ id: string; label: string; summary: string }>;
+  excludedIds: Set<string>;
+  skillNameById: Map<string, string>;
+  onChange: (nextIds: string[]) => void;
+}) {
+  const availableSkills = allSkills.filter(
+    (skill) => !selectedIds.includes(skill.id) && !excludedIds.has(skill.id),
+  );
+
+  return (
+    <section className="rounded-[20px] border border-line bg-surface px-4 py-4">
+      <div className="text-[13px] font-medium text-text">{title}</div>
+      <p className="mt-2 text-[12px] leading-6 text-muted-strong">{description}</p>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {selectedIds.length > 0 ? (
+          selectedIds.map((skillId) => (
+            <button
+              key={`${title}:${skillId}`}
+              type="button"
+              onClick={() => onChange(selectedIds.filter((id) => id !== skillId))}
+              className="rounded-full border border-line bg-background px-3 py-1.5 text-[12px] text-text transition hover:border-[#1f4fd1] hover:text-[#1f4fd1]"
+            >
+              {skillNameById.get(skillId) || skillId} · 移除
+            </button>
+          ))
+        ) : (
+          <span className="text-[12px] text-muted-strong">暂未绑定</span>
+        )}
+      </div>
+
+      <div className="mt-4">
+        <label className="text-[12px] text-muted-strong">添加技能</label>
+        <select
+          value=""
+          onChange={(event) => {
+            const nextSkillId = event.target.value;
+
+            if (!nextSkillId) {
+              return;
+            }
+
+            onChange([...selectedIds, nextSkillId]);
+          }}
+          className="mt-2 w-full rounded-[16px] border border-line bg-background px-4 py-3 text-[13px] text-text outline-none transition focus:border-[#1f4fd1]"
+        >
+          <option value="">选择要绑定的 skill</option>
+          {availableSkills.map((skill) => (
+            <option key={skill.id} value={skill.id}>
+              {skill.label} · {skill.summary}
+            </option>
+          ))}
+        </select>
+      </div>
+    </section>
+  );
+}
+
+function dedupeSkillIds(skillIds: string[]) {
+  return Array.from(new Set(skillIds));
+}
+
+function formatAgentReference(agentId: string) {
+  switch (agentId) {
+    case "project-manager":
+      return "项目管理";
+    case "product-manager":
+      return "产品";
+    case "ui-designer":
+      return "UI 设计";
+    case "frontend-engineer":
+      return "前端开发";
+    case "backend-engineer":
+      return "后端开发";
+    case "ios-engineer":
+      return "iOS 开发";
+    case "content-operator":
+      return "内容运营";
+    case "growth-operator":
+      return "增长运营";
+    case "hr-manager":
+      return "人力资源";
+    case "support-specialist":
+      return "客服";
+    default:
+      return agentId;
+  }
 }
 
 function formatAvailability(value: "solo" | "team" | "both") {

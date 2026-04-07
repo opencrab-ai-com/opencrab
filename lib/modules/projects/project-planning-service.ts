@@ -206,7 +206,7 @@ function buildRecommendationPrompt(input: {
   const answerLines = formatAnswerLines(input.answers);
   const brief = input.brief ?? buildFallbackBrief(input.rawIntent);
   const agentLines = input.candidateAgents.map((agent) =>
-    `- ${agent.id} | ${agent.name} | ${agent.roleLabel} | ${agent.teamRole} | ${agent.collectionLabel} / ${agent.groupLabel} | ${compactText(agent.summary, 56)}`,
+    `- ${agent.id} | ${agent.name} | ${agent.roleLabel} | ${agent.teamRole} | ${agent.familyLabel} | ${compactText(agent.summary, 56)}`,
   );
 
   return `你正在为 OpenCrab 的“新建团队”流程做 team composition planning。系统项目经理会默认自动加入团队，你这次只需要判断是否还需要额外加入其他 Agent。
