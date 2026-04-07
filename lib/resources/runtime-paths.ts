@@ -15,6 +15,7 @@ const LEGACY_OPENCRAB_HOME = path.join(HOME_DIR, "Library", "Application Support
 const OPENCRAB_HOME = process.env.OPENCRAB_HOME || DEFAULT_OPENCRAB_HOME;
 
 export const OPENCRAB_RUNTIME_DIR = OPENCRAB_HOME;
+export const OPENCRAB_CODEX_HOME = OPENCRAB_RUNTIME_DIR;
 export const OPENCRAB_STATE_DIR = path.join(OPENCRAB_RUNTIME_DIR, "state");
 export const OPENCRAB_UPLOADS_DIR = path.join(OPENCRAB_RUNTIME_DIR, "uploads");
 export const OPENCRAB_UPLOADS_INDEX_PATH = path.join(OPENCRAB_UPLOADS_DIR, "index.json");
@@ -30,6 +31,10 @@ export const OPENCRAB_CONVERSATION_WORKSPACES_DIR = path.join(
 export const OPENCRAB_DEFAULT_WORKSPACE_DIR = path.join(
   OPENCRAB_WORKSPACES_DIR,
   "default",
+);
+export const OPENCRAB_CODEX_MODELS_CACHE_PATH = path.join(
+  OPENCRAB_CODEX_HOME,
+  "models_cache.json",
 );
 export const OPENCRAB_LOCAL_STORE_PATH = path.join(OPENCRAB_STATE_DIR, "local-store.json");
 export const OPENCRAB_CHANNEL_STORE_PATH = path.join(OPENCRAB_STATE_DIR, "channels.json");

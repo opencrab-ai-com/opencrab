@@ -7,6 +7,7 @@ import {
   isCodexTransportNoiseMessage,
   normalizeCodexTransportNoiseMessage,
 } from "@/lib/codex/stream-noise";
+import { buildOpenCrabCodexEnv } from "@/lib/codex/runtime-env";
 import {
   resolveCodexExecutablePath,
 } from "@/lib/codex/executable";
@@ -310,7 +311,7 @@ function getCodexClient() {
   });
 }
 
-export function buildChatGptLoginEnv() {
+export function buildChatGptLoginEnv(): Record<string, string> {
   const nextEnv: Record<string, string> = {};
   const allowOpenAiApiKeyForCommands = getSnapshot().settings.allowOpenAiApiKeyForCommands === true;
 
@@ -330,7 +331,7 @@ export function buildChatGptLoginEnv() {
     nextEnv[key] = value;
   }
 
-  return nextEnv;
+  return buildOpenCrabCodexEnv(nextEnv);
 }
 
 function buildThreadOptions(input?: {

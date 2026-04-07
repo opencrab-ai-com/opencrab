@@ -55,7 +55,6 @@ type SkillStoreState = {
 };
 
 const STORE_PATH = OPENCRAB_SKILLS_STORE_PATH;
-const CODEX_SKILLS_ROOT = path.join(process.env.HOME || process.cwd(), ".codex", "skills");
 const BUNDLED_SKILLS_SOURCE_ROOT = resolveOpenCrabResourcePath("skills");
 let hasEnsuredBundledSkills = false;
 const store = createSyncJsonFileStore<SkillStoreState>({
@@ -911,7 +910,7 @@ function buildCatalog() {
       ...seed,
       sourcePath: managedSourcePath,
       detailsMarkdown: null,
-      note: `已安装到 ${managedSourcePath}。卸载只会移除 OpenCrab 自己的技能目录，不会影响 ~/.codex/skills。`,
+      note: `已安装到 ${managedSourcePath}。卸载只会移除 OpenCrab 自己管理的技能目录，不会影响其他工具。`,
     };
   });
   const state = readState();
@@ -942,31 +941,20 @@ function getRecommendedCatalogSeed(skillId: string) {
 function discoverCodexSkills(): CatalogSeed[] {
   ensureBundledSkillsInstalled();
 
-  const bundledSkillFiles = [
+  const skillFiles = [
     ...collectSkillFiles(OPENCRAB_SKILLS_DIR),
     ...collectSkillFiles(path.join(OPENCRAB_SKILLS_DIR, ".system")),
   ];
-  const bundledSkillIds = new Set(
-    bundledSkillFiles.map((filePath) => path.basename(path.dirname(filePath))),
-  );
-  const sharedCodexFiles = existsSync(CODEX_SKILLS_ROOT)
-    ? [
-        ...collectSkillFiles(CODEX_SKILLS_ROOT),
-        ...collectSkillFiles(path.join(CODEX_SKILLS_ROOT, ".system")),
-      ].filter((filePath) => !bundledSkillIds.has(path.basename(path.dirname(filePath))))
-    : [];
-  const skillFiles = [...bundledSkillFiles, ...sharedCodexFiles];
 
   return skillFiles.map((filePath, index) => {
     const slug = path.basename(path.dirname(filePath));
     const parsed = parseSkillFile(filePath, { includeDetails: false });
     const override = DISPLAY_OVERRIDES[slug];
-    const isBundledSkill = filePath.startsWith(OPENCRAB_SKILLS_DIR);
 
     return {
       id: slug,
       name: override?.name || parsed.name || humanizeSlug(slug),
-      summary: override?.summary || parsed.summary || "Imported from your local shared skills library.",
+      summary: override?.summary || parsed.summary || "Imported from your OpenCrab-managed skills library.",
       category: override?.category || inferCategory(slug),
       origin: "codex" as const,
       icon: override?.icon || inferIcon(slug),
@@ -974,9 +962,7 @@ function discoverCodexSkills(): CatalogSeed[] {
       sourcePath: filePath,
       detailsMarkdown: null,
       defaultStatus: "installed" as const,
-      note: isBundledSkill
-        ? `这是 OpenCrab 仓库内置并同步到本机的技能，当前副本位于 ${filePath}。`
-        : `详情内容复制自 ${filePath}。在 OpenCrab 里的安装、禁用、卸载只影响 OpenCrab，不会修改你电脑上的其他工具。`,
+      note: `这是 OpenCrab 当前管理的技能，当前副本位于 ${filePath}。`,
       order: getCodexOrder(slug, index),
     };
   });
@@ -1320,7 +1306,7 @@ function getStatusLabel(status: SkillStatus) {
 
 function getOriginLabel(origin: SkillOrigin) {
   if (origin === "codex") {
-    return "来自本机技能库";
+    return "OpenCrab 技能库";
   }
 
   if (origin === "custom") {

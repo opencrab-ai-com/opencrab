@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
 import type { ExecFileOptions, SpawnOptions } from "node:child_process";
+import { buildOpenCrabCodexEnv } from "@/lib/codex/runtime-env";
 import { getOpenCrabNodeExecutable } from "@/lib/runtime/node-exec";
 
 const execFileAsync = promisify(execFile);
@@ -89,32 +90,41 @@ export function resolveCodexInvocation(env = process.env): CodexInvocation {
 }
 
 export function spawnCodexCommand(args: string[], options: SpawnOptions = {}) {
-  const invocation = resolveCodexInvocation(options.env);
+  const env = buildOpenCrabCodexEnv(options.env) as NodeJS.ProcessEnv;
+  const invocation = resolveCodexInvocation(env);
 
-  return spawn(invocation.command, [...invocation.argsPrefix, ...args], options);
+  return spawn(invocation.command, [...invocation.argsPrefix, ...args], {
+    ...options,
+    env,
+  });
 }
 
 export async function execCodexCommand(args: string[], options: ExecFileOptions = {}) {
-  const invocation = resolveCodexInvocation(options.env);
+  const env = buildOpenCrabCodexEnv(options.env) as NodeJS.ProcessEnv;
+  const invocation = resolveCodexInvocation(env);
 
   return execFileAsync(
     invocation.command,
     [...invocation.argsPrefix, ...args],
-    options,
+    {
+      ...options,
+      env,
+    },
   );
 }
 
 export async function getCodexExecutableStatus(
   env: NodeJS.ProcessEnv = process.env,
 ): Promise<CodexExecutableStatus> {
-  const invocation = resolveCodexInvocation(env);
+  const runtimeEnv = buildOpenCrabCodexEnv(env) as NodeJS.ProcessEnv;
+  const invocation = resolveCodexInvocation(runtimeEnv);
 
   try {
     const { stdout, stderr } = await execFileAsync(
       invocation.command,
       [...invocation.argsPrefix, "--version"],
       {
-        env,
+        env: runtimeEnv,
         timeout: 5000,
       },
     );
