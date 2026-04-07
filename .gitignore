@@ -27,6 +27,7 @@
 .opencrab/
 .opencrab-desktop/
 .artifacts/
+.superpowers/
 dist/
 app-builder-bin-*.tgz
 output/
