@@ -1,6 +1,6 @@
 ---
 name: skill-installer
-description: Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill, or install a skill from another repo (including private repos).
+description: Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. In OpenCrab, CODEX_HOME is isolated to OpenCrab's own runtime home. Use when a user asks to list installable skills, install a curated skill, or install a skill from another repo (including private repos).
 metadata:
   short-description: Install curated skills from openai/skills or other repos
 ---
@@ -27,7 +27,7 @@ Skills from {repo}:
 Which ones would you like installed?
 """
 
-After installing a skill, tell the user: "Restart Codex to pick up new skills."
+After installing a skill, tell the user: "OpenCrab will pick up the new skill on the next run. If it does not appear immediately, restart OpenCrab."
 
 ## Scripts
 
@@ -45,7 +45,7 @@ All of these scripts use network, so when running in the sandbox, request escala
 - Defaults to direct download for public GitHub repos.
 - If download fails with auth/permission errors, falls back to git sparse checkout.
 - Aborts if the destination skill directory already exists.
-- Installs into `$CODEX_HOME/skills/<skill-name>` (defaults to `~/.codex/skills`).
+- Installs into `$CODEX_HOME/skills/<skill-name>`. Inside OpenCrab, `CODEX_HOME` defaults to `$OPENCRAB_HOME` (usually `~/.opencrab`).
 - Multiple `--path` values install multiple skills in one run, each named from the path basename unless `--name` is supplied.
 - Options: `--ref <ref>` (default `main`), `--dest <path>`, `--method auto|download|git`.
 

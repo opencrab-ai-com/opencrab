@@ -37,6 +37,7 @@ function buildIsolatedDesktopEnv(env = process.env, input = {}) {
     ...env,
     HOME: resolveSystemHomeDirectory(env),
     OPENCRAB_HOME: input.openCrabHome,
+    CODEX_HOME: input.openCrabHome,
   };
 
   if (input.runtimeProfile) {

@@ -34,6 +34,7 @@ describe("desktop runtime home helpers", () => {
 
     expect(env.HOME).toBe(resolveSystemHomeDirectory({ HOME: "/Users/example" }));
     expect(env.OPENCRAB_HOME).toBe("/tmp/opencrab-runtime/opencrab-home");
+    expect(env.CODEX_HOME).toBe("/tmp/opencrab-runtime/opencrab-home");
     expect(env.OPENCRAB_DESKTOP_RUNTIME_PROFILE).toBe("production");
     expect(env.OPENCRAB_DESKTOP_PORT).toBe("3456");
   });

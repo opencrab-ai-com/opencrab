@@ -8,7 +8,7 @@ Video generation uses the OpenAI Video API, so the CLI needs outbound network ac
 ## How do I reduce repeated approval prompts (network)?
 If you trust the repo and want fewer prompts, enable network access for the relevant sandbox mode and relax the approval policy.
 
-Example `~/.codex/config.toml` pattern:
+Example `$CODEX_HOME/config.toml` pattern (OpenCrab defaults `CODEX_HOME` to `~/.opencrab`):
 
 ```
 approval_policy = "never"

@@ -1,12 +1,12 @@
 import { existsSync, readFileSync } from "node:fs";
-import path from "node:path";
 import type {
   CodexModelOption,
   CodexOptionsResponse,
   CodexReasoningEffort,
 } from "@/lib/resources/opencrab-api-types";
+import { OPENCRAB_CODEX_MODELS_CACHE_PATH } from "@/lib/resources/runtime-paths";
 
-const MODELS_CACHE_PATH = path.join(process.env.HOME || "", ".codex", "models_cache.json");
+const MODELS_CACHE_PATH = OPENCRAB_CODEX_MODELS_CACHE_PATH;
 
 const FALLBACK_OPTIONS: CodexOptionsResponse = {
   models: [

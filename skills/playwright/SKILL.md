@@ -34,11 +34,12 @@ Once `npx` is present, proceed with the wrapper script. A global install of `pla
 ## Skill path (set once)
 
 ```bash
-export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+export OPENCRAB_HOME="${OPENCRAB_HOME:-$HOME/.opencrab}"
+export CODEX_HOME="${CODEX_HOME:-$OPENCRAB_HOME}"
 export PWCLI="$CODEX_HOME/skills/playwright/scripts/playwright_cli.sh"
 ```
 
-User-scoped skills install under `$CODEX_HOME/skills` (default: `~/.codex/skills`).
+In OpenCrab, skills install under `$CODEX_HOME/skills` and `CODEX_HOME` defaults to `~/.opencrab`.
 
 ## Quick start
 
