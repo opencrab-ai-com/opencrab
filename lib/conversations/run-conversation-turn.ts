@@ -16,7 +16,7 @@ import type {
   CodexReasoningEffort,
   CodexSandboxMode,
 } from "@/lib/resources/opencrab-api-types";
-import type { ConversationSource } from "@/lib/seed-data";
+import type { ConversationPlanStep, ConversationSource } from "@/lib/seed-data";
 
 export class ConversationTurnError extends Error {
   statusCode: number;
@@ -42,6 +42,7 @@ type ConversationTurnInput = {
   remoteUserMessageId?: string | null;
   remoteUserChatId?: string | null;
   onThreadReady?: (threadId: string | null) => void;
+  onPlan?: (steps: ConversationPlanStep[]) => void;
   onThinking?: (entries: string[]) => void;
   onAssistantText?: (text: string) => void;
 };
@@ -132,6 +133,7 @@ export function finalizeConversationTurn(
       output_tokens: number;
     } | null;
     thinking?: string[];
+    planSteps?: ConversationPlanStep[];
   },
 ) {
   updateConversation(prepared.conversationId, {
@@ -150,6 +152,7 @@ export function finalizeConversationTurn(
       wasUsedInReply: false,
     })),
     thinking: result.thinking,
+    planSteps: result.planSteps,
     usedAttachmentNames: prepared.attachments.map((attachment) => attachment.name),
     meta:
       prepared.attachments.length > 0
@@ -164,6 +167,7 @@ export function finalizeConversationTurn(
 export async function runConversationTurn(input: ConversationTurnInput) {
   const shouldStreamInternally =
     typeof input.onThreadReady === "function" ||
+    typeof input.onPlan === "function" ||
     typeof input.onThinking === "function" ||
     typeof input.onAssistantText === "function";
 
@@ -178,10 +182,12 @@ export async function runConversationTurn(input: ConversationTurnInput) {
       cached_input_tokens: number;
       output_tokens: number;
     } | null = null;
+    let latestPlanSteps: ConversationPlanStep[] = [];
 
     const persistStreamingAssistantMessage = (patch?: {
       content?: string;
       thinking?: string[];
+      planSteps?: ConversationPlanStep[];
       meta?: string;
       status?: "pending" | "done" | "stopped";
     }) => {
@@ -190,6 +196,7 @@ export async function runConversationTurn(input: ConversationTurnInput) {
         role: "assistant",
         content: patch?.content ?? latestText,
         thinking: patch?.thinking ?? latestThinking,
+        planSteps: patch?.planSteps ?? latestPlanSteps,
         meta: patch?.meta ?? `OpenCrab 正在回复中... · ${latestModel}`,
         status: patch?.status ?? "pending",
       });
@@ -219,6 +226,16 @@ export async function runConversationTurn(input: ConversationTurnInput) {
           continue;
         }
 
+        if (event.type === "plan") {
+          latestPlanSteps = event.steps;
+          persistStreamingAssistantMessage({
+            planSteps: event.steps,
+            status: "pending",
+          });
+          input.onPlan?.(event.steps);
+          continue;
+        }
+
         if (event.type === "thinking") {
           latestThinking = event.entries;
           persistStreamingAssistantMessage({
@@ -244,6 +261,7 @@ export async function runConversationTurn(input: ConversationTurnInput) {
         latestThreadId = event.threadId;
         latestModel = event.model;
         latestUsage = event.usage;
+        latestPlanSteps = event.planSteps;
       }
     } catch (error) {
       if (latestThinking.length > 0 || latestText.trim().length > 0) {
@@ -262,6 +280,7 @@ export async function runConversationTurn(input: ConversationTurnInput) {
       threadId: latestThreadId,
       usage: latestUsage,
       thinking: latestThinking,
+      planSteps: latestPlanSteps,
     });
 
     return {

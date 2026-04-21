@@ -3,6 +3,7 @@ import type {
   AttachmentItem,
   ConversationItem,
   ConversationMessage,
+  ConversationPlanStep,
   FolderItem,
 } from "@/lib/seed-data";
 
@@ -138,6 +139,10 @@ export type ReplyStreamEvent =
       threadId: string | null;
     }
   | {
+      type: "plan";
+      steps: ConversationPlanStep[];
+    }
+  | {
       type: "thinking";
       entries: string[];
     }
@@ -158,6 +163,7 @@ export type ReplyStreamEvent =
           output_tokens: number;
         } | null;
         thinking: string[];
+        planSteps: ConversationPlanStep[];
       };
     }
   | {
@@ -281,4 +287,226 @@ export type TaskListResponse = {
 
 export type TaskDetailResponse = {
   task: TaskDetail | null;
+};
+
+export type WorkflowOwnerType = "person" | "team";
+export type WorkflowStatus = "draft" | "active" | "paused" | "archived";
+export type WorkflowVersionStatus = "draft" | "published";
+export type WorkflowReviewState = "pending_review" | "up_to_date";
+export type WorkflowTriggerType = "manual" | "schedule";
+export type WorkflowSchedulePreset = "daily" | "weekdays" | "weekly" | "interval";
+export type WorkflowSchedule = {
+  preset: WorkflowSchedulePreset;
+  time?: string | null;
+  weekday?: number | null;
+  intervalMinutes?: number | null;
+  intervalHours?: number | null;
+};
+
+export type WorkflowDeliveryDestination =
+  | { kind: "none" }
+  | { kind: "review_center" }
+  | { kind: "pending_publish" }
+  | { kind: "conversation"; conversationId: string | null }
+  | { kind: "channel"; channelId: string | null };
+
+export type WorkflowNodePosition = {
+  x: number;
+  y: number;
+};
+
+export type WorkflowStartNode = {
+  id: string;
+  type: "start";
+  name: string;
+  config: {
+    trigger: WorkflowTriggerType;
+    schedule?: WorkflowSchedule | null;
+  };
+  uiPosition: WorkflowNodePosition;
+};
+
+export type WorkflowScriptNode = {
+  id: string;
+  type: "script";
+  name: string;
+  config: {
+    scriptId: string | null;
+    source?: string | null;
+  };
+  uiPosition: WorkflowNodePosition;
+};
+
+export type WorkflowAgentNode = {
+  id: string;
+  type: "agent";
+  name: string;
+  config: {
+    agentId: string | null;
+    prompt: string | null;
+  };
+  uiPosition: WorkflowNodePosition;
+};
+
+export type WorkflowEndNode = {
+  id: string;
+  type: "end";
+  name: string;
+  config: {
+    deliveryTarget: "conversation" | "channel" | "pending_publish" | "none";
+    primaryDestination?: WorkflowDeliveryDestination | null;
+    mirroredDestinations?: WorkflowDeliveryDestination[];
+  };
+  uiPosition: WorkflowNodePosition;
+};
+
+export type WorkflowNodeRecord =
+  | WorkflowStartNode
+  | WorkflowScriptNode
+  | WorkflowAgentNode
+  | WorkflowEndNode;
+
+export type WorkflowEdgeRecord = {
+  id: string;
+  sourceNodeId: string;
+  targetNodeId: string;
+  condition: string | null;
+  label: string | null;
+};
+
+export type WorkflowGraph = {
+  nodes: WorkflowNodeRecord[];
+  edges: WorkflowEdgeRecord[];
+  layout: {
+    viewport: {
+      x: number;
+      y: number;
+      zoom: number;
+    };
+  };
+  defaults: {
+    timezone: string | null;
+  };
+};
+
+export type WorkflowVersionRecord = {
+  id: string;
+  workflowId: string;
+  versionNumber: number;
+  status: WorkflowVersionStatus;
+  graph: WorkflowGraph;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string | null;
+};
+
+export type WorkflowRecord = {
+  id: string;
+  name: string;
+  description: string | null;
+  ownerType: WorkflowOwnerType;
+  ownerId: string;
+  status: WorkflowStatus;
+  activeVersionId: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WorkflowOverviewCard = {
+  id: string;
+  name: string;
+  description: string | null;
+  status: WorkflowStatus;
+  ownerType: WorkflowOwnerType;
+  ownerId: string;
+  updatedAt: string;
+  draftVersionNumber: number | null;
+  publishedVersionNumber: number | null;
+  reviewState: WorkflowReviewState;
+};
+
+export type WorkflowReviewCounters = {
+  total: number;
+  pendingReview: number;
+  upToDate: number;
+  neverPublished: number;
+};
+
+export type WorkflowDetailRecord = {
+  workflow: WorkflowRecord;
+  versions: WorkflowVersionRecord[];
+  reviewState: WorkflowReviewState;
+  nodeCount: number;
+  edgeCount: number;
+  latestDraftVersionNumber: number | null;
+  latestPublishedVersionNumber: number | null;
+};
+
+export type WorkflowRunRecord = {
+  id: string;
+  workflowId: string;
+  status: "accepted";
+  startedAt: string;
+  message: string;
+};
+
+export type WorkflowListResponse = {
+  workflows: WorkflowOverviewCard[];
+  reviewCounters: WorkflowReviewCounters;
+};
+
+export type WorkflowDetailResponse = {
+  workflow: WorkflowDetailRecord | null;
+};
+
+export type WorkflowRunResponse = {
+  workflow: WorkflowDetailRecord | null;
+  run: WorkflowRunRecord | null;
+};
+
+export type WorkflowReviewSurface = "general" | "pending_publish";
+export type WorkflowReviewStatus = "open" | "resolved";
+export type WorkflowReviewView = "all" | "pending_publish";
+
+export type WorkflowReviewItemRecord = {
+  id: string;
+  workflowId: string;
+  workflowName: string;
+  workflowStatus: WorkflowStatus;
+  workflowVersionId: string;
+  runId: string;
+  runStatus: "running" | "success" | "error" | "waiting_for_human" | null;
+  runStartedAt: string | null;
+  sourceNodeId: string;
+  sourceNodeName: string;
+  sourceNodeType: WorkflowNodeRecord["type"];
+  surface: WorkflowReviewSurface;
+  status: WorkflowReviewStatus;
+  summary: string;
+  threadPreview: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WorkflowReviewItemsResponse = {
+  view: WorkflowReviewView;
+  items: WorkflowReviewItemRecord[];
+};
+
+export type WorkflowReviewActionResponse = {
+  item: WorkflowReviewItemRecord | null;
+  workflow: WorkflowDetailRecord | null;
+  result:
+    | {
+        status: "retried";
+        reviewItemId: string;
+        runId: string;
+        nodeId: string;
+        staleNodeRunIds: string[];
+      }
+    | {
+        status: "saved_to_draft";
+        reviewItemId: string;
+      }
+    | null;
 };

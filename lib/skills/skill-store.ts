@@ -57,11 +57,39 @@ type SkillStoreState = {
 const STORE_PATH = OPENCRAB_SKILLS_STORE_PATH;
 const BUNDLED_SKILLS_SOURCE_ROOT = resolveOpenCrabResourcePath("skills");
 let hasEnsuredBundledSkills = false;
+let hasNormalizedManagedSkills = false;
 const store = createSyncJsonFileStore<SkillStoreState>({
   filePath: STORE_PATH,
   seed: createSeedState,
   normalize: normalizeState,
 });
+
+const NORMALIZABLE_SKILL_TEXT_EXTENSIONS = new Set([
+  ".md",
+  ".markdown",
+  ".txt",
+  ".sh",
+  ".bash",
+  ".zsh",
+  ".fish",
+  ".ps1",
+  ".py",
+  ".js",
+  ".mjs",
+  ".cjs",
+  ".ts",
+  ".tsx",
+  ".jsx",
+  ".json",
+  ".yaml",
+  ".yml",
+  ".toml",
+  ".ini",
+  ".cfg",
+  ".conf",
+  ".rb",
+  ".pl",
+]);
 
 const CODEX_ORDER = [
   "imagegen",
@@ -1038,6 +1066,7 @@ function getRecommendedCatalogSeed(skillId: string) {
 
 function discoverCodexSkills(): CatalogSeed[] {
   ensureBundledSkillsInstalled();
+  ensureManagedSkillsNormalized();
 
   const skillFiles = [
     ...collectSkillFiles(OPENCRAB_SKILLS_DIR),
@@ -1093,6 +1122,15 @@ function ensureBundledSkillsInstalled() {
     path.join(OPENCRAB_SKILLS_DIR, ".system"),
   );
   hasEnsuredBundledSkills = true;
+}
+
+function ensureManagedSkillsNormalized() {
+  if (hasNormalizedManagedSkills) {
+    return;
+  }
+
+  normalizeManagedSkillDirectory(OPENCRAB_SKILLS_DIR);
+  hasNormalizedManagedSkills = true;
 }
 
 function copyBundledSkillDirectories(
@@ -1153,6 +1191,7 @@ async function ensureRecommendedSkillInstalled(skillId: string) {
 
   try {
     await downloadGitHubTree(seed.sourceUrl, targetDir);
+    normalizeManagedSkillDirectory(targetDir);
   } catch (error) {
     rmSync(targetDir, { recursive: true, force: true });
     throw error;
@@ -1203,7 +1242,8 @@ async function fetchUpstreamSkillMarkdown(treeUrl: string) {
   }
 
   const content = await response.text();
-  return parseSkillMarkdown(content).detailsMarkdown;
+  const detailsMarkdown = parseSkillMarkdown(content).detailsMarkdown;
+  return detailsMarkdown ? normalizeLegacyCodexSkillPaths(detailsMarkdown) : null;
 }
 
 function parseGitHubTreeUrl(treeUrl: string) {
@@ -1323,6 +1363,53 @@ function parseSkillMarkdown(content: string, options?: { includeDetails?: boolea
       extractFrontmatterValue(frontmatter, "short-description"),
     detailsMarkdown,
   };
+}
+
+function normalizeManagedSkillDirectory(dirPath: string) {
+  if (!existsSync(dirPath)) {
+    return;
+  }
+
+  for (const entry of readdirSync(dirPath, { withFileTypes: true })) {
+    const entryPath = path.join(dirPath, entry.name);
+
+    if (entry.isDirectory()) {
+      normalizeManagedSkillDirectory(entryPath);
+      continue;
+    }
+
+    if (!shouldNormalizeSkillTextFile(entryPath)) {
+      continue;
+    }
+
+    const original = readFileSync(entryPath, "utf8");
+    const normalized = normalizeLegacyCodexSkillPaths(original);
+
+    if (normalized !== original) {
+      writeFileSync(entryPath, normalized, "utf8");
+    }
+  }
+}
+
+function shouldNormalizeSkillTextFile(filePath: string) {
+  const baseName = path.basename(filePath);
+
+  if (baseName === "SKILL.md") {
+    return true;
+  }
+
+  return NORMALIZABLE_SKILL_TEXT_EXTENSIONS.has(path.extname(filePath).toLowerCase());
+}
+
+function normalizeLegacyCodexSkillPaths(content: string) {
+  return content
+    .replaceAll("~/.codex/skills/", "$CODEX_HOME/skills/")
+    .replaceAll("$HOME/.codex/skills/", "$CODEX_HOME/skills/")
+    .replaceAll("${HOME}/.codex/skills/", "$CODEX_HOME/skills/")
+    .replaceAll("$env:USERPROFILE\\.codex\\skills\\", "$env:CODEX_HOME\\skills\\")
+    .replaceAll("%USERPROFILE%\\.codex\\skills\\", "%CODEX_HOME%\\skills\\")
+    .replace(/\/Users\/[^/\s"'`()]+\/\.codex\/skills\//g, "$CODEX_HOME/skills/")
+    .replace(/\/home\/[^/\s"'`()]+\/\.codex\/skills\//g, "$CODEX_HOME/skills/");
 }
 
 function extractFrontmatterValue(frontmatter: string, key: string) {

@@ -21,6 +21,7 @@ import { listSkills } from "@/lib/skills/skill-store";
 import { getSnapshot } from "@/lib/resources/local-store";
 import { OPENCRAB_DEFAULT_WORKSPACE_DIR } from "@/lib/resources/runtime-paths";
 import type { CodexReasoningEffort, CodexSandboxMode } from "@/lib/resources/opencrab-api-types";
+import type { ConversationPlanStep } from "@/lib/seed-data";
 
 const CONFIGURED_DEFAULT_MODEL = process.env.OPENCRAB_CODEX_MODEL;
 const DEFAULT_REASONING_EFFORT = normalizeReasoningEffort(
@@ -63,6 +64,10 @@ export type CodexReplyStreamEvent =
       threadId: string | null;
     }
   | {
+      type: "plan";
+      steps: ConversationPlanStep[];
+    }
+  | {
       type: "thinking";
       entries: string[];
     }
@@ -77,6 +82,7 @@ export type CodexReplyStreamEvent =
       model: string;
       usage: CodexUsage;
       thinking: string[];
+      planSteps: ConversationPlanStep[];
     };
 
 export async function generateCodexReply({
@@ -217,8 +223,10 @@ export async function* streamCodexReply({
 
     const thinkingMap = new Map<string, string>();
     let lastThinkingPayload = "";
+    let lastPlanPayload = "";
     let assistantText = "";
     let usage: CodexUsage = null;
+    let latestPlanSteps: ConversationPlanStep[] = [];
 
     yield {
       type: "thread",
@@ -240,6 +248,23 @@ export async function* streamCodexReply({
       }
 
       const item = event.item;
+
+      const nextPlanSteps = getPlanSteps(item);
+
+      if (nextPlanSteps) {
+        const serializedPlan = JSON.stringify(nextPlanSteps);
+
+        if (serializedPlan !== lastPlanPayload) {
+          lastPlanPayload = serializedPlan;
+          latestPlanSteps = nextPlanSteps;
+          yield {
+            type: "plan",
+            steps: nextPlanSteps,
+          };
+        }
+
+        continue;
+      }
 
       if (item.type === "agent_message") {
         if (item.text !== assistantText) {
@@ -284,6 +309,7 @@ export async function* streamCodexReply({
       model: modelConfig.model,
       usage,
       thinking: Array.from(thinkingMap.values()),
+      planSteps: latestPlanSteps,
     };
   } catch (error) {
     throw normalizeCodexRuntimeError(error);
@@ -563,11 +589,7 @@ function getThinkingEntry(item: {
 
       return `正在调用工具：${item.server} / ${item.tool}`;
     case "todo_list":
-      return item.items?.length
-        ? `正在规划步骤：${item.items
-            .map((todo) => `${todo.completed ? "已完成" : "待处理"} ${todo.text}`)
-            .join("；")}`
-        : null;
+      return null;
     case "error":
       if (!item.message || isCodexTransportNoiseMessage(item.message)) {
         return null;
@@ -577,6 +599,22 @@ function getThinkingEntry(item: {
     default:
       return null;
   }
+}
+
+function getPlanSteps(item: {
+  type: string;
+  id: string;
+  items?: Array<{ text: string; completed: boolean }>;
+}) {
+  if (item.type !== "todo_list" || !item.items?.length) {
+    return null;
+  }
+
+  return item.items.map((todo, index) => ({
+    id: `${item.id}:${index}`,
+    text: todo.text?.trim() || `步骤 ${index + 1}`,
+    status: todo.completed ? ("completed" as const) : ("pending" as const),
+  }));
 }
 
 function sanitizeThinkingEntry(value: string | undefined) {

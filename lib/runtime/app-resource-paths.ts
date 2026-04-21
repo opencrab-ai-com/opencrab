@@ -1,4 +1,7 @@
-import path from "node:path";
+import {
+  joinFileSystemPath,
+  resolveFileSystemPath,
+} from "@/lib/shared/filesystem-paths";
 
 export function resolveOpenCrabResourceRoot(env = process.env) {
   const configuredRoot = env.OPENCRAB_RESOURCE_ROOT?.trim();
@@ -7,11 +10,11 @@ export function resolveOpenCrabResourceRoot(env = process.env) {
     return process.cwd();
   }
 
-  return path.resolve(configuredRoot);
+  return resolveFileSystemPath(configuredRoot, process.cwd());
 }
 
 export const OPENCRAB_RESOURCE_ROOT = resolveOpenCrabResourceRoot();
 
 export function resolveOpenCrabResourcePath(...parts: string[]) {
-  return path.join(OPENCRAB_RESOURCE_ROOT, ...parts);
+  return joinFileSystemPath(OPENCRAB_RESOURCE_ROOT, ...parts);
 }

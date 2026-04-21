@@ -4,6 +4,7 @@ export type NavKey =
   | "projects"
   | "channels"
   | "tasks"
+  | "workflows"
   | "skills"
   | "about"
   | "settings";
@@ -23,6 +24,14 @@ export type AttachmentItem = {
   size: number;
   mimeType: string;
   wasUsedInReply?: boolean;
+};
+
+export type ConversationPlanStepStatus = "pending" | "completed";
+
+export type ConversationPlanStep = {
+  id: string;
+  text: string;
+  status: ConversationPlanStepStatus;
 };
 
 export type ConversationItem = {
@@ -79,6 +88,7 @@ export type ConversationMessage = {
   attachments?: AttachmentItem[];
   usedAttachmentNames?: string[];
   thinking?: string[];
+  planSteps?: ConversationPlanStep[];
   meta?: string;
   status?: "pending" | "done" | "stopped";
 };

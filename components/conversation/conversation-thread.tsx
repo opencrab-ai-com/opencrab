@@ -28,6 +28,7 @@ import type { AgentProfileRecord } from "@/lib/agents/types";
 import type { AttachmentItem } from "@/lib/seed-data";
 import { formatConversationMessageTimestamp } from "@/lib/conversations/utils";
 import { buildConversationDetailViewModel } from "@/lib/view-models/conversations";
+import type { ConversationPlanStep } from "@/lib/seed-data";
 
 type ConversationThreadProps = {
   conversationId: string;
@@ -281,6 +282,9 @@ const ConversationMessageCard = memo(function ConversationMessageCard({
         </div>
         <span className="text-[11px] text-muted">{formatConversationMessageTimestamp(message.timestamp)}</span>
       </div>
+      {message.role === "assistant" && message.planSteps?.length ? (
+        <PlanPanel steps={message.planSteps} isPending={message.status === "pending"} />
+      ) : null}
       {thinkingModeEnabled && message.role === "assistant" && message.thinking?.length ? (
         <ThinkingPanel
           entries={message.thinking}
@@ -320,6 +324,61 @@ const ConversationMessageCard = memo(function ConversationMessageCard({
     </article>
   );
 });
+
+function PlanPanel({
+  steps,
+  isPending,
+}: {
+  steps: ConversationPlanStep[];
+  isPending: boolean;
+}) {
+  const completedCount = steps.filter((step) => step.status === "completed").length;
+
+  return (
+    <div className="mb-3 rounded-[18px] border border-line bg-[#f8f6f0] px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-[11px] font-medium text-muted-strong">
+          <ThinkingSpinner isActive={isPending} />
+          <span>{isPending ? "执行计划" : "已执行计划"}</span>
+        </div>
+        <span className="rounded-full border border-[#ddd6c7] bg-background px-2.5 py-1 text-[11px] text-muted-strong">
+          {completedCount}/{steps.length} 已完成
+        </span>
+      </div>
+
+      <div className="mt-3 space-y-2 border-t border-line pt-3">
+        {steps.map((step, index) => {
+          const isCompleted = step.status === "completed";
+
+          return (
+            <div
+              key={step.id}
+              className="flex items-start gap-3 rounded-[14px] bg-background/70 px-3 py-2"
+            >
+              <span
+                aria-hidden="true"
+                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold ${
+                  isCompleted
+                    ? "border-[#94b88b] bg-[#eef7ea] text-[#3d6c37]"
+                    : "border-[#d9d2c3] bg-[#fffdf8] text-muted-strong"
+                }`}
+              >
+                {isCompleted ? "✓" : index + 1}
+              </span>
+              <p
+                className={`text-[13px] leading-6 ${
+                  isCompleted ? "text-muted line-through decoration-[#9ea69a]" : "text-text"
+                }`}
+              >
+                {step.text}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function AttachmentCard({ attachment }: { attachment: AttachmentItem }) {
   if (attachment.kind === "image") {

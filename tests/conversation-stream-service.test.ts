@@ -6,6 +6,7 @@ const finalizeConversationTurnMock = vi.hoisted(() => vi.fn());
 const updateConversationMock = vi.hoisted(() => vi.fn());
 const addMessageMock = vi.hoisted(() => vi.fn());
 const getAgentProfileMock = vi.hoisted(() => vi.fn());
+const syncBoundConversationHistoryMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/agents/agent-store", () => ({
   getAgentProfile: getAgentProfileMock,
@@ -23,6 +24,10 @@ vi.mock("@/lib/conversations/run-conversation-turn", () => ({
 vi.mock("@/lib/resources/local-store", () => ({
   addMessage: addMessageMock,
   updateConversation: updateConversationMock,
+}));
+
+vi.mock("@/lib/channels/bound-conversation-sync", () => ({
+  syncBoundConversationHistory: syncBoundConversationHistoryMock,
 }));
 
 type ConversationStreamModule = Awaited<
@@ -52,6 +57,7 @@ describe("conversation-stream-service", () => {
     updateConversationMock.mockReset();
     addMessageMock.mockReset();
     getAgentProfileMock.mockReset();
+    syncBoundConversationHistoryMock.mockReset();
 
     prepareConversationTurnMock.mockReturnValue({
       conversationId: "conversation-1",
@@ -72,6 +78,14 @@ describe("conversation-stream-service", () => {
       textAttachments: [],
       userMessageId: "message-user-1",
       assistantMessageId: "message-assistant-1",
+    });
+    syncBoundConversationHistoryMock.mockResolvedValue({
+      snapshot: {
+        folders: [],
+        conversations: [],
+        conversationMessages: {},
+        settings: {},
+      },
     });
   });
 
@@ -176,5 +190,65 @@ describe("conversation-stream-service", () => {
         error: "OpenCrab 回复在完成前中断了，请重试。",
       },
     ]);
+  });
+
+  it("forwards structured plan events before the final assistant result", async () => {
+    streamCodexReplyMock.mockImplementation(async function* () {
+      yield {
+        type: "plan" as const,
+        steps: [
+          { id: "todo-1:0", text: "读取当前上下文", status: "completed" as const },
+          { id: "todo-1:1", text: "整理执行步骤", status: "pending" as const },
+        ],
+      };
+      yield {
+        type: "assistant" as const,
+        text: "我先把实现路径收拢一下。",
+      };
+      yield {
+        type: "done" as const,
+        text: "已经整理完成。",
+        threadId: "thread-1",
+        model: "gpt-5.4",
+        usage: null,
+        thinking: [],
+        planSteps: [
+          { id: "todo-1:0", text: "读取当前上下文", status: "completed" as const },
+          { id: "todo-1:1", text: "整理执行步骤", status: "completed" as const },
+        ],
+      };
+    });
+
+    const { buildConversationReplyStream } =
+      await loadConversationStreamModule();
+    const response = await buildConversationReplyStream({
+      request: new Request("http://opencrab.test/api/reply", {
+        method: "POST",
+      }),
+      conversationId: "conversation-1",
+      body: {
+        content: "你好",
+      },
+    });
+
+    const events = await readStreamEvents(response);
+
+    expect(events[0]).toEqual({
+      type: "plan",
+      steps: [
+        { id: "todo-1:0", text: "读取当前上下文", status: "completed" },
+        { id: "todo-1:1", text: "整理执行步骤", status: "pending" },
+      ],
+    });
+    expect(events[1]).toEqual({
+      type: "assistant",
+      text: "我先把实现路径收拢一下。",
+    });
+    expect(events[2]).toMatchObject({
+      type: "done",
+      assistant: {
+        text: "已经整理完成。",
+      },
+    });
   });
 });

@@ -12,6 +12,7 @@ import type {
   AppSettings,
   ConversationItem,
   ConversationMessage,
+  ConversationPlanStep,
   ConversationSource,
 } from "@/lib/seed-data";
 import type {
@@ -558,6 +559,7 @@ function normalizeMessages(messages: ConversationMessage[]) {
       source: message.source ?? "local",
       remoteMessageId: message.remoteMessageId ?? null,
       remoteChatId: normalizeOptionalText(message.remoteChatId),
+      planSteps: normalizeConversationPlanSteps(message.planSteps),
       timestamp: inferredTimestamp,
     };
   });
@@ -688,9 +690,28 @@ function buildConversationMessage(
       ? structuredClone(message.usedAttachmentNames)
       : undefined,
     thinking: message.thinking ? structuredClone(message.thinking) : undefined,
+    planSteps: normalizeConversationPlanSteps(message.planSteps),
     meta: message.meta,
     status: message.status,
   };
+}
+
+function normalizeConversationPlanSteps(steps: ConversationPlanStep[] | undefined) {
+  if (!Array.isArray(steps) || steps.length === 0) {
+    return undefined;
+  }
+
+  return steps.map((step, index) => ({
+    id:
+      typeof step.id === "string" && step.id.trim().length > 0
+        ? step.id.trim()
+        : `plan-step-${index + 1}`,
+    text:
+      typeof step.text === "string" && step.text.trim().length > 0
+        ? step.text.trim()
+        : `步骤 ${index + 1}`,
+    status: step.status === "completed" ? ("completed" as const) : ("pending" as const),
+  }));
 }
 
 function touchConversationForMessage(

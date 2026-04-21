@@ -19,6 +19,13 @@ import type {
   TaskListResponse,
   TaskSchedule,
   TaskStatus,
+  WorkflowDetailResponse,
+  WorkflowGraph,
+  WorkflowListResponse,
+  WorkflowReviewActionResponse,
+  WorkflowReviewItemsResponse,
+  WorkflowReviewView,
+  WorkflowRunResponse,
   UploadedAttachment,
 } from "@/lib/resources/opencrab-api-types";
 import type {
@@ -230,6 +237,88 @@ export async function mutateSkill(skillId: string, action: SkillAction) {
 export async function getTasks() {
   return request<TaskListResponse>("/api/tasks", {
     method: "GET",
+  });
+}
+
+export async function getWorkflows() {
+  return request<WorkflowListResponse>("/api/workflows", {
+    method: "GET",
+  });
+}
+
+export async function getWorkflowDetail(workflowId: string) {
+  return request<WorkflowDetailResponse>(`/api/workflows/${workflowId}`, {
+    method: "GET",
+  });
+}
+
+export async function saveWorkflowDraft(
+  workflowId: string,
+  input: {
+    versionId: string;
+    graph: WorkflowGraph;
+  },
+) {
+  return request<WorkflowDetailResponse>(`/api/workflows/${workflowId}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function createWorkflow(input: {
+  name: string;
+  description?: string | null;
+  ownerType: "person" | "team";
+  ownerId: string;
+}) {
+  return request<WorkflowDetailResponse>("/api/workflows", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function publishWorkflow(
+  workflowId: string,
+  input?: { graph?: WorkflowGraph | null },
+) {
+  return request<WorkflowDetailResponse>(`/api/workflows/${workflowId}/publish`, {
+    method: "POST",
+    body: input?.graph
+      ? JSON.stringify({
+          graph: input.graph,
+        })
+      : undefined,
+  });
+}
+
+export async function runWorkflow(workflowId: string) {
+  return request<WorkflowRunResponse>(`/api/workflows/${workflowId}/run`, {
+    method: "POST",
+  });
+}
+
+export async function getWorkflowReviewItems(view: WorkflowReviewView = "all") {
+  const search = new URLSearchParams({ view });
+  return request<WorkflowReviewItemsResponse>(`/api/workflows/review-items?${search.toString()}`, {
+    method: "GET",
+  });
+}
+
+export async function reviewWorkflowItem(
+  reviewItemId: string,
+  input:
+    | {
+        action: "retry_current_node";
+        inputPatch?: Record<string, unknown>;
+      }
+    | {
+        action: "save_to_draft";
+        definitionPatch: Record<string, unknown>;
+      },
+) {
+  return request<WorkflowReviewActionResponse>(`/api/workflows/review-items/${reviewItemId}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
   });
 }
 

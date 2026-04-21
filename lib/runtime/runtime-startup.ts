@@ -9,6 +9,7 @@ import { ensureBrowserSessionWarmup } from "@/lib/codex/browser-session";
 import { logServerError } from "@/lib/server/observability";
 import { ensureBundledSkillsReady } from "@/lib/skills/skill-store";
 import { ensureTaskRunner } from "@/lib/tasks/task-runner";
+import { ensureWorkflowRunner } from "@/lib/workflows/workflow-runner";
 
 type RuntimeStartupTask = {
   event: string;
@@ -31,6 +32,11 @@ const BOOTSTRAP_TASKS: RuntimeStartupTask[] = [
     event: "bootstrap_task_runner_failed",
     message: "任务执行器启动失败。",
     run: () => ensureTaskRunner(),
+  },
+  {
+    event: "bootstrap_workflow_runner_failed",
+    message: "工作流执行器启动失败。",
+    run: () => ensureWorkflowRunner(),
   },
   {
     event: "bootstrap_conversation_metadata_sync_failed",

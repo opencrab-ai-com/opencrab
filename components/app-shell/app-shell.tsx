@@ -59,6 +59,7 @@ const navItems: Array<{
     conversationMode: "channel",
   },
   { key: "tasks", label: "定时任务", href: "/tasks", icon: <TaskIcon /> },
+  { key: "workflows", label: "Workflow", href: "/workflows", icon: <WorkflowIcon /> },
   { key: "skills", label: "技能", href: "/skills", icon: <StarIcon /> },
 ];
 
@@ -570,6 +571,22 @@ function TaskIcon() {
     >
       <rect x="5.5" y="6" width="13" height="12" rx="2.5" />
       <path d="M8.5 4.5v3M15.5 4.5v3M8.5 11.5h7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function WorkflowIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-[18px] w-[18px] stroke-current"
+      strokeWidth="1.8"
+      fill="none"
+    >
+      <circle cx="6" cy="7" r="2.2" />
+      <circle cx="18" cy="7" r="2.2" />
+      <circle cx="12" cy="17" r="2.2" />
+      <path d="M8 8.4 10.7 14M16 8.4 13.3 14M8.4 7h7.2" strokeLinecap="round" />
     </svg>
   );
 }

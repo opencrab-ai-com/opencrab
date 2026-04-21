@@ -1195,6 +1195,7 @@ function areConversationMessagesEqual(
         message.status === target.status &&
         areStringListsEqual(message.usedAttachmentNames, target.usedAttachmentNames) &&
         areStringListsEqual(message.thinking, target.thinking) &&
+        arePlanStepsEqual(message.planSteps, target.planSteps) &&
         areAttachmentsEqual(message.attachments, target.attachments)
       );
     })
@@ -1236,5 +1237,28 @@ function areAttachmentsEqual(
       attachment.mimeType === target.mimeType &&
       attachment.wasUsedInReply === target.wasUsedInReply
     );
+  });
+}
+
+function arePlanStepsEqual(
+  current?: ConversationMessage["planSteps"],
+  next?: ConversationMessage["planSteps"],
+) {
+  if (!current && !next) {
+    return true;
+  }
+
+  if (!current || !next || current.length !== next.length) {
+    return false;
+  }
+
+  return current.every((step, index) => {
+    const target = next[index];
+
+    if (!target) {
+      return false;
+    }
+
+    return step.id === target.id && step.text === target.text && step.status === target.status;
   });
 }

@@ -28,6 +28,7 @@
 .opencrab-desktop/
 .artifacts/
 .superpowers/
+.worktree/
 .worktrees/
 dist/
 app-builder-bin-*.tgz

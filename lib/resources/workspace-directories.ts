@@ -1,14 +1,17 @@
 import { existsSync, mkdirSync } from "node:fs";
-import path from "node:path";
 import {
   OPENCRAB_CONVERSATION_WORKSPACES_DIR,
 } from "@/lib/resources/runtime-paths";
+import {
+  joinFileSystemPath,
+  resolveFileSystemPath,
+} from "@/lib/shared/filesystem-paths";
 
 const HOME_DIR = process.env.HOME || process.cwd();
 
 export function getDefaultConversationWorkspaceDir(conversationId: string) {
   return ensureWorkspaceDirectory(
-    path.join(OPENCRAB_CONVERSATION_WORKSPACES_DIR, conversationId),
+    joinFileSystemPath(OPENCRAB_CONVERSATION_WORKSPACES_DIR, conversationId),
   );
 }
 
@@ -18,7 +21,7 @@ export function normalizeConversationWorkspaceDir(
 ) {
   const resolved =
     resolveWorkspaceDirectoryInput(value) ??
-    path.join(OPENCRAB_CONVERSATION_WORKSPACES_DIR, conversationId);
+    joinFileSystemPath(OPENCRAB_CONVERSATION_WORKSPACES_DIR, conversationId);
 
   return ensureWorkspaceDirectory(resolved);
 }
@@ -40,7 +43,7 @@ export function resolveWorkspaceDirectoryInput(value: string | null | undefined)
     return null;
   }
 
-  return path.resolve(expandHomeDirectory(raw));
+  return resolveFileSystemPath(raw, process.cwd(), HOME_DIR);
 }
 
 function ensureWorkspaceDirectory(dirPath: string) {
@@ -49,16 +52,4 @@ function ensureWorkspaceDirectory(dirPath: string) {
   }
 
   return dirPath;
-}
-
-function expandHomeDirectory(value: string) {
-  if (value === "~") {
-    return HOME_DIR;
-  }
-
-  if (value.startsWith("~/") || value.startsWith("~\\")) {
-    return path.join(HOME_DIR, value.slice(2));
-  }
-
-  return value;
 }

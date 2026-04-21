@@ -6,7 +6,12 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   {
-    files: ["desktop/**/*.cjs", "lib/runtime/runtime-network-config.shared.js"],
+    files: [
+      "desktop/**/*.cjs",
+      "lib/runtime/runtime-network-config.shared.js",
+      "skills/**/*.cjs",
+      "skills/**/*.js",
+    ],
     languageOptions: {
       sourceType: "commonjs",
     },
@@ -30,6 +35,7 @@ const eslintConfig = defineConfig([
     "dist/**",
     "output/**",
     "tmp/**",
+    ".worktrees/**",
   ]),
 ]);
 

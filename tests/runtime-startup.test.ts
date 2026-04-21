@@ -7,6 +7,7 @@ const syncAllChannelConfigsFromSecretsMock = vi.hoisted(() => vi.fn());
 const ensureBrowserSessionWarmupMock = vi.hoisted(() => vi.fn());
 const ensureBundledSkillsReadyMock = vi.hoisted(() => vi.fn());
 const ensureTaskRunnerMock = vi.hoisted(() => vi.fn());
+const ensureWorkflowRunnerMock = vi.hoisted(() => vi.fn());
 const logServerErrorMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/channels/channel-startup", () => ({
@@ -38,6 +39,10 @@ vi.mock("@/lib/tasks/task-runner", () => ({
   ensureTaskRunner: ensureTaskRunnerMock,
 }));
 
+vi.mock("@/lib/workflows/workflow-runner", () => ({
+  ensureWorkflowRunner: ensureWorkflowRunnerMock,
+}));
+
 async function flushMicrotasks() {
   await Promise.resolve();
   await Promise.resolve();
@@ -52,6 +57,7 @@ describe("runtime startup orchestration", () => {
     ensureBrowserSessionWarmupMock.mockReset().mockResolvedValue(undefined);
     ensureBundledSkillsReadyMock.mockReset();
     ensureTaskRunnerMock.mockReset().mockResolvedValue(undefined);
+    ensureWorkflowRunnerMock.mockReset().mockResolvedValue(undefined);
     logServerErrorMock.mockReset();
   });
 
@@ -66,6 +72,7 @@ describe("runtime startup orchestration", () => {
     expect(ensureChannelStartupSyncMock).toHaveBeenCalledWith();
     expect(ensureBrowserSessionWarmupMock).toHaveBeenCalledWith();
     expect(ensureTaskRunnerMock).toHaveBeenCalledWith();
+    expect(ensureWorkflowRunnerMock).toHaveBeenCalledWith();
     expect(ensureBoundConversationMetadataSyncMock).toHaveBeenCalledWith();
     expect(logServerErrorMock).not.toHaveBeenCalled();
   });

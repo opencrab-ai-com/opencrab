@@ -333,6 +333,13 @@ export function useOpenCrabMessageController(
                 return;
               }
 
+              if (event.type === "plan") {
+                input.patchMessage(conversationId, assistantMessageId, {
+                  planSteps: event.steps,
+                });
+                return;
+              }
+
               if (event.type === "assistant") {
                 input.patchMessage(conversationId, assistantMessageId, {
                   content: event.text,

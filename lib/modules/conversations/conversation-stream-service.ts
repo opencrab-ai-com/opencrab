@@ -11,6 +11,7 @@ import type {
   CodexSandboxMode,
   ReplyStreamEvent,
 } from "@/lib/resources/opencrab-api-types";
+import type { ConversationPlanStep } from "@/lib/seed-data";
 
 type BuildConversationReplyStreamInput = {
   request: Request;
@@ -44,6 +45,7 @@ export async function buildConversationReplyStream(
     async start(controller) {
       let latestText = "";
       let latestThinking: string[] = [];
+      let latestPlanSteps: ConversationPlanStep[] = [];
       let latestThreadId: string | null = prepared.conversation.codexThreadId ?? null;
       let didComplete = false;
       let emittedErrorMessage: string | null = null;
@@ -79,6 +81,12 @@ export async function buildConversationReplyStream(
             continue;
           }
 
+          if (event.type === "plan") {
+            latestPlanSteps = event.steps;
+            emit(event);
+            continue;
+          }
+
           if (event.type === "thinking") {
             latestThinking = event.entries;
             emit(event);
@@ -93,13 +101,15 @@ export async function buildConversationReplyStream(
 
           latestText = event.text;
           latestThinking = event.thinking;
+          latestPlanSteps = event.planSteps;
           latestThreadId = event.threadId;
-          const assistantMessageResult = finalizeConversationTurn(prepared, {
+          finalizeConversationTurn(prepared, {
             text: event.text,
             model: event.model,
             threadId: event.threadId,
             usage: event.usage,
             thinking: event.thinking,
+            planSteps: event.planSteps,
           });
           const syncResult = await syncBoundConversationHistory(input.conversationId);
 
@@ -112,6 +122,7 @@ export async function buildConversationReplyStream(
               threadId: event.threadId,
               usage: event.usage,
               thinking: event.thinking,
+              planSteps: event.planSteps,
             },
           });
           didComplete = true;
@@ -131,6 +142,7 @@ export async function buildConversationReplyStream(
             role: "assistant",
             content: latestText.trim() || "已停止当前回复。",
             thinking: latestThinking,
+            planSteps: latestPlanSteps,
             meta: `已停止 · ${input.body.model || prepared.conversation.lastAssistantModel || "OpenCrab"}`,
             status: "stopped",
           });

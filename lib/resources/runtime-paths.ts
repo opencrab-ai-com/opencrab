@@ -42,6 +42,7 @@ export const OPENCRAB_RUNTIME_CONFIG_PATH = path.join(OPENCRAB_STATE_DIR, "runti
 export const OPENCRAB_SKILLS_STORE_PATH = path.join(OPENCRAB_STATE_DIR, "skills.json");
 export const OPENCRAB_TASKS_STORE_PATH = path.join(OPENCRAB_STATE_DIR, "tasks.json");
 export const OPENCRAB_PROJECTS_STORE_PATH = path.join(OPENCRAB_STATE_DIR, "projects.json");
+export const OPENCRAB_WORKFLOWS_STORE_PATH = path.join(OPENCRAB_STATE_DIR, "workflows.json");
 export const OPENCRAB_CHANNEL_SECRET_STORE_PATH = path.join(
   OPENCRAB_STATE_DIR,
   "channel-secrets.json",
@@ -59,6 +60,7 @@ const LEGACY_ROOT_ITEM_MIGRATIONS = [
   ["runtime-config.json", OPENCRAB_RUNTIME_CONFIG_PATH],
   ["skills.json", OPENCRAB_SKILLS_STORE_PATH],
   ["tasks.json", OPENCRAB_TASKS_STORE_PATH],
+  ["workflows.json", OPENCRAB_WORKFLOWS_STORE_PATH],
   ["uploads", OPENCRAB_UPLOADS_DIR],
   ["tunnels", OPENCRAB_TUNNEL_LOG_DIR],
   ["chrome-debug-profile", OPENCRAB_CHROME_PROFILE_DIR],
